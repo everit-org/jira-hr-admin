@@ -41,11 +41,12 @@ import org.osgi.framework.ServiceReference;
 
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.atlassian.sal.api.websudo.WebSudoManager;
 
 /**
  * Testing the addition of a servlet.
  */
-public class HelloWorldServlet extends HttpServlet {
+public class GlobalPermissionsServlet extends HttpServlet {
 
   private static final CompiledTemplate TEMPLATE;
 
@@ -55,8 +56,9 @@ public class HelloWorldServlet extends HttpServlet {
 
     try {
       TEMPLATE = htmlTemplateCompiler.compile(IOUtils
-          .toString(HelloWorldServlet.class.getResource("/META-INF/pages/configuration_main.html")),
-          new ParserConfiguration(HelloWorldServlet.class.getClassLoader()));
+          .toString(GlobalPermissionsServlet.class
+              .getResource("/META-INF/pages/global_permissions.html")),
+          new ParserConfiguration(GlobalPermissionsServlet.class.getClassLoader()));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -65,6 +67,14 @@ public class HelloWorldServlet extends HttpServlet {
   @Override
   protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
       throws ServletException, IOException {
+
+    WebSudoManager webSudoManager =
+        ComponentAccessor.getOSGiComponentInstanceOfType(WebSudoManager.class);
+
+    if (!webSudoManager.canExecuteRequest(req)) {
+      webSudoManager.enforceWebSudoProtection(req, resp);
+      return;
+    }
 
     StringWriter writer = new StringWriter();
     EveritWebResourceManager webResourceManager = new EveritWebResourceManager(writer);
@@ -78,7 +88,7 @@ public class HelloWorldServlet extends HttpServlet {
 
     System.out.println(transactionTemplate);
 
-    ClassLoader classLoader = HelloWorldServlet.class.getClassLoader();
+    ClassLoader classLoader = GlobalPermissionsServlet.class.getClassLoader();
     BundleReference bundleReference = (BundleReference) classLoader;
 
     BundleContext bundleContext = bundleReference.getBundle().getBundleContext();

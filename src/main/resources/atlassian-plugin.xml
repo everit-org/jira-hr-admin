@@ -23,7 +23,19 @@
     <vendor name="Everit Kft." url="http://www.everit.biz" />
   </plugin-info>
 
-  <servlet name="EveritConfiguration" class="org.everit.jira.configuration.plugin.HelloWorldServlet" key="everit-configuration">
-    <url-pattern>/everit-configuration</url-pattern>
+  <resource type="i18n" name="i18n" location="META-INF/i18n/everit-configuration" />
+
+  <web-section key="everit" name="Everit Configuration" location="admin_plugins_menu" weight="110">
+    <label key="admin_plugins_menu.section_everit" />
+  </web-section>
+
+  <web-item key="global_permissions" name="Everit Global Permissions" section="admin_plugins_menu/everit" weight="60">
+    <label key="admin_plugins_menu.section_everit.global_permissions" />
+    <link>/plugins/servlet/everit/global-permissions</link>
+  </web-item>
+
+  <servlet name="EveritConfiguration" class="org.everit.jira.configuration.plugin.GlobalPermissionsServlet"
+    key="everit-configuration">
+    <url-pattern>/everit/global-permissions</url-pattern>
   </servlet>
 </atlassian-plugin>
