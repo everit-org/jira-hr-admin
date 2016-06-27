@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.jira.configuration.org.everit.jira.configuration.plugin;
+package org.everit.jira.configuration.plugin;
 
 import java.io.Writer;
 

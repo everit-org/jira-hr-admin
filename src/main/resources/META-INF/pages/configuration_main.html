@@ -15,15 +15,22 @@
     limitations under the License.
 
 -->
-<atlassian-plugin key="${project.artifactId}" name="${project.name}"
-  plugins-version="2">
-  <plugin-info>
-    <description>${project.description}</description>
-    <version>${project.version}</version>
-    <vendor name="Everit Kft." url="http://www.everit.biz" />
-  </plugin-info>
-
-  <servlet name="EveritConfiguration" class="org.everit.jira.configuration.plugin.HelloWorldServlet" key="everit-configuration">
-    <url-pattern>/everit-configuration</url-pattern>
-  </servlet>
-</atlassian-plugin>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="decorator" content="atl.general">
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
+  data-eht-render="'content'"></script>
+<title>Insert title here</title>
+</head>
+<body>
+  <div id="helloworld">Hello world test</div>
+  <script>
+      if (everit.partialresponse) {
+        $('#helloworld').css('color', 'red');
+      }
+    </script>
+</body>
+</html>

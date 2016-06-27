@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.jira.configuration.org.everit.jira.configuration.plugin;
+package org.everit.jira.configuration.plugin;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.everit.expression.ExpressionCompiler;
 import org.everit.expression.ParserConfiguration;
 import org.everit.expression.jexl.JexlExpressionCompiler;
@@ -51,13 +53,13 @@ public class HelloWorldServlet extends HttpServlet {
     ExpressionCompiler expressionCompiler = new JexlExpressionCompiler();
     TemplateCompiler htmlTemplateCompiler = new HTMLTemplateCompiler(expressionCompiler);
 
-    TEMPLATE = htmlTemplateCompiler.compile(
-        "<html><head><meta name=\"decorator\" content=\"atl.general\">"
-            + "<script data-eht-text='webResourceManager.requireResource(\"org.everit.web.partialresponse.jira:org.everit.web.partialresponse\")' data-eht-render=\"'content'\"></script>"
-            + "</head><body>"
-            + "<div id=\"helloworld\">Hello world</div>"
-            + "<script>if (everit.partialresponse){$('#helloworld').css('color', 'red');}</script></body></html>",
-        new ParserConfiguration(HelloWorldServlet.class.getClassLoader()));
+    try {
+      TEMPLATE = htmlTemplateCompiler.compile(IOUtils
+          .toString(HelloWorldServlet.class.getResource("/META-INF/pages/configuration_main.html")),
+          new ParserConfiguration(HelloWorldServlet.class.getClassLoader()));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   @Override
