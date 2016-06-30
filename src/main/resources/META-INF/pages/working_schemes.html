@@ -1,0 +1,221 @@
+<!--
+
+    Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Everit - Working Schemes</title>
+<meta charset="UTF-8">
+<meta name="decorator" content="atl.admin">
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
+  data-eht-render="'content'"></script>
+<style type="text/css">
+.everit-tabs .tabs-pane {
+    padding-top: 2em;
+}
+table.aui thead tr td {
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+  <form class="aui">
+    <label for="working_scheme_selector">Working Scheme: </label> <select
+      id="working_scheme_selector" class="select">
+      <option value="0" selected="selected">Hungary</option>
+      <option value="1">Germany - Baden Württemberg</option>
+      <option value="2">Germany - Sachsen-Anhalt</option>
+      <option value="3">United Kingdom</option>
+    </select>
+
+    <button class="aui-button">Edit</button>
+    <button class="aui-button">New</button>
+  </form>
+  <div class="aui-tabs horizontal-tabs everit-tabs">
+    <ul class="tabs-menu">
+      <li class="menu-item active-tab"><a href="#working-general">General</a></li>
+      <li class="menu-item"><a href="#tab-weekdays">Weekdays</a></li>
+      <li class="menu-item"><a href="#tab-public-holidays">Public Holidays</a></li>
+      <li class="menu-item"><a href="#tab-working-weekend-days">Working weekend days</a></li>
+      <li class="menu-item"><a href="#tab-users">Users</a></li>
+    </ul>
+    <div class="tabs-pane active-pane" id="working-general">
+      <h2>General settings</h2>
+      <h3>Daily working hours</h3>
+      <form class="aui">
+        <div class="form-group">
+          <input type="radio" name="daily-working-hours-selection" value="default">
+          <label>From Jira settings</label>
+        </div>
+        <div class="form-group">
+          <input type="radio" name="daily-working-hours-selection" value="custom">
+          <label for="daily-working-hours">Custom</label> <input type="text"
+            class="text short-field" name="daily-working-hours" value="8h" />
+        </div>
+        <div class="form-group" style="padding-top: 2em;">
+          <button class="aui-button aui-button-primary">Save</button>
+        </div>
+      </form>
+    </div>
+    <div class="tabs-pane" id="tab-weekdays">
+      <h2>Weekdays</h2>
+      <form class="aui">
+        <table class="aui" style="width: auto;">
+          <thead>
+            <tr>
+              <th id="weekday-day">Day</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Monday</td>
+              <td><input type="checkbox" class="checkbox" checked="checked" /></td>
+            </tr>
+            <tr>
+              <td>Tuesday</td>
+              <td><input type="checkbox" class="checkbox" checked="checked" /></td>
+            </tr>
+            <tr>
+              <td>Wednesday</td>
+              <td><input type="checkbox" class="checkbox" checked="checked" /></td>
+            </tr>
+            <tr>
+              <td>Thursday</td>
+              <td><input type="checkbox" class="checkbox" checked="checked" /></td>
+            </tr>
+            <tr>
+              <td>Friday</td>
+              <td><input type="checkbox" class="checkbox" checked="checked" /></td>
+            </tr>
+            <tr>
+              <td>Saturday</td>
+              <td><input type="checkbox" class="checkbox" /></td>
+            </tr>
+            <tr>
+              <td>Sunday</td>
+              <td><input type="checkbox" class="checkbox" /></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="form-group" style="padding-top: 2em;">
+          <button class="aui-button aui-button-primary">Save</button>
+        </div>
+      </form>
+    </div>
+    <div class="tabs-pane" id="tab-public-holidays">
+      <h2>Public Holidays</h2>
+      <table class="aui">
+        <thead>
+          <tr>
+            <th id="public-holiday-date">Date</th>
+            <th id="public-holiday-description">Description</th>
+            <td id="public-holiday-actions"><a href="#">Add</a></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td headers="public-holiday-date">2016-05-01</td>
+            <td headers="public-holiday-description">May One</td>
+            <td headers="public-holiday-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+          </tr>
+          <tr>
+            <td headers="public-holiday-date">2016-01-01</td>
+            <td headers="public-holiday-description">Everyone is drunk</td>
+            <td headers="public-holiday-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tabs-pane" id="tab-working-weekend-days">
+      <h2>Working weekend days</h2>
+      <table class="aui">
+        <thead>
+          <tr>
+            <th id="working-weekend-day-date">Date</th>
+            <th id="working-weekend-day-description">Description</th>
+            <td id="working-weekend-day-actions"><a href="#">Add</a></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td headers="working-weekend-day-date">2016-04-20</td>
+            <td headers="working-weekend-day-description">Working instead of easter</td>
+            <td headers="working-weekend-day-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+          </tr>
+          <tr>
+            <td headers="working-weekend-day-date">2016-03-30</td>
+            <td headers="working-weekend-day-description">Everyone must work</td>
+            <td headers="working-weekend-day-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tabs-pane" id="tab-users">
+      <h2>Users</h2>
+
+      <form class="aui">
+        <div class="form-group">
+          <label for="user-selector">User: </label> <select id="user-selector"
+            class="js-default-user-picker single-user-picker" name="user"></select> <label
+            for="current-checkbox">Current time ranges:</label> <input id="current-checkbox" type="checkbox" />
+            <button class="aui-button aui-button-primary">Filter</button>
+        </div>
+      </form>
+
+      <table class="aui">
+        <thead>
+          <tr>
+            <th id="working-scheme-user-name">User</th>
+            <th id="working-scheme-user-start-date">Start date</th>
+            <th id="working-scheme-user-end-date">End date</th>
+            <th id="working-scheme-user-working-hours">Daily working hours</th>
+            <td id="working-scheme-user-actions"><a href="#">Add</a></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td headers="working-scheme-user-name">balazs.zsoldos@everit.biz</td>
+            <td headers="working-scheme-user-start-date">2016-05-19</td>
+            <td headers="working-scheme-user-end-date">2016-11-30</td>
+            <td headers="working-scheme-user-working-hours">default</td>
+            <td headers="working-scheme-user-actions">
+              <ul class="menu">
+                <li><a href="#">Edit</a></li>
+                <li><a href="#">Delete</a></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td headers="working-scheme-user-name">balazs.zsoldos@everit.biz</td>
+            <td headers="working-scheme-user-start-date">2016-01-01</td>
+            <td headers="working-scheme-user-end-date">2016-05-18</td>
+            <td headers="working-scheme-user-working-hours">6h</td>
+            <td headers="working-scheme-user-actions">
+              <ul class="menu">
+                <li><a href="#">Edit</a></li>
+                <li><a href="#">Delete</a></li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

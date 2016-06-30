@@ -1,0 +1,72 @@
+<!--
+
+    Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Working Schemes</title>
+<meta charset="UTF-8">
+<meta name="decorator" content="atl.admin">
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
+  data-eht-render="'content'"></script>
+<style type="text/css">
+.everit-tabs .tabs-pane {
+    padding-top: 2em;
+}
+</style>
+<title>Everit - Holiday Manager</title>
+</head>
+<body>
+  <h2>Holiday manager</h2>
+  <form class="aui">
+    <label for="user-selector">User: </label> <select id="user-selector"
+      class="js-default-user-picker single-user-picker" name="user"></select> <label
+      for="year-selector">Year: </label> <input id="year-selector" class="text short-field"
+      name="year" />
+    <button class="aui-button aui-button-primary">Filter</button>
+  </form>
+
+  <table class="aui">
+    <thead>
+      <tr>
+        <th id="user-holiday-user">User</th>
+        <th id="user-holiday-year">Year</th>
+        <th id="user-holiday-count">Holiday count</th>
+        <th id="user-holiday-description">Description</th>
+        <td id="user-holiday-actions"><a style="font-weight: bold;" href="#">Add</a></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td headers="user-holiday-user">balazs.zsoldos@everit.biz</td>
+        <td headers="user-holiday-year">2016</td>
+        <td headers="user-holiday-count">30</td>
+        <td headers="user-holiday-description">4 children + one was born this year</td>
+        <td headers="user-holiday-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+      </tr>
+      <tr>
+        <td headers="user-holiday-user">balazs.zsoldos@everit.biz</td>
+        <td headers="user-holiday-year">2015</td>
+        <td headers="user-holiday-count">23</td>
+        <td headers="user-holiday-description">3 from past year</td>
+        <td headers="user-holiday-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

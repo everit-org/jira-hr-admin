@@ -25,17 +25,52 @@
 
   <resource type="i18n" name="i18n" location="META-INF/i18n/everit-configuration" />
 
-  <web-section key="everit" name="Everit Configuration" location="admin_plugins_menu" weight="110">
+  <web-section key="everit" name="Everit Configuration" location="admin_plugins_menu"
+    weight="110">
     <label key="admin_plugins_menu.section_everit" />
   </web-section>
 
-  <web-item key="global_permissions" name="Everit Global Permissions" section="admin_plugins_menu/everit" weight="60">
+  <web-item key="global_permissions" name="Everit Global Permissions" section="admin_plugins_menu/everit"
+    weight="60">
     <label key="admin_plugins_menu.section_everit.global_permissions" />
     <link>/plugins/servlet/everit/global-permissions</link>
   </web-item>
 
+  <web-item key="working_schemes" name="Everit Working Schemes" section="admin_plugins_menu/everit"
+    weight="60">
+    <label key="admin_plugins_menu.section_everit.working_schemes" />
+    <link>/plugins/servlet/everit/working-schemes</link>
+  </web-item>
+
+  <web-item key="special_issues" name="Everit Special Issues" section="admin_plugins_menu/everit"
+    weight="60">
+    <label key="admin_plugins_menu.section_everit.special_issues" />
+    <link>/plugins/servlet/everit/special-issues</link>
+  </web-item>
+  
+  <web-item key="holiday_manager" name="Everit Holiday Manager" section="admin_plugins_menu/everit"
+    weight="60">
+    <label key="admin_plugins_menu.section_everit.holiday_manager" />
+    <link>/plugins/servlet/everit/holiday-manager</link>
+  </web-item>  
+
   <servlet name="EveritConfiguration" class="org.everit.jira.configuration.plugin.GlobalPermissionsServlet"
     key="everit-configuration">
     <url-pattern>/everit/global-permissions</url-pattern>
+  </servlet>
+
+  <servlet name="WorkingSchemes" class="org.everit.jira.configuration.plugin.WorkingSchemesServlet"
+    key="everit-working-schemes">
+    <url-pattern>/everit/working-schemes</url-pattern>
+  </servlet>
+
+  <servlet name="Special Issues" class="org.everit.jira.configuration.plugin.SpecialIssuesServlet"
+    key="everit-special-issues">
+    <url-pattern>/everit/special-issues</url-pattern>
+  </servlet>
+
+  <servlet name="Holidays" class="org.everit.jira.configuration.plugin.HolidayManagerServlet"
+    key="everit-holiday-manager">
+    <url-pattern>/everit/holiday-manager</url-pattern>
   </servlet>
 </atlassian-plugin>

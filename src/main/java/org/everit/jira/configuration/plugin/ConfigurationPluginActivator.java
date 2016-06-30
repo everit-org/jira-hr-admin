@@ -34,7 +34,6 @@ public class ConfigurationPluginActivator implements BundleActivator {
 
   @Override
   public void start(final BundleContext context) throws Exception {
-    System.out.println("////////////////////// 1");
     try (Connection connection = DefaultOfBizConnectionFactory.getInstance().getConnection()) {
       DatabaseConnection databaseConnection = new JdbcConnection(connection);
       Liquibase liquibase =
@@ -42,8 +41,6 @@ public class ConfigurationPluginActivator implements BundleActivator {
               new OSGiResourceAccessor(context.getBundle()), databaseConnection);
 
       liquibase.update((String) null);
-
-      System.out.println("//////////////////// 2");
     }
   }
 

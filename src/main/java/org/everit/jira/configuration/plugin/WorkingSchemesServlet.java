@@ -16,15 +16,15 @@
 package org.everit.jira.configuration.plugin;
 
 /**
- * Testing the addition of a servlet.
+ * Servlet that allows the users to view and edit working schemes.
  */
-public class GlobalPermissionsServlet extends AbstractPageServlet {
+public class WorkingSchemesServlet extends AbstractPageServlet {
 
-  private static final long serialVersionUID = -4704767395527396521L;
+  private static final long serialVersionUID = 5855299893731146143L;
 
   @Override
   protected String getPageTemplateResourceURL() {
-    return "/META-INF/pages/global_permissions.html";
+    return "/META-INF/pages/working_schemes.html";
   }
 
   @Override

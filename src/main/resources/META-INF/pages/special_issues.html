@@ -1,0 +1,77 @@
+<!--
+
+    Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Everit - Special issues</title>
+<meta charset="UTF-8">
+<meta name="decorator" content="atl.admin">
+<script data-eht-text="webResourceManager.requireResource('jira.webresources:global-static')"
+  data-eht-render="'content'"></script>
+<script data-eht-text="webResourceManager.requireResource('jira.webresources:calendar')"
+  data-eht-render="'content'"></script>
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
+  data-eht-render="'content'"></script>
+</head>
+<body>
+  <h2>Special Issues</h2>
+  <h3>Holiday issues</h3>
+  <form action="#" class="aui">
+    <div class="form-group">
+      <label>Issues:</label> <input type="text" class="text long-field" />
+    </div>
+    <div class="description">(Comma separated list of issues that do represent paid holidays)</div>
+
+    <div class="form-group">
+      <label>Projects:</label> <input type="text" class="text long-field" />
+    </div>
+    <div class="description">(Comma separated list of projects that do represent paid
+      holidays)</div>
+    <button class="aui-button aui-button-primary">Save</button>
+  </form>
+
+  <h3>Non-working issues</h3>
+  <form action="#" class="aui">
+    <div class="form-group">
+      <label>Issues:</label> <input type="text" class="text long-field" />
+    </div>
+    <div class="description">(Comma separated list of issues that do not mean working (e.g.:
+      lunch, private project))</div>
+    <div class="form-group">
+      <label>Projects:</label> <input type="text" class="text long-field" />
+    </div>
+    <div class="description">(Comma separated list of projects that do not mean working (e.g.:
+      lunch, private project))</div>
+    <button class="aui-button aui-button-primary">Save</button>
+  </form>
+  <!--   <form class="aui"> -->
+  <!--     <div class="ajax_autocomplete atlassian-autocomplete"> -->
+  <!--       <select class="aui-field-issuepicker hidden" multiple="multiple" name="issueSelect" -->
+  <!--         id="issueSelect" data-popup-link-message="" data-popup-height="500" -->
+  <!--         data-remove-on-un-select="true" data-ajax-options.query="true" -->
+  <!--         data-eht-attr-data-ajax-options.url="request.contextPath + '/rest/api/1.0/issues/picker'" -->
+  <!--         data-ajax-options.data.query="-" data-ajax-options.data.current-issue-key="" -->
+  <!--         data-ajax-options.data.show-sub-tasks="true" -->
+  <!--         data-ajax-options.data.show-sub-task-parent="true" -->
+  <!--         data-ajax-options.data.current_jql="resolution = Unresolved ORDER BY issuetype ASC, priority DESC"> .. -->
+  <!--       </select> -->
+  <!--     </div> -->
+  <!--   </form> -->
+</body>
+</html>

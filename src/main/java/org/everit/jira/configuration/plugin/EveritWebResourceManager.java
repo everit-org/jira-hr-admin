@@ -19,6 +19,10 @@ import java.io.Writer;
 
 import com.atlassian.jira.component.ComponentAccessor;
 
+/**
+ * Web resource manager that writes the necessary requirement block (script or css) to the specified
+ * writer.
+ */
 public class EveritWebResourceManager {
 
   private final Writer writer;
@@ -27,6 +31,7 @@ public class EveritWebResourceManager {
     this.writer = writer;
   }
 
+  @SuppressWarnings("deprecation")
   public void requireResource(final String moduleCompleteKey) {
     ComponentAccessor.getWebResourceManager().requireResource(moduleCompleteKey, writer);
   }

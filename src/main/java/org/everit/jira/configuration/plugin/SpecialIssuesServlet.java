@@ -16,19 +16,15 @@
 package org.everit.jira.configuration.plugin;
 
 /**
- * Testing the addition of a servlet.
+ * Selecting issues and projects to have special behavior.
  */
-public class GlobalPermissionsServlet extends AbstractPageServlet {
+public class SpecialIssuesServlet extends AbstractPageServlet {
 
-  private static final long serialVersionUID = -4704767395527396521L;
+  private static final long serialVersionUID = -4733879091733857960L;
 
   @Override
   protected String getPageTemplateResourceURL() {
-    return "/META-INF/pages/global_permissions.html";
+    return "/META-INF/pages/special_issues.html";
   }
 
-  @Override
-  protected boolean isWebSudoNecessary() {
-    return true;
-  }
 }
