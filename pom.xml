@@ -27,7 +27,7 @@
   <parent>
     <groupId>org.everit.config</groupId>
     <artifactId>org.everit.config.oss</artifactId>
-    <version>7.1.0</version>
+    <version>7.3.0</version>
   </parent>
 
   <name>org.everit.jira.configuration.plugin</name>
@@ -41,6 +41,24 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/main/generated/java/</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>com.atlassian.maven.plugins</groupId>
         <artifactId>maven-jira-plugin</artifactId>
@@ -95,7 +113,10 @@
               <groupId>org.everit.web</groupId>
               <artifactId>org.everit.web.partialresponse.jira</artifactId>
             </pluginDependency>
-
+            <pluginDependency>
+              <groupId>org.everit.jira</groupId>
+              <artifactId>jira-querydsl-support</artifactId>
+            </pluginDependency>
           </pluginDependencies>
           <instructions>
             <Bundle-Activator>org.everit.jira.configuration.plugin.ConfigurationPluginActivator</Bundle-Activator>
@@ -103,12 +124,20 @@
               org.everit.web.partialresponse.jira;version="[1.0,2)",
               *
             </Import-Package>
-            <Embed-Transitive>false</Embed-Transitive>
-            <Embed-Dependency>
-              org.everit.web.partialresponse
-            </Embed-Dependency>
+            <Export-Package>org.everit.jira.configuration.plugin.schema.qdsl;version="1.0.0"</Export-Package>
+            <Provide-Capability>liquibase.changelog;liquibase.changelog=org.everit.jira.configuration;resource=/META-INF/liquibase/org.everit.jira.configuration.changelog.xml;lqmg.config.resource=/META-INF/liquibase/org.everit.jira.configuration.lqmg.xml;version:Version="1.0.0"</Provide-Capability>
             <CONF_COMM />
           </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.everit.persistence</groupId>
+        <artifactId>lqmg-maven-plugin</artifactId>
+        <version>4.1.0</version>
+        <configuration>
+          <defaultSchema>public</defaultSchema>
+          <capability>org.everit.jira.configuration</capability>
+          <packages>org.everit.jira.configuration.plugin.schema.qdsl</packages>
         </configuration>
       </plugin>
     </plugins>
@@ -215,6 +244,12 @@
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.core</artifactId>
       <version>4.3.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.everit.jira</groupId>
+      <artifactId>jira-querydsl-support</artifactId>
+      <version>1.0.0</version>
       <scope>provided</scope>
     </dependency>
 

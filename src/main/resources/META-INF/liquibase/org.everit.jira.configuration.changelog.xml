@@ -21,6 +21,8 @@
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd"
   logicalFilePath="org.everit.jira.configuration">
 
+  <include file="/META-INF/liquibase/virtualjira/jira.changelog.xml" context="lqmg" />
+
   <changeSet id="1.0.0" author="everit">
     <createTable tableName="everit_jira_spec_proj">
       <column name="spec_proj_id" type="bigint" autoIncrement="true">
@@ -58,82 +60,169 @@
     <addUniqueConstraint columnNames="issue_id,specialty" tableName="everit_jira_spec_issue"
       constraintName="u_everit_jira_spec_iss_pid_s" />
 
-    <createTable tableName="everit_jira_user_hday_c">
-      <column name="user_holiday_count_id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_user_hday_c" />
+    <createTable tableName="everit_jira_work_schedule">
+      <column name="work_schedule_id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_work_sched" />
       </column>
-      <column name="user_id" type="bigint">
-        <constraints foreignKeyName="fk_everit_jira_u_hday_c_u" referencedTableName="cwd_user"
-          referencedColumnNames="id" nullable="false" />
-      </column>
-      <column name="year_" type="int">
+      <column name="name_" type="varchar(60)">
         <constraints nullable="false" />
       </column>
-      <column name="holiday_count" type="int">
+      <column name="scope_" type="varchar(60)">
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+    <createIndex tableName="everit_jira_work_schedule" indexName="i_everit_jira_work_sched_g">
+      <column name="scope_" />
+    </createIndex>
+
+    <createTable tableName="everit_jira_exact_work_sched">
+      <column name="exact_work_sched_id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_ex_work_sched" />
+      </column>
+      <column name="date_" type="date">
+        <constraints nullable="false" />
+      </column>
+      <column name="start_time" type="time">
+        <constraints nullable="false" />
+      </column>
+      <column name="duration_" type="int">
+        <constraints nullable="false" />
+      </column>
+      <column name="work_schedule_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_ex_w_sch_wsch" referencedTableName="everit_jira_work_schedule"
+          referencedColumnNames="work_schedule_id" />
+      </column>
+    </createTable>
+    <createIndex tableName="everit_jira_exact_work_sched" indexName="i_everit_jira_ex_work_sch_d">
+      <column name="date_" />
+    </createIndex>
+
+    <createTable tableName="everit_jira_wd_work_sched">
+      <column name="wd_work_sched_id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_wd_work_sched" />
+      </column>
+      <column name="weekday" type="tinyint">
+        <constraints nullable="false" />
+      </column>
+      <column name="start_time" type="time">
+        <constraints nullable="false" />
+      </column>
+      <column name="duration_" type="int">
+        <constraints nullable="false" />
+      </column>
+      <column name="work_schedule_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_wd_w_sch_wsch" referencedTableName="everit_jira_work_schedule"
+          referencedColumnNames="work_schedule_id" />
+      </column>
+    </createTable>
+    <createIndex tableName="everit_jira_wd_work_sched" indexName="i_everit_jira_wd_w_sch_wd">
+      <column name="weekday" />
+    </createIndex>
+
+    <createTable tableName="everit_jira_date_range">
+      <column name="date_range_id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_date_range" />
+      </column>
+      <column name="start_date" type="date" />
+      <column name="end_date_excluded" type="date" />
+    </createTable>
+    <createIndex tableName="everit_jira_date_range" indexName="i_everit_jira_date_range_sd">
+      <column name="start_date" />
+    </createIndex>
+    <createIndex tableName="everit_jira_date_range" indexName="i_everit_jira_date_range_ed">
+      <column name="end_date_excluded" />
+    </createIndex>
+
+    <createTable tableName="everit_jira_user_hday_amount">
+      <column name="user_hday_amount_id" type="bigint" autoIncrement="true">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_user_hday_am" />
+      </column>
+      <column name="date_range_id" type="bigint">
+        <constraints nullable="false" foreignKeyName="fk_everit_jira_user_hday_a_dr"
+          referencedTableName="everit_jira_date_range" referencedColumnNames="date_range_id" />
+      </column>
+      <column name="user_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_user_hday_am_u" referencedTableName="cwd_user"
+          referencedColumnNames="id" nullable="false" />
+      </column>
+    </createTable>
+
+    <createTable tableName="everit_jira_user_work_sched">
+      <column name="user_work_sched_id" type="bigint" autoIncrement="true">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_us_w_sched" />
+      </column>
+      <column name="user_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_us_w_sched_u" referencedTableName="cwd_user"
+          referencedColumnNames="id" nullable="false" />
+      </column>
+      <column name="work_schedule_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_us_w_sch_wsch" referencedTableName="everit_jira_work_schedule"
+          referencedColumnNames="work_schedule_id" />
+      </column>
+    </createTable>
+
+    <createTable tableName="everit_jira_holiday_scheme">
+      <column name="holiday_scheme_id" type="bigint" autoIncrement="true">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_hday_scheme" />
+      </column>
+      <column name="name_" type="varchar(60)">
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+
+    <createTable tableName="everit_jira_user_hday_schm">
+      <column name="user_hday_scheme_id" type="bigint" autoIncrement="true">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_user_hday_schm" />
+      </column>
+      <column name="holiday_scheme_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_us_hd_schm_hs" referencedTableName="everit_jira_holiday_scheme"
+          referencedColumnNames="holiday_scheme_id" />
+      </column>
+      <column name="user_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_user_hday_sch_u"
+          referencedTableName="cwd_user" referencedColumnNames="id" nullable="false" />
+      </column>
+      <column name="date_range_id" type="bigint">
+        <constraints nullable="false" foreignKeyName="fk_everit_jira_us_hday_sch_dr"
+          referencedTableName="everit_jira_date_range" referencedColumnNames="date_range_id" />
+      </column>
+      <column name="description_" type="varchar(255)" />
+    </createTable>
+
+
+    <createTable tableName="everit_jira_public_holiday">
+      <column name="public_holiday_id" type="bigint" autoIncrement="true">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_public_hday" />
+      </column>
+      <column name="holiday_scheme_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_pub_hd_hsch" referencedTableName="everit_jira_holiday_scheme"
+          referencedColumnNames="holiday_scheme_id" />
+      </column>
+      <column name="date_" type="date">
         <constraints nullable="false" />
       </column>
       <column name="description_" type="varchar(255)" />
     </createTable>
-    <createIndex tableName="everit_jira_user_hday_c" indexName="i_everit_jira_u_hday_c_y">
-      <column name="year_" />
+    <createIndex tableName="everit_jira_public_holiday" indexName="i_everit_jira_public_hday_d">
+      <column name="date_" />
     </createIndex>
-    <addUniqueConstraint columnNames="user_id,year_" tableName="everit_jira_user_hday_c"
-      constraintName="u_everit_jira_user_hday_c_uy" />
 
-    <createTable tableName="everit_jira_work_scheme">
-      <column name="work_scheme_id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_work_sch" />
+    <createTable tableName="everit_jira_shifted_work_day">
+      <column name="shifted_work_day_id" type="bigint" autoIncrement="true">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_shifted_wday" />
       </column>
-      <column name="name_" type="varchar(255)">
-        <constraints nullable="false" unique="true" uniqueConstraintName="u_everit_jira_work_scheme_nm" />
+      <column name="holiday_scheme_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_shifted_wd_hs" referencedTableName="everit_jira_holiday_scheme"
+          referencedColumnNames="holiday_scheme_id" />
       </column>
-      <column name="default_daily_work_hours" type="float" />
-    </createTable>
-
-    <createTable tableName="everit_jira_user_work_scheme">
-      <column name="user_work_scheme_id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_usr_work_sch" />
-      </column>
-      <column name="work_scheme_id" type="bigint">
-        <constraints nullable="false" foreignKeyName="fk_everit_jira_usr_work_s_ws"
-          referencedTableName="everit_jira_work_scheme" referencedColumnNames="work_scheme_id" />
-      </column>
-      <column name="user_id" type="bigint">
-        <constraints foreignKeyName="fk_everit_jira_usr_work_s_u" referencedTableName="cwd_user"
-          referencedColumnNames="id" nullable="false" />
-      </column>
-      <column name="start_date" type="date">
+      <column name="date_" type="date">
         <constraints nullable="false" />
       </column>
-      <column name="end_date_excluded" type="date" />
-      <column name="daily_work_hours" type="float" />
+      <column name="description_" type="varchar(255)" />
     </createTable>
-    <createIndex tableName="everit_jira_user_work_scheme" indexName="i_everit_jira_user_w_sch_sd">
-      <column name="start_date" />
+    <createIndex tableName="everit_jira_shifted_work_day" indexName="i_everit_jira_shifted_wd_date">
+      <column name="date_" />
     </createIndex>
-    <createIndex tableName="everit_jira_user_work_scheme" indexName="i_everit_jira_user_w_sch_ed">
-      <column name="end_date_excluded" type="date" />
-    </createIndex>
-    
-    <createTable tableName="everit_jira_non_working_days">
-      <column name="user_work_scheme_id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_usr_work_sch" />
-      </column>
-      <column name="work_scheme_id" type="bigint">
-        <constraints nullable="false" foreignKeyName="fk_everit_jira_usr_work_s_ws"
-          referencedTableName="everit_jira_work_scheme" referencedColumnNames="work_scheme_id" />
-      </column>
-      <column name="user_id" type="bigint">
-        <constraints foreignKeyName="fk_everit_jira_usr_work_s_u" referencedTableName="cwd_user"
-          referencedColumnNames="id" nullable="false" />
-      </column>
-      <column name="start_date" type="date">
-        <constraints nullable="false" />
-      </column>
-      <column name="end_date_excluded" type="date" />
-      <column name="daily_work_hours" type="float" />
-    </createTable>
-    
   </changeSet>
 
 </databaseChangeLog>

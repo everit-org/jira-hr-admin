@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (C) 2011 Everit Kft. (http://www.everit.biz)
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+            http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+<lqmg xmlns="http://everit.org/lqmg" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://everit.org/lqmg http://everit.org/xml/ns/lqmg/lqmg-3.0.0.xsd"
+  defaultPackage="org.everit.jira.configuration.plugin.schema.qdsl">
+  <namingRules>
+    <classNameRule>
+      <entity>everit_jira_spec_proj</entity>
+      <class>SpecialProject</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_spec_proj</name>
+          <property>specialProjectPK</property>
+        </primaryKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_spec_issue</entity>
+      <class>SpecialIssue</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_spec_issue</name>
+          <property>specialIssuePK</property>
+        </primaryKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_work_schedule</entity>
+      <class>WorkSchedule</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_work_sched</name>
+          <property>workSchedulePK</property>
+        </primaryKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_exact_work_sched</entity>
+      <class>ExactWorkSchedule</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_ex_work_sched</name>
+          <property>exactWorkSchedulePK</property>
+        </primaryKey>
+        <foreignKey>
+          <name>fk_everit_jira_ex_w_sch_wsch</name>
+          <property>workScheduleFK</property>
+        </foreignKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_wd_work_sched</entity>
+      <class>WeekdayWorkSchedule</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_wd_work_sched</name>
+          <property>weekdayWorkSchedulePK</property>
+        </primaryKey>
+        <foreignKey>
+          <name>fk_everit_jira_wd_w_sch_wsch</name>
+          <property>workScheduleFK</property>
+        </foreignKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_date_range</entity>
+      <class>DateRange</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_date_range</name>
+          <property>dateRangePK</property>
+        </primaryKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_user_hday_amount</entity>
+      <class>UserHolidayAmount</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_user_hday_am</name>
+          <property>userHolidayAmountPK</property>
+        </primaryKey>
+        <column>
+          <name>user_hday_amount_id</name>
+          <property>userHolidayAmountId</property>
+        </column>
+        <foreignKey>
+          <name>fk_everit_jira_user_hday_a_dr</name>
+          <property>dateRangeFK</property>
+        </foreignKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_user_work_sched</entity>
+      <class>UserWorkSchedule</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_us_w_sched</name>
+          <property>userWorkSchedulePK</property>
+        </primaryKey>
+        <column>
+          <name>user_work_sched_id</name>
+          <property>userWorkScheduleId</property>
+        </column>
+        <foreignKey>
+          <name>fk_everit_jira_us_w_sch_wsch</name>
+          <property>workScheduleFK</property>
+        </foreignKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_holiday_scheme</entity>
+      <class>HolidayScheme</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_hday_scheme</name>
+          <property>holidaySchemePK</property>
+        </primaryKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_user_hday_schm</entity>
+      <class>UserHolidayScheme</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_user_hday_schm</name>
+          <property>userHolidaySchemePK</property>
+        </primaryKey>
+        <column>
+          <name>user_hday_scheme_id</name>
+          <property>userHolidaySchemeId</property>
+        </column>
+        <foreignKey>
+          <name>fk_everit_jira_us_hd_schm_hs</name>
+          <property>holidaySchemeFK</property>
+        </foreignKey>
+        <foreignKey>
+          <name>fk_everit_jira_us_hday_sch_dr</name>
+          <property>dateRangeFK</property>
+        </foreignKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_public_holiday</entity>
+      <class>PublicHoliday</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_public_hday</name>
+          <property>publicHolidayPK</property>
+        </primaryKey>
+        <foreignKey>
+          <name>fk_everit_jira_pub_hd_hsch</name>
+          <property>holidaySchemeFK</property>
+        </foreignKey>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
+      <entity>everit_jira_shifted_work_day</entity>
+      <class>ShiftedWorkDay</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_shifted_wday</name>
+          <property>shiftedWorkPK</property>
+        </primaryKey>
+        <foreignKey>
+          <name>fk_everit_jira_shifted_wd_hs</name>
+          <property>holidaySchemeFK</property>
+        </foreignKey>
+      </propertyMappings>
+    </classNameRule>
+  </namingRules>
+</lqmg>
