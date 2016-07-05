@@ -40,7 +40,7 @@ public class ConfigurationPluginActivator implements BundleActivator {
           new Liquibase("META-INF/liquibase/org.everit.jira.configuration.changelog.xml",
               new OSGiResourceAccessor(context.getBundle()), databaseConnection);
 
-      liquibase.update((String) null);
+      liquibase.update("production");
     }
   }
 

@@ -30,12 +30,6 @@
     <label key="admin_plugins_menu.section_everit" />
   </web-section>
 
-  <web-item key="global_permissions" name="Everit Global Permissions" section="admin_plugins_menu/everit"
-    weight="60">
-    <label key="admin_plugins_menu.section_everit.global_permissions" />
-    <link>/plugins/servlet/everit/global-permissions</link>
-  </web-item>
-
   <web-item key="working_schemes" name="Everit Working Schemes" section="admin_plugins_menu/everit"
     weight="60">
     <label key="admin_plugins_menu.section_everit.working_schemes" />
@@ -53,11 +47,6 @@
     <label key="admin_plugins_menu.section_everit.holiday_manager" />
     <link>/plugins/servlet/everit/holiday-manager</link>
   </web-item>  
-
-  <servlet name="EveritConfiguration" class="org.everit.jira.configuration.plugin.GlobalPermissionsServlet"
-    key="everit-configuration">
-    <url-pattern>/everit/global-permissions</url-pattern>
-  </servlet>
 
   <servlet name="WorkingSchemes" class="org.everit.jira.configuration.plugin.WorkingSchemesServlet"
     key="everit-working-schemes">

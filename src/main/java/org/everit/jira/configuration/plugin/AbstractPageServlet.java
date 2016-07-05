@@ -53,35 +53,49 @@ public abstract class AbstractPageServlet extends HttpServlet {
     TemplateCompiler htmlTemplateCompiler = new HTMLTemplateCompiler(expressionCompiler);
 
     try {
+      ClassLoader classLoader = this.getClass().getClassLoader();
       pageTemplate = htmlTemplateCompiler.compile(IOUtils
-          .toString(GlobalPermissionsServlet.class
-              .getResource(getPageTemplateResourceURL()), "UTF8"),
-          new ParserConfiguration(GlobalPermissionsServlet.class.getClassLoader()));
+          .toString(classLoader.getResource(getPageTemplateResourceURL()), "UTF8"),
+          new ParserConfiguration(classLoader));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
+  }
+
+  protected boolean checkWebSudo(final HttpServletRequest req, final HttpServletResponse resp) {
+    if (!isWebSudoNecessary()) {
+      return true;
+    }
+
+    WebSudoManager webSudoManager =
+        ComponentAccessor.getOSGiComponentInstanceOfType(WebSudoManager.class);
+
+    if (!webSudoManager.canExecuteRequest(req)) {
+      webSudoManager.enforceWebSudoProtection(req, resp);
+      return false;
+    }
+    return true;
+  }
+
+  protected Map<String, Object> createCommonVars(final HttpServletRequest req,
+      final HttpServletResponse resp) throws IOException {
+    EveritWebResourceManager webResourceManager = new EveritWebResourceManager(resp.getWriter());
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("webResourceManager", webResourceManager);
+    vars.put("request", req);
+    vars.put("response", resp);
+    return vars;
   }
 
   @Override
   protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
       throws ServletException, IOException {
 
-    if (isWebSudoNecessary()) {
-      WebSudoManager webSudoManager =
-          ComponentAccessor.getOSGiComponentInstanceOfType(WebSudoManager.class);
-
-      if (!webSudoManager.canExecuteRequest(req)) {
-        webSudoManager.enforceWebSudoProtection(req, resp);
-        return;
-      }
+    if (!checkWebSudo(req, resp)) {
+      return;
     }
 
-    EveritWebResourceManager webResourceManager = new EveritWebResourceManager(resp.getWriter());
-    Map<String, Object> vars = new HashMap<String, Object>();
-    vars.put("webResourceManager", webResourceManager);
-    vars.put("request", req);
-    vars.put("response", resp);
-
+    Map<String, Object> vars = createCommonVars(req, resp);
     doGetInternal(req, resp, vars);
   }
 
