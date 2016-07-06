@@ -16,9 +16,13 @@
 package org.everit.jira.configuration.plugin;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.UncheckedIOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -29,6 +33,7 @@ import org.apache.commons.io.IOUtils;
 import org.everit.expression.ExpressionCompiler;
 import org.everit.expression.ParserConfiguration;
 import org.everit.expression.jexl.JexlExpressionCompiler;
+import org.everit.jira.configuration.plugin.util.ResourceBundleMap;
 import org.everit.templating.CompiledTemplate;
 import org.everit.templating.TemplateCompiler;
 import org.everit.templating.html.HTMLTemplateCompiler;
@@ -55,7 +60,7 @@ public abstract class AbstractPageServlet extends HttpServlet {
     try {
       ClassLoader classLoader = this.getClass().getClassLoader();
       pageTemplate = htmlTemplateCompiler.compile(IOUtils
-          .toString(classLoader.getResource(getPageTemplateResourceURL()), "UTF8"),
+          .toString(classLoader.getResource(getPageId() + ".html"), "UTF8"),
           new ParserConfiguration(classLoader));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
@@ -84,6 +89,7 @@ public abstract class AbstractPageServlet extends HttpServlet {
     vars.put("webResourceManager", webResourceManager);
     vars.put("request", req);
     vars.put("response", resp);
+    vars.put("messages", getMessages(resp));
     return vars;
   }
 
@@ -105,7 +111,28 @@ public abstract class AbstractPageServlet extends HttpServlet {
     pageTemplate.render(resp.getWriter(), vars);
   }
 
-  protected abstract String getPageTemplateResourceURL();
+  /**
+   * Gets the current pages localization properties to be able to use it on child pages ajax
+   * responses.
+   */
+  protected ResourceBundleMap getMessages(final HttpServletResponse resp) {
+    ClassLoader lClassLoader = this.getClass().getClassLoader();
+    URL baseResourceURL = lClassLoader.getResource(getPageId() + ".properties");
+    ResourceBundle resourceBundle;
+    if (baseResourceURL != null) {
+      resourceBundle = ResourceBundle.getBundle(
+          getPageId(), resp.getLocale(), lClassLoader);
+    } else {
+      try {
+        resourceBundle = new PropertyResourceBundle(new StringReader(""));
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+    return new ResourceBundleMap(resourceBundle);
+  }
+
+  protected abstract String getPageId();
 
   protected boolean isWebSudoNecessary() {
     return false;

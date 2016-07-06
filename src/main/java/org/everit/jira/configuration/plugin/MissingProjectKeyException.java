@@ -16,19 +16,20 @@
 package org.everit.jira.configuration.plugin;
 
 /**
- * Servlet that allows the users to view and edit working schemes.
+ * Indicates that a project key is not available in Jira.
  */
-public class WorkingSchemesServlet extends AbstractPageServlet {
+public class MissingProjectKeyException extends RuntimeException {
 
-  private static final long serialVersionUID = 5855299893731146143L;
+  private static final long serialVersionUID = 3295210185088460872L;
 
-  @Override
-  protected String getPageId() {
-    return "/META-INF/pages/working_schemes";
+  private final String projectKey;
+
+  public MissingProjectKeyException(final String projectKey) {
+    this.projectKey = projectKey;
   }
 
-  @Override
-  protected boolean isWebSudoNecessary() {
-    return true;
+  public String getProjectKey() {
+    return projectKey;
   }
+
 }

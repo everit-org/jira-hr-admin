@@ -23,8 +23,8 @@ public class HolidayManagerServlet extends AbstractPageServlet {
   private static final long serialVersionUID = 1073648466982165361L;
 
   @Override
-  protected String getPageTemplateResourceURL() {
-    return "/META-INF/pages/holiday_manager.html";
+  protected String getPageId() {
+    return "/META-INF/pages/holiday_manager";
   }
 
   @Override

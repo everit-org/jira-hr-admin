@@ -17,10 +17,15 @@ package org.everit.jira.configuration.plugin;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -32,10 +37,13 @@ import org.everit.jira.querydsl.schema.QJiraissue;
 import org.everit.jira.querydsl.schema.QProject;
 import org.everit.jira.querydsl.support.QuerydslSupport;
 import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
+import org.everit.web.partialresponse.PartialResponseBuilder;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
+import com.querydsl.sql.dml.SQLInsertClause;
 
 /**
  * Selecting issues and projects to have special behavior.
@@ -54,6 +62,16 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
     }
   }
 
+  private void addInputDbContentsToVars(final Map<String, Object> vars) {
+    Map<String, Collection<String>> specialIssues = querySpecialIssues();
+    Map<String, Collection<String>> specialProjects = querySpecialProjects();
+
+    vars.put("holidayIssues", convertCollectionToCommaSeparated(specialIssues, "holiday"));
+    vars.put("nonWorkingIssues", convertCollectionToCommaSeparated(specialIssues, "nowork"));
+    vars.put("holidayProjects", convertCollectionToCommaSeparated(specialProjects, "holiday"));
+    vars.put("nonWorkingProjects", convertCollectionToCommaSeparated(specialProjects, "nowork"));
+  }
+
   private void addSpecialElementToMap(final String specialty, final String element,
       final Map<String, Collection<String>> map) {
 
@@ -63,6 +81,20 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
       map.put(specialty, elements);
     }
     elements.add(element);
+  }
+
+  private void checkNoProjectKeyMissing(final Collection<String> queriedProjectKeys,
+      final Collection<String> returnedProjectKeys) {
+
+    if (queriedProjectKeys.size() == returnedProjectKeys.size()) {
+      return;
+    }
+
+    for (String queriedProjectKey : queriedProjectKeys) {
+      if (!returnedProjectKeys.contains(queriedProjectKey)) {
+        throw new MissingProjectKeyException(queriedProjectKey);
+      }
+    }
   }
 
   private String convertCollectionToCommaSeparated(final Map<String, Collection<String>> specialMap,
@@ -99,13 +131,7 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
       vars.put("holidayProjects", holidayProjectsParameter);
       vars.put("nonWorkingProjects", nonWorkingProjectsParameter);
     } else {
-      Map<String, Collection<String>> specialIssues = querySpecialIssues();
-      Map<String, Collection<String>> specialProjects = querySpecialProjects();
-
-      vars.put("holidayIssues", convertCollectionToCommaSeparated(specialIssues, "holiday"));
-      vars.put("nonWorkingIssues", convertCollectionToCommaSeparated(specialIssues, "nowork"));
-      vars.put("holidayProjects", convertCollectionToCommaSeparated(specialProjects, "holiday"));
-      vars.put("nonWorkingProjects", convertCollectionToCommaSeparated(specialProjects, "nowork"));
+      addInputDbContentsToVars(vars);
     }
 
     pageTemplate.render(resp.getWriter(), vars);
@@ -126,12 +152,23 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
       save(holidayIssues, holidayProjects, nonWorkingIssues, nonWorkingProjects);
     }
 
-    doGet(req, resp);
+    if ("XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
+      try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+        Map<String, Object> vars = createCommonVars(req, resp);
+        addInputDbContentsToVars(vars);
+
+        prb.replace("#specialIssuesFormBody", (writer) -> {
+          pageTemplate.render(writer, vars, "specialIssuesFormBody");
+        });
+      }
+    } else {
+      doGet(req, resp);
+    }
   }
 
   @Override
-  protected String getPageTemplateResourceURL() {
-    return "/META-INF/pages/special_issues.html";
+  protected String getPageId() {
+    return "/META-INF/pages/special_issues";
   }
 
   private Map<String, Collection<String>> querySpecialIssues() {
@@ -149,7 +186,7 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
           .fetch();
 
       for (Tuple tuple : resultSet) {
-        String issueId = tuple.get(project.pkey) + tuple.get(jiraIssue.issuenum);
+        String issueId = tuple.get(project.pkey) + '-' + tuple.get(jiraIssue.issuenum);
         String specialty = tuple.get(specialIssue.specialty);
         addSpecialElementToMap(specialty, issueId, result);
       }
@@ -178,33 +215,204 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
     });
   }
 
+  private void removeIssueFromMap(final Map<String, Collection<Long>> projectKeyIssueNumMap,
+      final String projectKey, final Long issueNum) {
+
+    Collection<Long> issueNums = projectKeyIssueNumMap.get(projectKey);
+    issueNums.remove(issueNum);
+    if (issueNums.isEmpty()) {
+      projectKeyIssueNumMap.remove(projectKey);
+    }
+  }
+
+  private Collection<Long> resolveIssueIds(final String issuesString) {
+    Map<String, Collection<Long>> projectKeyIssueNumMap =
+        resolveProjectKeyIssueNumMap(issuesString);
+
+    if (projectKeyIssueNumMap.isEmpty()) {
+      return Collections.emptySet();
+    }
+
+    Map<String, Long> projectKeyIdMap = resolveProjectKeyIdMap(projectKeyIssueNumMap.keySet());
+
+    return querydslSupport.execute((connection, configuration) -> {
+
+      // Create the predicate that selects records for all issues
+      BooleanExpression predicate = null;
+      for (Entry<String, Collection<Long>> projectKeyIssueNumEntry : projectKeyIssueNumMap
+          .entrySet()) {
+
+        String projectKey = projectKeyIssueNumEntry.getKey();
+        Long projectId = projectKeyIdMap.get(projectKey);
+        Collection<Long> issueNums = projectKeyIssueNumEntry.getValue();
+
+        BooleanExpression bexpr = QJiraissue.jiraissue.project.eq(projectId)
+            .and(QJiraissue.jiraissue.issuenum.in(issueNums));
+
+        if (predicate == null) {
+          predicate = bexpr;
+        } else {
+          predicate = predicate.or(bexpr);
+        }
+      }
+
+      // Do the query
+      List<Tuple> tuples = new SQLQuery<Tuple>(connection, configuration)
+          .select(QProject.project.pkey, QJiraissue.jiraissue.issuenum, QJiraissue.jiraissue.id)
+          .from(QJiraissue.jiraissue)
+          .innerJoin(QProject.project).on(QJiraissue.jiraissue.project.eq(QProject.project.id))
+          .where(predicate).fetch();
+
+      Set<Long> result = new LinkedHashSet<>();
+      for (Tuple tuple : tuples) {
+        String projectKey = tuple.get(QProject.project.pkey);
+        Long issueNum = tuple.get(QJiraissue.jiraissue.issuenum);
+        Long issueId = tuple.get(QJiraissue.jiraissue.id);
+        result.add(issueId);
+        removeIssueFromMap(projectKeyIssueNumMap, projectKey, issueNum);
+      }
+      if (!projectKeyIssueNumMap.isEmpty()) {
+
+      }
+      return result;
+    });
+  }
+
+  private Collection<Long> resolveProjectIds(final String projectsString) {
+    if ("".equals(projectsString.trim())) {
+      return Collections.emptySet();
+    }
+    String[] projectKeyArray = projectsString.split(",");
+    Set<String> projectKeys = new HashSet<>();
+    for (String projectKey : projectKeyArray) {
+      String trimmed = projectKey.trim();
+      if (!"".equals(trimmed)) {
+        projectKeys.add(trimmed);
+      }
+    }
+
+    return resolveProjectKeyIdMap(projectKeys).values();
+  }
+
+  private Map<String, Long> resolveProjectKeyIdMap(final Set<String> projectKeys) {
+    Map<String, Long> result = querydslSupport.execute((connection, configuration) -> {
+      List<Tuple> resultSet = new SQLQuery<>(connection, configuration)
+          .select(QProject.project.pkey, QProject.project.id)
+          .from(QProject.project)
+          .where(QProject.project.pkey.in(projectKeys)).fetch();
+
+      Map<String, Long> localResult = new HashMap<>();
+      for (Tuple tuple : resultSet) {
+        localResult.put(tuple.get(QProject.project.pkey), tuple.get(QProject.project.id));
+      }
+      return localResult;
+    });
+
+    checkNoProjectKeyMissing(projectKeys, result.keySet());
+    return result;
+  }
+
+  private Map<String, Collection<Long>> resolveProjectKeyIssueNumMap(final String issues) {
+    if (issues == null || issues.trim().isEmpty()) {
+      return Collections.emptyMap();
+    }
+
+    Map<String, Collection<Long>> result = new LinkedHashMap<>();
+    String[] projectNameWithIssueNums = issues.split(",");
+    for (String projectNameWithIssueNum : projectNameWithIssueNums) {
+      String trimmedProjectNameWithIssueNum = projectNameWithIssueNum.trim();
+      String[] issueNameParts = trimmedProjectNameWithIssueNum.split("-");
+      if (issueNameParts.length != 2) {
+        throw new IssueKeySyntaxException(trimmedProjectNameWithIssueNum);
+      }
+
+      String projectName = issueNameParts[0];
+      try {
+        Long issueNum = Long.parseLong(issueNameParts[1]);
+        Collection<Long> issueNums = result.get(projectName);
+        if (issueNums == null) {
+          issueNums = new LinkedHashSet<>();
+          result.put(projectName, issueNums);
+        }
+        issueNums.add(issueNum);
+      } catch (NumberFormatException e) {
+        throw new IssueKeySyntaxException(trimmedProjectNameWithIssueNum);
+      }
+    }
+    return result;
+  }
+
   private void save(final String holidayIssues, final String holidayProjects,
       final String nonWorkingIssues,
       final String nonWorkingProjects) {
 
-    saveSpecialIssues(holidayIssues, "holiday");
-    saveSpecialIssues(holidayIssues, "nowork");
+    Collection<Long> holidayIssueIds = resolveIssueIds(holidayIssues);
+    Collection<Long> nonWorkingIssueIds = resolveIssueIds(nonWorkingIssues);
+    Collection<Long> holidayProjectIds = resolveProjectIds(holidayProjects);
+    Collection<Long> nonWorkingProjectIds = resolveProjectIds(nonWorkingProjects);
+
+    saveSpecialIssues(holidayIssueIds, "holiday");
+    saveSpecialIssues(nonWorkingIssueIds, "nowork");
+    saveSpecialProjects(holidayProjectIds, "holiday");
+    saveSpecialProjects(nonWorkingProjectIds, "nowork");
   }
 
-  private void saveSpecialIssues(final String issues, final String specialty) {
-    if (issues == null || issues.isEmpty()) {
-      querydslSupport.execute((connection,
-          configuration) -> new SQLDeleteClause(connection, configuration,
-              QSpecialIssue.specialIssue)
-                  .where(QSpecialIssue.specialIssue.specialty.eq(specialty)));
-      return;
-    }
+  private void saveSpecialIssues(final Collection<Long> issueIds, final String specialty) {
+    querydslSupport.execute((connection, configuration) -> {
+      Set<Long> existingIssueIds = new LinkedHashSet<>(new SQLQuery<Long>(connection, configuration)
+          .select(QSpecialIssue.specialIssue.issueId)
+          .from(QSpecialIssue.specialIssue)
+          .where(QSpecialIssue.specialIssue.specialty.eq(specialty))
+          .fetch());
 
-    String[] issueKeyArray = issues.split(",");
-    for (String issueKey : issueKeyArray) {
-      String trimmedIssueKey = issueKey.trim();
-      if (!trimmedIssueKey.isEmpty()) {
-        String[] issueKeyParts = trimmedIssueKey.split("-");
-        if (issueKeyParts.length != 2) {
-          throw new IssueKeySyntaxException(trimmedIssueKey);
+      // Insert non existent issue ids
+      for (Long issueId : issueIds) {
+        if (!existingIssueIds.remove(issueId)) {
+          new SQLInsertClause(connection, configuration, QSpecialIssue.specialIssue)
+              .set(QSpecialIssue.specialIssue.issueId, issueId)
+              .set(QSpecialIssue.specialIssue.specialty, specialty)
+              .execute();
         }
       }
-    }
+
+      if (!existingIssueIds.isEmpty()) {
+        new SQLDeleteClause(connection, configuration, QSpecialIssue.specialIssue)
+            .where(QSpecialIssue.specialIssue.specialty.eq(specialty)
+                .and(QSpecialIssue.specialIssue.issueId.in(existingIssueIds)))
+            .execute();
+      }
+
+      return null;
+    });
+
+  }
+
+  private void saveSpecialProjects(final Collection<Long> projectIds, final String specialty) {
+    querydslSupport.execute((connection, configuration) -> {
+      Set<Long> existingProjectIds = new HashSet<Long>(new SQLQuery<Long>(connection, configuration)
+          .select(QSpecialProject.specialProject.projectId)
+          .from(QSpecialProject.specialProject)
+          .where(QSpecialProject.specialProject.specialty.eq(specialty))
+          .fetch());
+
+      for (Long projectId : projectIds) {
+        if (!existingProjectIds.remove(projectId)) {
+          new SQLInsertClause(connection, configuration, QSpecialProject.specialProject)
+              .set(QSpecialProject.specialProject.projectId, projectId)
+              .set(QSpecialProject.specialProject.specialty, specialty)
+              .execute();
+        }
+      }
+
+      if (!existingProjectIds.isEmpty()) {
+        new SQLDeleteClause(connection, configuration, QSpecialProject.specialProject)
+            .where(QSpecialProject.specialProject.specialty.eq(specialty)
+                .and(QSpecialProject.specialProject.projectId.in(existingProjectIds)))
+            .execute();
+      }
+      return null;
+    });
+
   }
 
 }

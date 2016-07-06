@@ -28,38 +28,79 @@
 <script
   data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
   data-eht-render="'content'"></script>
+<script type="text/javascript">
+  if (!$.parseHTML) {
+    $.parseHTML = function(str) {
+        var tmp = document.implementation.createHTMLDocument();
+        tmp.body.innerHTML = str;
+        return tmp.body.children;
+    }
+  }
+  $(function() {
+    var formSubmitInProgress = false;
+    AJS.$("#specialElementsForm").submit(function(event) {
+      var formdata = {
+        'holidayIssues' : $('#holidayIssuesInput').val(),
+        'holidayProjects' : $('#holidayProjectsInput').val(),
+        'nonWorkingIssues' : $('#nonWorkingIssuesInput').val(),
+        'nonWorkingProjects' : $('#nonWorkingProjectsInput').val(),
+        'action' : 'save'
+      };
+      event.preventDefault();
+      if (formSubmitInProgress) {
+        return;
+      }
+      AJS.$('#specialElementsSubmitButton').spin();
+      $.ajax({
+        url : '#',
+        type : 'POST',
+        data : formdata
+      }).success(function(content) {
+        everit.partialresponse.process(content);
+      }).error(function(resp) {
+        everit.partialresponse.process(content);
+      }).complete(function() {
+        $('#specialElementsSubmitButton').spinStop();
+      });
+    });
+  });
+</script>
 </head>
 <body>
   <h2>Special Issues</h2>
-  <form action="" class="aui" method="post">
+  <form id="specialElementsForm" action="" class="aui" method="post">
+    <input type="hidden" name="action" value="save" />
     <h3>Holiday issues</h3>
-    <div class="form-group">
-      <label>Issues:</label> <input type="text" name="holidayIssues" class="text long-field"
-        data-eht-attr-value="holidayIssues" />
-    </div>
-    <div class="description">(Comma separated list of issues that do represent paid holidays)</div>
+    <div id="specialIssuesFormBody" data-eht-fragment="'specialIssuesFormBody'">
+      <div class="form-group">
+        <label>Issues:</label> <input id="holidayIssuesInput" type="text" name="holidayIssues"
+          class="text long-field" data-eht-attr-value="holidayIssues" />
+      </div>
+      <div class="description">(Comma separated list of issues that do represent paid
+        holidays)</div>
 
-    <div class="form-group">
-      <label>Projects:</label> <input type="text" name="holidayProjects" class="text long-field"
-        data-eht-attr-value="holidayProjects" />
-    </div>
-    <div class="description">(Comma separated list of projects that do represent paid
-      holidays)</div>
+      <div class="form-group">
+        <label>Projects:</label> <input id="holidayProjectsInput" type="text" name="holidayProjects"
+          class="text long-field" data-eht-attr-value="holidayProjects" />
+      </div>
+      <div class="description">(Comma separated list of projects that do represent paid
+        holidays)</div>
 
-    <h3>Non-working issues</h3>
-    <div class="form-group">
-      <label>Issues:</label> <input type="text" name="nonWorkingIssues" class="text long-field"
-        data-eht-attr-value="nonWorkingIssues" />
-    </div>
-    <div class="description">(Comma separated list of issues that do not mean working (e.g.:
-      lunch, private project))</div>
-    <div class="form-group">
-      <label>Projects:</label> <input type="text" name="nonWorkingProjects" class="text long-field"
-        data-eht-attr-value="nonWorkingProjects" />
+      <h3>Non-working issues</h3>
+      <div class="form-group">
+        <label>Issues:</label> <input id="nonWorkingIssuesInput" type="text" name="nonWorkingIssues"
+          class="text long-field" data-eht-attr-value="nonWorkingIssues" />
+      </div>
+      <div class="description">(Comma separated list of issues that do not mean working (e.g.:
+        lunch, private project))</div>
+      <div class="form-group">
+        <label>Projects:</label> <input id="nonWorkingProjectsInput" type="text"
+          name="nonWorkingProjects" class="text long-field" data-eht-attr-value="nonWorkingProjects" />
+      </div>
     </div>
     <div class="description" style="padding-bottom: 3em;">(Comma separated list of projects
       that do not mean working (e.g.: lunch, private project))</div>
-    <button name="action" value="save" type="submit" class="aui-button aui-button-primary">Save</button>
+    <button id="specialElementsSubmitButton" type="submit" class="aui-button aui-button-primary">Save</button>
   </form>
 </body>
 </html>
