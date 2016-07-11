@@ -39,6 +39,8 @@ import org.everit.jira.querydsl.support.QuerydslSupport;
 import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.sql.SQLQuery;
@@ -54,12 +56,16 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
 
   private final QuerydslSupport querydslSupport;
 
+  private final TransactionTemplate transactionTemplate;
+
   public SpecialIssuesServlet() {
     try {
       querydslSupport = new QuerydslSupportImpl();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+    transactionTemplate =
+        ComponentAccessor.getOSGiComponentInstanceOfType(TransactionTemplate.class);
   }
 
   private void addInputDbContentsToVars(final Map<String, Object> vars) {
@@ -141,6 +147,10 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
   protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
       throws ServletException, IOException {
 
+    if (!checkWebSudo(req, resp)) {
+      return;
+    }
+
     String action = req.getParameter("action");
     if ("save".equals(action)) {
       String holidayIssues = req.getParameter("holidayIssues");
@@ -148,8 +158,18 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
 
       String nonWorkingIssues = req.getParameter("nonWorkingIssues");
       String nonWorkingProjects = req.getParameter("nonWorkingProjects");
-
-      save(holidayIssues, holidayProjects, nonWorkingIssues, nonWorkingProjects);
+      try {
+        save(holidayIssues, holidayProjects, nonWorkingIssues, nonWorkingProjects);
+      } catch (MissingProjectKeyException e) {
+        renderError("Project key not found", e.getProjectKey(), req, resp);
+        return;
+      } catch (IssueKeySyntaxException e) {
+        renderError("Issue key is invalid", e.getIssueKey(), req, resp);
+        return;
+      } catch (MissingIssueException e) {
+        renderError("Issue not found", e.getIssue(), req, resp);
+        return;
+      }
     }
 
     if ("XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
@@ -159,6 +179,11 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
 
         prb.replace("#specialIssuesFormBody", (writer) -> {
           pageTemplate.render(writer, vars, "specialIssuesFormBody");
+        });
+        prb.append("#specialIssuesFormBody", (writer) -> {
+          vars.put("alertType", "info");
+          vars.put("alertMessage", "Saving changes successful");
+          pageTemplate.render(writer, vars, "alert");
         });
       }
     } else {
@@ -225,6 +250,19 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
     }
   }
 
+  private void renderError(final String messageKey, final String targetObjectKey,
+      final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
+
+    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    PartialResponseBuilder prb = new PartialResponseBuilder(resp);
+    Map<String, Object> vars = createCommonVars(req, resp);
+    vars.put("alertType", "error");
+    vars.put("alertMessage", messageKey + ": " + targetObjectKey);
+    prb.append("#specialIssuesFormBody",
+        (writer) -> pageTemplate.render(writer, vars, "alert"));
+    prb.close();
+  }
+
   private Collection<Long> resolveIssueIds(final String issuesString) {
     Map<String, Collection<Long>> projectKeyIssueNumMap =
         resolveProjectKeyIssueNumMap(issuesString);
@@ -272,7 +310,9 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
         removeIssueFromMap(projectKeyIssueNumMap, projectKey, issueNum);
       }
       if (!projectKeyIssueNumMap.isEmpty()) {
-
+        Entry<String, Collection<Long>> entry = projectKeyIssueNumMap.entrySet().iterator().next();
+        String issue = entry.getKey() + '-' + entry.getValue().iterator().next();
+        throw new MissingIssueException(issue);
       }
       return result;
     });
@@ -351,10 +391,13 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
     Collection<Long> holidayProjectIds = resolveProjectIds(holidayProjects);
     Collection<Long> nonWorkingProjectIds = resolveProjectIds(nonWorkingProjects);
 
-    saveSpecialIssues(holidayIssueIds, "holiday");
-    saveSpecialIssues(nonWorkingIssueIds, "nowork");
-    saveSpecialProjects(holidayProjectIds, "holiday");
-    saveSpecialProjects(nonWorkingProjectIds, "nowork");
+    transactionTemplate.execute(() -> {
+      saveSpecialIssues(holidayIssueIds, "holiday");
+      saveSpecialIssues(nonWorkingIssueIds, "nowork");
+      saveSpecialProjects(holidayProjectIds, "holiday");
+      saveSpecialProjects(nonWorkingProjectIds, "nowork");
+      return null;
+    });
   }
 
   private void saveSpecialIssues(final Collection<Long> issueIds, final String specialty) {
