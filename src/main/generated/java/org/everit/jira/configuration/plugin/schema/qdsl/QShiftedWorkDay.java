@@ -85,7 +85,7 @@ public class QShiftedWorkDay extends com.querydsl.sql.RelationalPathBase<QShifte
 
     public void addMetadata() {
         addMetadata(date_, ColumnMetadata.named("date_").withIndex(3).ofType(Types.DATE).withSize(8).notNull());
-        addMetadata(description_, ColumnMetadata.named("description_").withIndex(4).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(description_, ColumnMetadata.named("description_").withIndex(4).ofType(Types.VARCHAR).withSize(2000));
         addMetadata(holidaySchemeId, ColumnMetadata.named("holiday_scheme_id").withIndex(2).ofType(Types.BIGINT).withSize(19));
         addMetadata(shiftedWorkDayId, ColumnMetadata.named("shifted_work_day_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
     }

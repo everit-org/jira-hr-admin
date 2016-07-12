@@ -196,6 +196,11 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
     return "/META-INF/pages/special_issues";
   }
 
+  @Override
+  protected boolean isWebSudoNecessary() {
+    return true;
+  }
+
   private Map<String, Collection<String>> querySpecialIssues() {
     return querydslSupport.execute((connection, configuration) -> {
       Map<String, Collection<String>> result = new HashMap<>();

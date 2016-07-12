@@ -38,42 +38,42 @@
     </classNameRule>
 
     <classNameRule>
-      <entity>everit_jira_work_schedule</entity>
-      <class>WorkSchedule</class>
+      <entity>everit_jira_work_scheme</entity>
+      <class>WorkScheme</class>
       <propertyMappings>
         <primaryKey>
-          <name>pk_everit_jira_work_sched</name>
-          <property>workSchedulePK</property>
+          <name>pk_everit_jira_work_scheme</name>
+          <property>workSchemePK</property>
         </primaryKey>
       </propertyMappings>
     </classNameRule>
 
     <classNameRule>
-      <entity>everit_jira_exact_work_sched</entity>
-      <class>ExactWorkSchedule</class>
+      <entity>everit_jira_exact_work_scheme</entity>
+      <class>ExactWorkScheme</class>
       <propertyMappings>
         <primaryKey>
-          <name>pk_everit_jira_ex_work_sched</name>
-          <property>exactWorkSchedulePK</property>
+          <name>pk_everit_jira_ex_work_scheme</name>
+          <property>exactWorkSchemePK</property>
         </primaryKey>
         <foreignKey>
           <name>fk_everit_jira_ex_w_sch_wsch</name>
-          <property>workScheduleFK</property>
+          <property>workSchemeFK</property>
         </foreignKey>
       </propertyMappings>
     </classNameRule>
 
     <classNameRule>
-      <entity>everit_jira_wd_work_sched</entity>
-      <class>WeekdayWorkSchedule</class>
+      <entity>everit_jira_wd_work_scheme</entity>
+      <class>WeekdayWorkScheme</class>
       <propertyMappings>
         <primaryKey>
-          <name>pk_everit_jira_wd_work_sched</name>
-          <property>weekdayWorkSchedulePK</property>
+          <name>pk_everit_jira_wd_work_scheme</name>
+          <property>weekdayWorkSchemePK</property>
         </primaryKey>
         <foreignKey>
           <name>fk_everit_jira_wd_w_sch_wsch</name>
-          <property>workScheduleFK</property>
+          <property>workSchemeFK</property>
         </foreignKey>
       </propertyMappings>
     </classNameRule>
@@ -109,20 +109,20 @@
     </classNameRule>
 
     <classNameRule>
-      <entity>everit_jira_user_work_sched</entity>
-      <class>UserWorkSchedule</class>
+      <entity>everit_jira_user_work_scheme</entity>
+      <class>UserWorkScheme</class>
       <propertyMappings>
         <primaryKey>
-          <name>pk_everit_jira_us_w_sched</name>
-          <property>userWorkSchedulePK</property>
+          <name>pk_everit_jira_us_w_scheme</name>
+          <property>userWorkSchemePK</property>
         </primaryKey>
         <column>
           <name>user_work_sched_id</name>
-          <property>userWorkScheduleId</property>
+          <property>userWorkSchemeId</property>
         </column>
         <foreignKey>
           <name>fk_everit_jira_us_w_sch_wsch</name>
-          <property>workScheduleFK</property>
+          <property>workSchemeFK</property>
         </foreignKey>
       </propertyMappings>
     </classNameRule>

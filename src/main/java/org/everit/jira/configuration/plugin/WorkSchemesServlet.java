@@ -18,13 +18,13 @@ package org.everit.jira.configuration.plugin;
 /**
  * Servlet that allows the users to view and edit working schemes.
  */
-public class WorkingSchemesServlet extends AbstractPageServlet {
+public class WorkSchemesServlet extends AbstractPageServlet {
 
   private static final long serialVersionUID = 5855299893731146143L;
 
   @Override
   protected String getPageId() {
-    return "/META-INF/pages/working_schemes";
+    return "/META-INF/pages/work_schemes";
   }
 
   @Override

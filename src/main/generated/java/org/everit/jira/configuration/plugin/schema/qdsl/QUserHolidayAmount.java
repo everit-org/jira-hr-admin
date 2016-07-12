@@ -24,6 +24,7 @@ import javax.annotation.Generated;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.PathMetadata;
 import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.sql.ColumnMetadata;
 
 /**
@@ -52,6 +53,8 @@ public class QUserHolidayAmount extends com.querydsl.sql.RelationalPathBase<QUse
       new QUserHolidayAmount("everit_jira_user_hday_amount");
 
   public final NumberPath<Long> dateRangeId = createNumber("dateRangeId", Long.class);
+
+  public final StringPath description_ = createString("description_");
 
   public final ForeignKeys fk = new ForeignKeys();
 
@@ -86,6 +89,8 @@ public class QUserHolidayAmount extends com.querydsl.sql.RelationalPathBase<QUse
   public void addMetadata() {
     addMetadata(dateRangeId, ColumnMetadata.named("date_range_id").withIndex(2).ofType(Types.BIGINT)
         .withSize(19).notNull());
+    addMetadata(description_,
+        ColumnMetadata.named("description_").withIndex(4).ofType(Types.VARCHAR).withSize(2000));
     addMetadata(userHolidayAmountId, ColumnMetadata.named("user_hday_amount_id").withIndex(1)
         .ofType(Types.BIGINT).withSize(19).notNull());
     addMetadata(userId,

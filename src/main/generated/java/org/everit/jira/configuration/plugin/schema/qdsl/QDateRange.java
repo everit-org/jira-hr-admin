@@ -47,6 +47,8 @@ public class QDateRange extends com.querydsl.sql.RelationalPathBase<QDateRange> 
 
     public class ForeignKeys {
 
+        public final com.querydsl.sql.ForeignKey<QUserWorkScheme> _everitJiraUserWSchDrFk = createInvForeignKey(dateRangeId, "date_range_id");
+
         public final com.querydsl.sql.ForeignKey<QUserHolidayScheme> _everitJiraUsHdaySchDrFk = createInvForeignKey(dateRangeId, "date_range_id");
 
         public final com.querydsl.sql.ForeignKey<QUserHolidayAmount> _everitJiraUserHdayADrFk = createInvForeignKey(dateRangeId, "date_range_id");

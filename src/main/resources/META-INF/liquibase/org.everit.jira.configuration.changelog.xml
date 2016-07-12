@@ -60,9 +60,9 @@
     <addUniqueConstraint columnNames="issue_id,specialty" tableName="everit_jira_spec_issue"
       constraintName="u_everit_jira_spec_iss_pid_s" />
 
-    <createTable tableName="everit_jira_work_schedule">
-      <column name="work_schedule_id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_work_sched" />
+    <createTable tableName="everit_jira_work_scheme">
+      <column name="work_scheme_id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_work_scheme" />
       </column>
       <column name="name_" type="varchar(60)">
         <constraints nullable="false" />
@@ -71,13 +71,13 @@
         <constraints nullable="false" />
       </column>
     </createTable>
-    <createIndex tableName="everit_jira_work_schedule" indexName="i_everit_jira_work_sched_g">
+    <createIndex tableName="everit_jira_work_scheme" indexName="i_everit_jira_work_scheme_g">
       <column name="scope_" />
     </createIndex>
 
-    <createTable tableName="everit_jira_exact_work_sched">
-      <column name="exact_work_sched_id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_ex_work_sched" />
+    <createTable tableName="everit_jira_exact_work_scheme">
+      <column name="exact_work_scheme_id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_ex_work_scheme" />
       </column>
       <column name="date_" type="date">
         <constraints nullable="false" />
@@ -88,18 +88,18 @@
       <column name="duration_" type="int">
         <constraints nullable="false" />
       </column>
-      <column name="work_schedule_id" type="bigint">
-        <constraints foreignKeyName="fk_everit_jira_ex_w_sch_wsch" referencedTableName="everit_jira_work_schedule"
-          referencedColumnNames="work_schedule_id" />
+      <column name="work_scheme_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_ex_w_sch_wsch" referencedTableName="everit_jira_work_scheme"
+          referencedColumnNames="work_scheme_id" />
       </column>
     </createTable>
-    <createIndex tableName="everit_jira_exact_work_sched" indexName="i_everit_jira_ex_work_sch_d">
+    <createIndex tableName="everit_jira_exact_work_scheme" indexName="i_everit_jira_ex_work_sch_d">
       <column name="date_" />
     </createIndex>
 
-    <createTable tableName="everit_jira_wd_work_sched">
-      <column name="wd_work_sched_id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_wd_work_sched" />
+    <createTable tableName="everit_jira_wd_work_scheme">
+      <column name="wd_work_scheme_id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_wd_work_scheme" />
       </column>
       <column name="weekday" type="tinyint">
         <constraints nullable="false" />
@@ -110,12 +110,12 @@
       <column name="duration_" type="int">
         <constraints nullable="false" />
       </column>
-      <column name="work_schedule_id" type="bigint">
-        <constraints foreignKeyName="fk_everit_jira_wd_w_sch_wsch" referencedTableName="everit_jira_work_schedule"
-          referencedColumnNames="work_schedule_id" />
+      <column name="work_scheme_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_wd_w_sch_wsch" referencedTableName="everit_jira_work_scheme"
+          referencedColumnNames="work_scheme_id" />
       </column>
     </createTable>
-    <createIndex tableName="everit_jira_wd_work_sched" indexName="i_everit_jira_wd_w_sch_wd">
+    <createIndex tableName="everit_jira_wd_work_scheme" indexName="i_everit_jira_wd_w_sch_wd">
       <column name="weekday" />
     </createIndex>
 
@@ -145,19 +145,24 @@
         <constraints foreignKeyName="fk_everit_jira_user_hday_am_u" referencedTableName="cwd_user"
           referencedColumnNames="id" nullable="false" />
       </column>
+      <column name="description_" type="varchar(2000)" />
     </createTable>
 
-    <createTable tableName="everit_jira_user_work_sched">
+    <createTable tableName="everit_jira_user_work_scheme">
       <column name="user_work_sched_id" type="bigint" autoIncrement="true">
-        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_us_w_sched" />
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_us_w_scheme" />
       </column>
       <column name="user_id" type="bigint">
-        <constraints foreignKeyName="fk_everit_jira_us_w_sched_u" referencedTableName="cwd_user"
+        <constraints foreignKeyName="fk_everit_jira_us_w_scheme_u" referencedTableName="cwd_user"
           referencedColumnNames="id" nullable="false" />
       </column>
-      <column name="work_schedule_id" type="bigint">
-        <constraints foreignKeyName="fk_everit_jira_us_w_sch_wsch" referencedTableName="everit_jira_work_schedule"
-          referencedColumnNames="work_schedule_id" />
+      <column name="work_scheme_id" type="bigint">
+        <constraints foreignKeyName="fk_everit_jira_us_w_sch_wsch" referencedTableName="everit_jira_work_scheme"
+          referencedColumnNames="work_scheme_id" />
+      </column>
+      <column name="date_range_id" type="bigint">
+        <constraints nullable="false" foreignKeyName="fk_everit_jira_user_w_sch_dr"
+          referencedTableName="everit_jira_date_range" referencedColumnNames="date_range_id" />
       </column>
     </createTable>
 
@@ -186,7 +191,7 @@
         <constraints nullable="false" foreignKeyName="fk_everit_jira_us_hday_sch_dr"
           referencedTableName="everit_jira_date_range" referencedColumnNames="date_range_id" />
       </column>
-      <column name="description_" type="varchar(255)" />
+      <column name="description_" type="varchar(2000)" />
     </createTable>
 
 
@@ -201,7 +206,7 @@
       <column name="date_" type="date">
         <constraints nullable="false" />
       </column>
-      <column name="description_" type="varchar(255)" />
+      <column name="description_" type="varchar(2000)" />
     </createTable>
     <createIndex tableName="everit_jira_public_holiday" indexName="i_everit_jira_public_hday_d">
       <column name="date_" />
@@ -218,7 +223,7 @@
       <column name="date_" type="date">
         <constraints nullable="false" />
       </column>
-      <column name="description_" type="varchar(255)" />
+      <column name="description_" type="varchar(2000)" />
     </createTable>
     <createIndex tableName="everit_jira_shifted_work_day" indexName="i_everit_jira_shifted_wd_date">
       <column name="date_" />

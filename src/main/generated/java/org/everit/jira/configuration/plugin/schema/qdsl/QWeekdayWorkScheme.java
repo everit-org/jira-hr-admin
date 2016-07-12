@@ -30,24 +30,24 @@ import java.sql.Types;
 
 
 /**
- * QWeekdayWorkSchedule is a Querydsl query type for QWeekdayWorkSchedule
+ * QWeekdayWorkScheme is a Querydsl query type for QWeekdayWorkScheme
  */
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
-public class QWeekdayWorkSchedule extends com.querydsl.sql.RelationalPathBase<QWeekdayWorkSchedule> {
+public class QWeekdayWorkScheme extends com.querydsl.sql.RelationalPathBase<QWeekdayWorkScheme> {
 
-    private static final long serialVersionUID = 2036540626;
+    private static final long serialVersionUID = -574416224;
 
-    public static final QWeekdayWorkSchedule weekdayWorkSchedule = new QWeekdayWorkSchedule("everit_jira_wd_work_sched");
+    public static final QWeekdayWorkScheme weekdayWorkScheme = new QWeekdayWorkScheme("everit_jira_wd_work_scheme");
 
     public class PrimaryKeys {
 
-        public final com.querydsl.sql.PrimaryKey<QWeekdayWorkSchedule> weekdayWorkSchedulePK = createPrimaryKey(wdWorkSchedId);
+        public final com.querydsl.sql.PrimaryKey<QWeekdayWorkScheme> weekdayWorkSchemePK = createPrimaryKey(wdWorkSchemeId);
 
     }
 
     public class ForeignKeys {
 
-        public final com.querydsl.sql.ForeignKey<QWorkSchedule> workScheduleFK = createForeignKey(workScheduleId, "work_schedule_id");
+        public final com.querydsl.sql.ForeignKey<QWorkScheme> workSchemeFK = createForeignKey(workSchemeId, "work_scheme_id");
 
     }
 
@@ -55,42 +55,42 @@ public class QWeekdayWorkSchedule extends com.querydsl.sql.RelationalPathBase<QW
 
     public final TimePath<java.sql.Time> startTime = createTime("startTime", java.sql.Time.class);
 
-    public final NumberPath<Long> wdWorkSchedId = createNumber("wdWorkSchedId", Long.class);
+    public final NumberPath<Long> wdWorkSchemeId = createNumber("wdWorkSchemeId", Long.class);
 
     public final NumberPath<Byte> weekday = createNumber("weekday", Byte.class);
 
-    public final NumberPath<Long> workScheduleId = createNumber("workScheduleId", Long.class);
+    public final NumberPath<Long> workSchemeId = createNumber("workSchemeId", Long.class);
 
     public final PrimaryKeys pk = new PrimaryKeys();
 
     public final ForeignKeys fk = new ForeignKeys();
 
-    public QWeekdayWorkSchedule(String variable) {
-        super(QWeekdayWorkSchedule.class, forVariable(variable), "public", "everit_jira_wd_work_sched");
+    public QWeekdayWorkScheme(String variable) {
+        super(QWeekdayWorkScheme.class, forVariable(variable), "public", "everit_jira_wd_work_scheme");
         addMetadata();
     }
 
-    public QWeekdayWorkSchedule(String variable, String schema, String table) {
-        super(QWeekdayWorkSchedule.class, forVariable(variable), schema, table);
+    public QWeekdayWorkScheme(String variable, String schema, String table) {
+        super(QWeekdayWorkScheme.class, forVariable(variable), schema, table);
         addMetadata();
     }
 
-    public QWeekdayWorkSchedule(Path<? extends QWeekdayWorkSchedule> path) {
-        super(path.getType(), path.getMetadata(), "public", "everit_jira_wd_work_sched");
+    public QWeekdayWorkScheme(Path<? extends QWeekdayWorkScheme> path) {
+        super(path.getType(), path.getMetadata(), "public", "everit_jira_wd_work_scheme");
         addMetadata();
     }
 
-    public QWeekdayWorkSchedule(PathMetadata metadata) {
-        super(QWeekdayWorkSchedule.class, metadata, "public", "everit_jira_wd_work_sched");
+    public QWeekdayWorkScheme(PathMetadata metadata) {
+        super(QWeekdayWorkScheme.class, metadata, "public", "everit_jira_wd_work_scheme");
         addMetadata();
     }
 
     public void addMetadata() {
         addMetadata(duration_, ColumnMetadata.named("duration_").withIndex(4).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(startTime, ColumnMetadata.named("start_time").withIndex(3).ofType(Types.TIME).withSize(6).notNull());
-        addMetadata(wdWorkSchedId, ColumnMetadata.named("wd_work_sched_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
+        addMetadata(wdWorkSchemeId, ColumnMetadata.named("wd_work_scheme_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(weekday, ColumnMetadata.named("weekday").withIndex(2).ofType(Types.TINYINT).withSize(3).notNull());
-        addMetadata(workScheduleId, ColumnMetadata.named("work_schedule_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
+        addMetadata(workSchemeId, ColumnMetadata.named("work_scheme_id").withIndex(5).ofType(Types.BIGINT).withSize(19));
     }
 
 }

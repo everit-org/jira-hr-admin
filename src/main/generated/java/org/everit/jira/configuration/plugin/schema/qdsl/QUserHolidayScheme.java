@@ -94,7 +94,7 @@ public class QUserHolidayScheme extends com.querydsl.sql.RelationalPathBase<QUse
     addMetadata(dateRangeId, ColumnMetadata.named("date_range_id").withIndex(4).ofType(Types.BIGINT)
         .withSize(19).notNull());
     addMetadata(description_,
-        ColumnMetadata.named("description_").withIndex(5).ofType(Types.VARCHAR).withSize(255));
+        ColumnMetadata.named("description_").withIndex(5).ofType(Types.VARCHAR).withSize(2000));
     addMetadata(holidaySchemeId,
         ColumnMetadata.named("holiday_scheme_id").withIndex(2).ofType(Types.BIGINT).withSize(19));
     addMetadata(userHolidaySchemeId, ColumnMetadata.named("user_hday_scheme_id").withIndex(1)

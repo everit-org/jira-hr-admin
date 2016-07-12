@@ -1,0 +1,152 @@
+<!--
+
+    Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Everit - Working Schemes</title>
+<meta charset="UTF-8">
+<meta name="decorator" content="atl.admin">
+<style type="text/css">
+.everit-tabs .tabs-pane {
+    padding-top: 2em;
+}
+
+table.aui thead tr td {
+    font-weight: bold;
+}
+
+.aui-inline-dialog.aui-datepicker-dialog {
+    z-index: 4000;
+}
+</style>
+<script
+  data-eht-text="webResourceManager.requireResource('com.atlassian.auiplugin:aui-date-picker')"
+  data-eht-render="'content'"></script>
+<script type="text/javascript">
+  if (!$.parseHTML) {
+    $.parseHTML = function(str) {
+      var tmp = document.implementation.createHTMLDocument();
+      tmp.body.innerHTML = str;
+      return tmp.body.children;
+    }
+  }
+  
+  var newRecordDialog = null; 
+
+  $(function() {
+    newRecordDialog = new AJS.Dialog({
+      width : 800,
+      height : 500,
+      id : "new-user-holiday-amount-dialog",
+      closeOnOutsideClick : true
+    });
+
+    newRecordDialog.addHeader("New record");
+    newRecordDialog.addPanel("New Record Form", $("#newRecordTemplate").html(),
+        "panel-body");
+    
+    AJS.$('#new-user-holiday-amount-dialog .aui-date-picker').each(function() {
+      new AJS.DatePicker(this, {
+        'overrideBrowserDefault' : true
+      });
+    });
+    
+    $('.everit-lazy-classes', '#new-user-holiday-amount-dialog').each(function() {
+      var thisObj = $(this);
+      var lazyclasses = thisObj.attr('data-everit-jira-lazy-classes');
+      thisObj.addClass(lazyclasses);
+      thisObj.removeAttr('data-everit-jira-lazy-classes');
+      thisObj.removeClass('everit-lazy-classes');
+    });
+    
+    JIRA.trigger(JIRA.Events.NEW_CONTENT_ADDED, [$('#new-user-holiday-amount-dialog')]);
+  });
+
+  var openNewDialog = function() {
+    newRecordDialog.show();
+  }
+</script>
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
+  data-eht-render="'content'"></script>
+</head>
+<body>
+  <everit-jira-template id="newRecordTemplate" style="display: none;">
+    <div>
+      <form class="aui">
+        <input type="hidden" name="action" value="saveNewRecord" />
+        <div class="form-group">
+          <label>User:</label> <select id="newform-user-selector"
+            class="everit-lazy-classes" data-everit-jira-lazy-classes="js-default-user-picker single-user-picker" name="user"></select>
+        </div>
+        <div class="form-group">
+          <label>Start date:</label> <input class="text aui-date-picker" name="start-date"
+            type="date" />
+        </div>
+        <div class="form-group">
+          <label>End date:</label> <input class="text aui-date-picker" name="end-date" type="date" />
+        </div>
+        <div class="form-group">
+          <label>Amount (hours):</label> <input class="text short-field" name="amount" type="number" />
+        </div>
+        <div class="form-group">
+          <button class=""></button>
+        </div>
+      </form>
+    </div>
+  </everit-jira-template>
+
+  <h2>Users</h2>
+
+  <form class="aui">
+    <div class="form-group">
+      <label for="user-selector">User: </label> <select id="filter-user-selector"
+        class="js-default-user-picker single-user-picker" name="user"></select> <label
+        for="current-checkbox">Current time ranges only:</label> <input id="current-checkbox"
+        type="checkbox" />
+      <button class="aui-button aui-button-primary">Filter</button>
+    </div>
+  </form>
+
+  <table class="aui">
+    <thead>
+      <tr>
+        <th id="holiday-amount-user-name">User</th>
+        <th id="holiday-amount-start-date">Start date</th>
+        <th id="holiday-amount-end-date">End date</th>
+        <th id="holiday-amount-amount">Amount (in hours)</th>
+        <td id="holiday-amount-actions"><a href="javascript:openNewDialog();">Add</a></td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td headers="holiday-amount-user-name">balazs.zsoldos@everit.biz</td>
+        <td headers="holiday-amount-start-date">2016-01-01</td>
+        <td headers="holiday-amount-end-date">2016-12-31</td>
+        <td headers="holiday-amount-amount">320</td>
+        <td headers="holiday-amount-actions">
+          <ul class="menu">
+            <li><a href="#">Edit</a></li>
+            <li><a href="#">Delete</a></li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

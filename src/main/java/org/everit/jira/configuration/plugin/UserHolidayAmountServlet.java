@@ -16,15 +16,15 @@
 package org.everit.jira.configuration.plugin;
 
 /**
- * Servlet that allows the users to view and edit working schemes.
+ * Assigning holiday amounts to users.
  */
-public class HolidayManagerServlet extends AbstractPageServlet {
+public class UserHolidayAmountServlet extends AbstractPageServlet {
 
   private static final long serialVersionUID = 1073648466982165361L;
 
   @Override
   protected String getPageId() {
-    return "/META-INF/pages/holiday_manager";
+    return "/META-INF/pages/user_holiday_amount";
   }
 
   @Override

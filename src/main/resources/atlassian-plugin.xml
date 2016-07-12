@@ -30,36 +30,47 @@
     <label key="admin_plugins_menu.section_everit" />
   </web-section>
 
-  <web-item key="working_schemes" name="Everit Working Schemes" section="admin_plugins_menu/everit"
-    weight="60">
-    <label key="admin_plugins_menu.section_everit.working_schemes" />
-    <link>/plugins/servlet/everit/working-schemes</link>
-  </web-item>
-
   <web-item key="special_issues" name="Everit Special Issues" section="admin_plugins_menu/everit"
     weight="60">
     <label key="admin_plugins_menu.section_everit.special_issues" />
     <link>/plugins/servlet/everit/special-issues</link>
   </web-item>
-  
-  <web-item key="holiday_manager" name="Everit Holiday Manager" section="admin_plugins_menu/everit"
-    weight="60">
-    <label key="admin_plugins_menu.section_everit.holiday_manager" />
-    <link>/plugins/servlet/everit/holiday-manager</link>
-  </web-item>  
 
-  <servlet name="WorkingSchemes" class="org.everit.jira.configuration.plugin.WorkingSchemesServlet"
-    key="everit-working-schemes">
-    <url-pattern>/everit/working-schemes</url-pattern>
-  </servlet>
+  <web-item key="work_schemes" name="Everit Work Schemes" section="admin_plugins_menu/everit"
+    weight="60">
+    <label key="admin_plugins_menu.section_everit.work_schemes" />
+    <link>/plugins/servlet/everit/work-schemes</link>
+  </web-item>
+
+  <web-item key="holiday_schemes" name="Everit Holiday Schemes" section="admin_plugins_menu/everit"
+    weight="60">
+    <label key="admin_plugins_menu.section_everit.holiday_schemes" />
+    <link>/plugins/servlet/everit/holiday-schemes</link>
+  </web-item>
+  
+  <web-item key="user_holiday_amount" name="Everit User Holiday Amount" section="admin_plugins_menu/everit"
+    weight="60">
+    <label key="admin_plugins_menu.section_everit.user_holiday_amount" />
+    <link>/plugins/servlet/everit/user-holiday-amount</link>
+  </web-item>
 
   <servlet name="Special Issues" class="org.everit.jira.configuration.plugin.SpecialIssuesServlet"
     key="everit-special-issues">
     <url-pattern>/everit/special-issues</url-pattern>
   </servlet>
 
-  <servlet name="Holidays" class="org.everit.jira.configuration.plugin.HolidayManagerServlet"
-    key="everit-holiday-manager">
-    <url-pattern>/everit/holiday-manager</url-pattern>
+  <servlet name="HolidaySchemes" class="org.everit.jira.configuration.plugin.HolidaySchemesServlet"
+    key="everit-holiday-schemes">
+    <url-pattern>/everit/holiday-schemes</url-pattern>
+  </servlet>
+
+  <servlet name="WorkSchemes" class="org.everit.jira.configuration.plugin.WorkSchemesServlet"
+    key="everit-work-schemes">
+    <url-pattern>/everit/work-schemes</url-pattern>
+  </servlet>
+  
+    <servlet name="WorkSchemes" class="org.everit.jira.configuration.plugin.UserHolidayAmountServlet"
+    key="everit-user-holiday-amount">
+    <url-pattern>/everit/user-holiday-amount</url-pattern>
   </servlet>
 </atlassian-plugin>
