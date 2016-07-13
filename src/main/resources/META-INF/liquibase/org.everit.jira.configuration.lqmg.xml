@@ -105,6 +105,14 @@
           <name>fk_everit_jira_user_hday_a_dr</name>
           <property>dateRangeFK</property>
         </foreignKey>
+        <column>
+          <name>amount_</name>
+          <property>amount</property>
+        </column>
+        <column>
+          <name>description_</name>
+          <property>description</property>
+        </column>
       </propertyMappings>
     </classNameRule>
 

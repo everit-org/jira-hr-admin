@@ -52,16 +52,18 @@ public class QUserHolidayAmount extends com.querydsl.sql.RelationalPathBase<QUse
   public static final QUserHolidayAmount userHolidayAmount =
       new QUserHolidayAmount("everit_jira_user_hday_amount");
 
+  public final NumberPath<Integer> amount = createNumber("amount", Integer.class);
+
   public final NumberPath<Long> dateRangeId = createNumber("dateRangeId", Long.class);
 
-  public final StringPath description_ = createString("description_");
+  public final StringPath description = createString("description");
+
+  public final NumberPath<Long> userHolidayAmountId =
+      createNumber("userHolidayAmountId", Long.class);
 
   public final ForeignKeys fk = new ForeignKeys();
 
   public final PrimaryKeys pk = new PrimaryKeys();
-
-  public final NumberPath<Long> userHolidayAmountId =
-      createNumber("userHolidayAmountId", Long.class);
 
   public final NumberPath<Long> userId = createNumber("userId", Long.class);
 
@@ -87,10 +89,12 @@ public class QUserHolidayAmount extends com.querydsl.sql.RelationalPathBase<QUse
   }
 
   public void addMetadata() {
+    addMetadata(amount,
+        ColumnMetadata.named("amount_").withIndex(4).ofType(Types.INTEGER).withSize(10).notNull());
     addMetadata(dateRangeId, ColumnMetadata.named("date_range_id").withIndex(2).ofType(Types.BIGINT)
         .withSize(19).notNull());
-    addMetadata(description_,
-        ColumnMetadata.named("description_").withIndex(4).ofType(Types.VARCHAR).withSize(2000));
+    addMetadata(description,
+        ColumnMetadata.named("description_").withIndex(5).ofType(Types.VARCHAR).withSize(2000));
     addMetadata(userHolidayAmountId, ColumnMetadata.named("user_hday_amount_id").withIndex(1)
         .ofType(Types.BIGINT).withSize(19).notNull());
     addMetadata(userId,

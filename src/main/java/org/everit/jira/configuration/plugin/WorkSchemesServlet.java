@@ -23,7 +23,7 @@ public class WorkSchemesServlet extends AbstractPageServlet {
   private static final long serialVersionUID = 5855299893731146143L;
 
   @Override
-  protected String getPageId() {
+  protected String getTemplateBase() {
     return "/META-INF/pages/work_schemes";
   }
 

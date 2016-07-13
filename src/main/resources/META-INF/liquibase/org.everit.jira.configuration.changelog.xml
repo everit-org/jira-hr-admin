@@ -145,6 +145,9 @@
         <constraints foreignKeyName="fk_everit_jira_user_hday_am_u" referencedTableName="cwd_user"
           referencedColumnNames="id" nullable="false" />
       </column>
+      <column name="amount_" type="int">
+        <constraints nullable="false" />
+      </column>
       <column name="description_" type="varchar(2000)" />
     </createTable>
 

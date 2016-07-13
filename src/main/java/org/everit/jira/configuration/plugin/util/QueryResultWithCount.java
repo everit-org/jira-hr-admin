@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.jira.configuration.plugin;
+package org.everit.jira.configuration.plugin.util;
 
-/**
- * Managing holiday schemes.
- */
-public class HolidaySchemesServlet extends AbstractPageServlet {
+import java.util.Collection;
 
-  private static final long serialVersionUID = 1073648466982165361L;
+public class QueryResultWithCount<T> {
 
-  @Override
-  protected String getTemplateBase() {
-    return "/META-INF/pages/holiday_schemes";
+  public long count;
+
+  public Collection<T> resultSet;
+
+  public QueryResultWithCount(final Collection<T> resultSet, final long count) {
+    this.resultSet = resultSet;
+    this.count = count;
   }
 
-  @Override
-  protected boolean isWebSudoNecessary() {
-    return true;
-  }
 }

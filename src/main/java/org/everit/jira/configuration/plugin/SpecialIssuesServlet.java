@@ -192,7 +192,7 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
   }
 
   @Override
-  protected String getPageId() {
+  protected String getTemplateBase() {
     return "/META-INF/pages/special_issues";
   }
 
