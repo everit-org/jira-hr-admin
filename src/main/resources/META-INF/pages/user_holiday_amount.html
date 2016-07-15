@@ -116,14 +116,21 @@ table.aui thead tr td {
     $('#dataform-messages').empty();
     editDialog.show();
   }
-  
-  var openEditDialog = function() {
-    $('#dataform-action').val('new');
-    $('#dataform-userholidayamount-id').val('');
-    $('#dataform-start-date').val('');
-    $('#dataform-end-date').val('');
-    $('#dataform-amount').val('');
-    $('#dataform-description').val('');
+
+  var openEditDialog = function(userHolidayAmountId) {
+
+    $('#dataform-action').val('edit');
+    $('#dataform-userholidayamount-id').val(userHolidayAmountId);
+
+    var recordRow = $('#record-' + userHolidayAmountId);
+
+    $('#dataform-user-selector').auiSelect2('val',
+        recordRow.attr('data-user-name'));
+
+    $('#dataform-start-date').val(recordRow.attr('data-start-date'));
+    $('#dataform-end-date').val(recordRow.attr('data-end-date'));
+    $('#dataform-amount').val(recordRow.attr('data-amount'));
+    $('#dataform-description').val(recordRow.attr('data-description'));
     $('#dataform-messages').empty();
     editDialog.show();
   }
@@ -245,7 +252,12 @@ table.aui thead tr td {
     <tbody>
       <tr data-eht-foreach="{'record' : userHolidayAmounts.resultSet}"
         data-eht-attr-id="'record-' + record.userHolidayAmountId"
-        data-eht-attr-user-name="record.userName">
+        data-eht-attr-data-user-name="record.userName"
+        data-eht-attr-data-display-name="record.displayName"
+        data-eht-attr-data-start-date="record.startDate"
+        data-eht-attr-data-end-date="record.endDate"
+        data-eht-attr-data-amount="record.amount / 3600"
+        data-eht-attr-data-description="record.description">
         <td headers="holiday-amount-user-name" data-eht-text="record.displayName">balazs.zsoldos</td>
         <td headers="holiday-amount-start-date" data-eht-text="record.startDate">2016-01-01</td>
         <td headers="holiday-amount-end-date" data-eht-text="record.endDate">2016-12-31</td>
@@ -254,7 +266,8 @@ table.aui thead tr td {
           because of children</td>
         <td headers="holiday-amount-actions">
           <ul class="menu">
-            <li><a data-eht-attr-href="javascript:">Edit</a></li>
+            <li><a
+              data-eht-attr-href="'javascript:openEditDialog(' + record.userHolidayAmountId + ')'">Edit</a></li>
             <li><a href="#">Delete</a></li>
           </ul>
         </td>

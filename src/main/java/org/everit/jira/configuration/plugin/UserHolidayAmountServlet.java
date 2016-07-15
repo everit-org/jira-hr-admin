@@ -339,7 +339,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       QDateRange qDateRange = QDateRange.dateRange;
       QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
 
-      Long dateRangeId = new SQLQuery<Long>()
+      Long dateRangeId = new SQLQuery<Long>(connection, configuration)
           .select(qDateRange.dateRangeId)
           .from(qUserHolidayAmount)
           .innerJoin(qUserHolidayAmount.fk.dateRangeFK, qDateRange)
