@@ -38,6 +38,24 @@ table.aui thead tr td {
   data-eht-text="webResourceManager.requireResource('com.atlassian.auiplugin:aui-date-picker')"
   data-eht-render="'content'"></script>
 <script type="text/javascript">
+  var processRuntimeAlerts = function() {
+    $('.everit-jira-runtimealert').each(function() {
+      var thisObj = $(this);
+      var alertType = thisObj.attr('data-everit-jira-alert-type');
+      var alertMessage = thisObj.attr('data-everit-jira-alert-message');
+      thisObj.remove();
+      if (alertType == 'info') {
+        AJS.messages.generic({
+          body : alertMessage
+        });
+      } else if (alertType == 'error') {
+        AJS.messages.error({
+          body : alertMessage
+        });
+      }
+    });
+  }
+
   if (!$.parseHTML) {
     $.parseHTML = function(str) {
       var tmp = document.implementation.createHTMLDocument();
@@ -63,13 +81,24 @@ table.aui thead tr td {
     });
 
     JIRA.trigger(JIRA.Events.NEW_CONTENT_ADDED, [ $('#' + dialogId) ]);
+
+    var dialogElementObj = $('#' + dialogId);
+    dialogElementObj.find('select.aui-ss-select').each(function() {
+      var thisObj = $(this);
+      var thisObjRequired = thisObj.prop('required');
+      if (thisObjRequired) {
+        thisObj.prop('required', false);
+        $('#' + thisObj.prop('id') + '-field').prop('required', true);
+      }
+    });
+
     return dialog;
   }
 
-  var newRecordDialog = null;
+  var editDialog = null;
 
   $(function() {
-    newRecordDialog = new ajsDialogFromTemplate("#newRecordTemplate", {
+    editDialog = new ajsDialogFromTemplate("#editDialogTemplate", {
       width : 800,
       height : 500,
       id : "new-user-holiday-amount-dialog",
@@ -78,37 +107,58 @@ table.aui thead tr td {
   });
 
   var openNewDialog = function() {
-    $('#newform-start-date').val('');
-    $('#newform-end-date').val('');
-    $('#newform-amount').val('');
-    $('#newform-description').val('');
-    $('#newrecord-messages').empty();
-    newRecordDialog.show();
+    $('#dataform-action').val('new');
+    $('#dataform-userholidayamount-id').val('');
+    $('#dataform-start-date').val('');
+    $('#dataform-end-date').val('');
+    $('#dataform-amount').val('');
+    $('#dataform-description').val('');
+    $('#dataform-messages').empty();
+    editDialog.show();
+  }
+  
+  var openEditDialog = function() {
+    $('#dataform-action').val('new');
+    $('#dataform-userholidayamount-id').val('');
+    $('#dataform-start-date').val('');
+    $('#dataform-end-date').val('');
+    $('#dataform-amount').val('');
+    $('#dataform-description').val('');
+    $('#dataform-messages').empty();
+    editDialog.show();
   }
 
   var holidayAmountPageSwitch = function(pageIndex) {
-    
+
   }
 
-  var saveNewRecord = function() {
-    var newRecordDialogObj = $('new-user-holiday-amount-dialog');
+  var saveRecord = function() {
+    var editDialogObj = $('new-user-holiday-amount-dialog');
+    var form = $('#dataForm')[0];
+    var formValid = form.checkValidity();
+    if (!formValid) {
+      return;
+    }
     var formdata = {
-      'action' : 'saveNewRecord',
-      'user' : $('#newform-user-selector').prop('value'),
-      'start-date' : $('#newform-start-date').val(),
-      'end-date' : $('#newform-end-date').val(),
-      'amount' : $('#newform-amount').val(),
-      'description' : $('#newform-description').val()
+      'action' : $('#dataform-action').val(),
+      'userholidayamount-id' : $('#dataform-userholidayamount-id').val(),
+      'user' : $('#dataform-user-selector').prop('value'),
+      'showCurrentTimeRanges' : $('holiday-amount-table').attr(
+          'data-holiday-amount-currentTimeRanges'),
+      'start-date' : $('#dataform-start-date').val(),
+      'end-date' : $('#dataform-end-date').val(),
+      'amount' : $('#dataform-amount').val(),
+      'description' : $('#dataform-description').val()
     };
     event.preventDefault();
-    AJS.$('#newform-savebutton').spin();
+    AJS.$('#dataform-savebutton').spin();
     $.ajax({
       url : '#',
       type : 'POST',
       data : formdata
     }).success(function(content) {
       everit.partialresponse.process(content);
-      newRecordDialog.hide();
+      editDialog.hide();
       processRuntimeAlerts();
     }).error(function(resp) {
       if (resp.status == 400) {
@@ -116,7 +166,7 @@ table.aui thead tr td {
         processRuntimeAlerts();
       }
     }).complete(function() {
-      $('#newform-savebutton').spinStop();
+      $('#dataform-savebutton').spinStop();
     });
   }
 </script>
@@ -125,35 +175,43 @@ table.aui thead tr td {
   data-eht-render="'content'"></script>
 </head>
 <body>
-  <div id="newRecordTemplate" data-jira-modal-title="New Record"
-    data-eht-text="template_ctx.renderFragment('newRecordTemplateBody')" style="display: none;">
+  <div id="aui-message-bar" style="position: fixed; z-index: 3005; top: 0; left: 0; width: 100%;">
+    <everit-jira-alert class="everit-jira-runtimealert" data-eht-fragment="'alert'"
+      data-eht-render="template_ctx.fragmentId == 'alert'"
+      data-eht-attr-data-everit-jira-alert-type="alertType"
+      data-eht-attr-data-everit-jira-alert-message="alertMessage" />
+  </div>
+  <div id="editDialogTemplate" data-jira-modal-title="User Holiday Amount"
+    data-eht-text="template_ctx.renderFragment('editDialogTemplateBody')" style="display: none;">
 
-    <div data-eht-fragment="'newRecordTemplateBody'">
-      <form id="newRecordForm" class="aui">
-        <div id="newrecord-messages"></div>
+    <div data-eht-fragment="'editDialogTemplateBody'">
+      <form id="dataForm" class="aui">
+        <input type="hidden" id="dataform-action" name="action" /> <input type="hidden"
+          id="dataform-userholidayamount-id" name="userholidayamount-id" />
+        <div id="dataform-messages"></div>
         <div class="form-group">
-          <label>User:</label> <select id="newform-user-selector"
+          <label>User:</label> <select id="dataform-user-selector"
             class="js-default-user-picker single-user-picker" name="user" required="required"></select>
         </div>
         <div class="form-group">
-          <label>Start date:</label> <input id="newform-start-date" class="text aui-date-picker"
+          <label>Start date:</label> <input id="dataform-start-date" class="text aui-date-picker"
             name="start-date" type="date" required="required" />
         </div>
         <div class="form-group">
-          <label>End date:</label> <input id="newform-end-date" class="text aui-date-picker"
+          <label>End date:</label> <input id="dataform-end-date" class="text aui-date-picker"
             name="end-date" type="date" required="required" />
         </div>
         <div class="form-group">
-          <label>Amount (hours):</label> <input id="newform-amount" class="text short-field"
+          <label>Amount (hours):</label> <input id="dataform-amount" class="text short-field"
             name="amount" type="number" required="required" />
         </div>
         <div class="form-group">
-          <label>Description:</label> <input id="newform-description" class="text long-field"
+          <label>Description:</label> <input id="dataform-description" class="text long-field"
             name="description" type="text" />
         </div>
         <div class="form-group">
-          <button id="newform-savebutton" class="aui-button aui-button-primary"
-            onclick="saveNewRecord();">Save</button>
+          <button id="dataform-savebutton" class="aui-button aui-button-primary"
+            onclick="saveRecord();">Save</button>
         </div>
       </form>
     </div>
@@ -166,12 +224,13 @@ table.aui thead tr td {
       <label for="user-selector">User: </label> <select id="filter-user-selector"
         class="js-default-user-picker single-user-picker" name="user"></select> <label
         for="current-checkbox">Current time ranges only:</label> <input id="current-checkbox"
-        name="currentTimeRanges" type="checkbox" />
+        name="showCurrentTimeRanges" type="checkbox" />
       <button class="aui-button aui-button-primary">Filter</button>
     </div>
   </form>
 
-  <table id="holiday-amount-table" class="aui" data-eht-attr-data-holiday-amount-user="user"
+  <table id="holiday-amount-table" data-eht-fragment="'holiday-amount-table'" class="aui"
+    data-eht-attr-data-holiday-amount-user="user"
     data-eht-attr-data-holiday-amount-currentTimeRanges="currentTimeRanges">
     <thead>
       <tr>
@@ -184,15 +243,18 @@ table.aui thead tr td {
       </tr>
     </thead>
     <tbody>
-      <tr data-eht-foreach="{'record' : userHolidayAmounts.resultSet}">
-        <td headers="holiday-amount-user-name">balazs.zsoldos@everit.biz</td>
-        <td headers="holiday-amount-start-date">2016-01-01</td>
-        <td headers="holiday-amount-end-date">2016-12-31</td>
-        <td headers="holiday-amount-amount">320</td>
-        <td headers="holiday-amount-description">Got it because of children</td>
+      <tr data-eht-foreach="{'record' : userHolidayAmounts.resultSet}"
+        data-eht-attr-id="'record-' + record.userHolidayAmountId"
+        data-eht-attr-user-name="record.userName">
+        <td headers="holiday-amount-user-name" data-eht-text="record.displayName">balazs.zsoldos</td>
+        <td headers="holiday-amount-start-date" data-eht-text="record.startDate">2016-01-01</td>
+        <td headers="holiday-amount-end-date" data-eht-text="record.endDate">2016-12-31</td>
+        <td headers="holiday-amount-amount" data-eht-text="record.amount / 3600">320</td>
+        <td headers="holiday-amount-description" data-eht-text="record.description">Got it
+          because of children</td>
         <td headers="holiday-amount-actions">
           <ul class="menu">
-            <li><a href="#">Edit</a></li>
+            <li><a data-eht-attr-href="javascript:">Edit</a></li>
             <li><a href="#">Delete</a></li>
           </ul>
         </td>
@@ -202,7 +264,7 @@ table.aui thead tr td {
       </tr>
     </tbody>
     <tfoot align="center"
-      data-eht-code="pageCount = userHolidayAmounts.count / 50 + ((userHolidayAmounts.count % 50 > 0) ? 1 : 0)"
+      data-eht-code="pageCount = userHolidayAmounts.count / pageSize + ((userHolidayAmounts.count % pageSize > 0) ? 1 : 0)"
       data-eht-render="pageCount > 1">
       <tr>
         <td colspan="6" style="text-align: center;"
