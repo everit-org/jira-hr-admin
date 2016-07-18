@@ -95,18 +95,65 @@ table.aui thead tr td {
     return dialog;
   }
 
+  var createFormDataWithSearchFields = function() {
+    var table = $("#holiday-amount-table");
+    var userFilter = table.attr("data-holiday-amount-filter-user");
+    var currentTimeRangesFilter = table
+        .attr("data-holiday-amount-filter-currentTimeRanges");
+    var pageIndex = table.attr("data-holiday-amount-page-index");
+
+    var formdata = {
+      'currentTimeRangesFilter' : currentTimeRangesFilter,
+      'pageIndex' : pageIndex,
+    };
+
+    if (userFilter) {
+      formdata['userFilter'] = userFilter;
+    }
+
+    return formdata;
+  }
+
   var editDialog = null;
+  var editDialogUserPicker = null;
+
+  var deleteDialog = null;
 
   $(function() {
-    editDialog = new ajsDialogFromTemplate("#editDialogTemplate", {
-      width : 800,
-      height : 500,
+    editDialog = ajsDialogFromTemplate("#editDialogTemplate", {
+      width : 750,
+      height : 340,
       id : "new-user-holiday-amount-dialog",
+      closeOnOutsideClick : true
+    });
+
+    editDialogUserPicker = new AJS.SingleSelect({
+      element : $("#dataform-user-selector"),
+      submitInputVal : true,
+      showDropdownButton : false,
+      errorMessage : AJS.format("There is no such user \'\'{0}\'\'.", "'{0}'"),
+      ajaxOptions : {
+        url : AJS.contextPath() + "/rest/api/1.0/users/picker",
+        query : true, // keep going back to the sever for each keystroke
+        data : {
+          showAvatar : true
+        },
+        formatResponse : JIRA.UserPickerUtil.formatResponse
+      }
+    });
+
+    deleteDialog = ajsDialogFromTemplate("#deleteDialogTemplate", {
+      width : 300,
+      height : 200,
+      id : "delete-user-holiday-amount-dialog",
       closeOnOutsideClick : true
     });
   });
 
   var openNewDialog = function() {
+
+    editDialogUserPicker.clear();
+
     $('#dataform-action').val('new');
     $('#dataform-userholidayamount-id').val('');
     $('#dataform-start-date').val('');
@@ -124,8 +171,13 @@ table.aui thead tr td {
 
     var recordRow = $('#record-' + userHolidayAmountId);
 
-    $('#dataform-user-selector').auiSelect2('val',
-        recordRow.attr('data-user-name'));
+    var userName = recordRow.attr('data-user-name');
+
+    editDialogUserPicker.setSelection(new AJS.ItemDescriptor({
+      value : userName,
+      label : recordRow.attr("data-display-name"),
+      icon : recordRow.attr("data-avatar-url")
+    }));
 
     $('#dataform-start-date').val(recordRow.attr('data-start-date'));
     $('#dataform-end-date').val(recordRow.attr('data-end-date'));
@@ -136,7 +188,24 @@ table.aui thead tr td {
   }
 
   var holidayAmountPageSwitch = function(pageIndex) {
+    var table = $("#holiday-amount-table");
+    var userFilter = table.attr("data-holiday-amount-filter-user");
+    var currentTimeRangesFilter = table
+        .attr("data-holiday-amount-filter-currentTimeRanges");
 
+    var holidayAmountFilterForm = $("#holiday-amount-filter-form");
+    var uriPrefix = holidayAmountFilterForm.attr('action');
+
+    var formdata = createFormDataWithSearchFields();
+    formdata['pageIndex'] = pageIndex;
+
+    $.ajax({
+      url : '#',
+      type : 'GET',
+      data : formdata
+    }).success(function(content) {
+      everit.partialresponse.process(content);
+    })
   }
 
   var saveRecord = function() {
@@ -146,18 +215,19 @@ table.aui thead tr td {
     if (!formValid) {
       return;
     }
-    var formdata = {
-      'action' : $('#dataform-action').val(),
-      'userholidayamount-id' : $('#dataform-userholidayamount-id').val(),
-      'user' : $('#dataform-user-selector').prop('value'),
-      'showCurrentTimeRanges' : $('holiday-amount-table').attr(
-          'data-holiday-amount-currentTimeRanges'),
-      'start-date' : $('#dataform-start-date').val(),
-      'end-date' : $('#dataform-end-date').val(),
-      'amount' : $('#dataform-amount').val(),
-      'description' : $('#dataform-description').val()
-    };
+
     event.preventDefault();
+
+    var formdata = createFormDataWithSearchFields();
+    formdata['action'] = $('#dataform-action').val();
+    formdata['userholidayamount-id'] = $('#dataform-userholidayamount-id')
+        .val();
+    formdata['user'] = $('#dataform-user-selector').prop('value');
+    formdata['start-date'] = $('#dataform-start-date').val();
+    formdata['end-date'] = $('#dataform-end-date').val();
+    formdata['amount'] = $('#dataform-amount').val();
+    formdata['description'] = $('#dataform-description').val();
+
     AJS.$('#dataform-savebutton').spin();
     $.ajax({
       url : '#',
@@ -174,6 +244,52 @@ table.aui thead tr td {
       }
     }).complete(function() {
       $('#dataform-savebutton').spinStop();
+    });
+  }
+
+  var submitFilterForm = function() {
+    var userFilter = $("#filter-user-selector").val();
+    var currentTimeRangesFilter = $("#filter-current-time-ranges").prop(
+        "checked");
+    var formdata = {
+      "currentTimeRangesFilter" : currentTimeRangesFilter
+    }
+
+    if (userFilter) {
+      formdata['userFilter'] = userFilter;
+    }
+
+    event.preventDefault();
+
+    $.ajax({
+      url : '#',
+      type : 'GET',
+      data : formdata
+    }).success(function(content) {
+      everit.partialresponse.process(content);
+      processRuntimeAlerts();
+    });
+  }
+
+  var openDeleteDialog = function(userHolidayAmountId) {
+    $("#delete-user-holiday-amount-id").val(userHolidayAmountId);
+    deleteDialog.show();
+  }
+  var doDeleteHolidayAmount = function() {
+    event.preventDefault();
+
+    var formdata = createFormDataWithSearchFields();
+    formdata['action'] = 'delete';
+    formdata['userholidayamount-id'] = $("#delete-user-holiday-amount-id").val();
+
+    $.ajax({
+      url : '#',
+      type : 'POST',
+      data : formdata
+    }).success(function(content) {
+      deleteDialog.hide();
+      everit.partialresponse.process(content);
+      processRuntimeAlerts();
     });
   }
 </script>
@@ -196,27 +312,27 @@ table.aui thead tr td {
         <input type="hidden" id="dataform-action" name="action" /> <input type="hidden"
           id="dataform-userholidayamount-id" name="userholidayamount-id" />
         <div id="dataform-messages"></div>
-        <div class="form-group">
-          <label>User:</label> <select id="dataform-user-selector"
-            class="js-default-user-picker single-user-picker" name="user" required="required"></select>
+        <div class="field-group">
+          <label>User</label> <select id="dataform-user-selector" class="single-user-picker"
+            name="user" required="required"></select>
         </div>
-        <div class="form-group">
-          <label>Start date:</label> <input id="dataform-start-date" class="text aui-date-picker"
+        <div class="field-group">
+          <label>Start date</label> <input id="dataform-start-date" class="text aui-date-picker"
             name="start-date" type="date" required="required" />
         </div>
-        <div class="form-group">
-          <label>End date:</label> <input id="dataform-end-date" class="text aui-date-picker"
+        <div class="field-group">
+          <label>End date</label> <input id="dataform-end-date" class="text aui-date-picker"
             name="end-date" type="date" required="required" />
         </div>
-        <div class="form-group">
-          <label>Amount (hours):</label> <input id="dataform-amount" class="text short-field"
+        <div class="field-group">
+          <label>Amount (hours)</label> <input id="dataform-amount" class="text short-field"
             name="amount" type="number" required="required" />
         </div>
-        <div class="form-group">
-          <label>Description:</label> <input id="dataform-description" class="text long-field"
+        <div class="field-group">
+          <label>Description</label> <input id="dataform-description" class="text long-field"
             name="description" type="text" />
         </div>
-        <div class="form-group">
+        <div class="field-group">
           <button id="dataform-savebutton" class="aui-button aui-button-primary"
             onclick="saveRecord();">Save</button>
         </div>
@@ -224,21 +340,38 @@ table.aui thead tr td {
     </div>
   </div>
 
+  <div id="deleteDialogTemplate" data-jira-modal-title="User Holiday Amount"
+    data-eht-text="template_ctx.renderFragment('deleteDialogTemplateBody')" style="display: none;">
+
+    <div data-eht-fragment="'deleteDialogTemplateBody'">
+      <input type="hidden" id="delete-user-holiday-amount-id" />
+      <p>Are you sure?</p>
+      <div style="text-align: center; padding-top: 2em;">
+        <button class="aui-button aui-button-primary" onclick="doDeleteHolidayAmount();">Yes</button>
+        <button class="aui-button aui-button-primary"
+          onclick="event.preventDefault();deleteDialog.hide();">No</button>
+      </div>
+    </div>
+  </div>
+
   <h2>Users</h2>
 
-  <form class="aui">
-    <div class="form-group">
-      <label for="user-selector">User: </label> <select id="filter-user-selector"
-        class="js-default-user-picker single-user-picker" name="user"></select> <label
-        for="current-checkbox">Current time ranges only:</label> <input id="current-checkbox"
-        name="showCurrentTimeRanges" type="checkbox" />
+  <form id="holiday-amount-filter-form" class="aui"
+    data-eht-attr-action="request.contextPath + request.servletPath"
+    data-eht-attr-data-jira-uri-prefix="request.contextPath" onsubmit="submitFilterForm();">
+    <div>
+      <label for="user-selector">User </label> <select id="filter-user-selector"
+        class="js-default-user-picker single-user-picker" name="userFilter"></select> <label
+        for="current-checkbox">Current time ranges only:</label> <input
+        id="filter-current-time-ranges" name="showCurrentTimeRangesFilter" type="checkbox" />
       <button class="aui-button aui-button-primary">Filter</button>
     </div>
   </form>
 
   <table id="holiday-amount-table" data-eht-fragment="'holiday-amount-table'" class="aui"
-    data-eht-attr-data-holiday-amount-user="user"
-    data-eht-attr-data-holiday-amount-currentTimeRanges="currentTimeRanges">
+    data-eht-attr-data-holiday-filter-amount-user="userFilter"
+    data-eht-attr-data-holiday-amount-filter-currentTimeRanges="currentTimeRangesFilter"
+    data-eht-attr-data-holiday-amount-page-index="pageIndex">
     <thead>
       <tr>
         <th id="holiday-amount-user-name">User</th>
@@ -251,14 +384,17 @@ table.aui thead tr td {
     </thead>
     <tbody>
       <tr data-eht-foreach="{'record' : userHolidayAmounts.resultSet}"
+        data-eht-code="avatarOwner = (!empty(record.avatarOwner)) ? record.avatarOwner : (empty(record.avatarId) ? record.userName.toLowerCase() : null); avatarUrl = request.contextPath + '/secure/useravatar?size=small' + ((!empty(record.avatarOwner)) ? '&ownerId=' + record.avatarOwner : '') + ((record.avatarId != null) ? '&avatarId=' + record.avatarId : '')"
         data-eht-attr-id="'record-' + record.userHolidayAmountId"
-        data-eht-attr-data-user-name="record.userName"
+        data-eht-attr-data-avatar-url="avatarUrl" data-eht-attr-data-user-name="record.userName"
         data-eht-attr-data-display-name="record.displayName"
         data-eht-attr-data-start-date="record.startDate"
         data-eht-attr-data-end-date="record.endDate"
         data-eht-attr-data-amount="record.amount / 3600"
-        data-eht-attr-data-description="record.description">
-        <td headers="holiday-amount-user-name" data-eht-text="record.displayName">balazs.zsoldos</td>
+        data-eht-attr-data-description="record.description" style="vertical-align: middle;">
+        <td headers="holiday-amount-user-name"><img width="24" height="24"
+          data-eht-attr-src="avatarUrl" /><span style="margin-left: 1em;"
+          data-eht-text="record.displayName">balazs.zsoldos</span></td>
         <td headers="holiday-amount-start-date" data-eht-text="record.startDate">2016-01-01</td>
         <td headers="holiday-amount-end-date" data-eht-text="record.endDate">2016-12-31</td>
         <td headers="holiday-amount-amount" data-eht-text="record.amount / 3600">320</td>
@@ -268,7 +404,8 @@ table.aui thead tr td {
           <ul class="menu">
             <li><a
               data-eht-attr-href="'javascript:openEditDialog(' + record.userHolidayAmountId + ')'">Edit</a></li>
-            <li><a href="#">Delete</a></li>
+            <li><a
+              data-eht-attr-href="'javascript:openDeleteDialog(' + record.userHolidayAmountId + ');'">Delete</a></li>
           </ul>
         </td>
       </tr>

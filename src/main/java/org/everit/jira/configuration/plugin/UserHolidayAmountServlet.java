@@ -16,6 +16,7 @@
 package org.everit.jira.configuration.plugin;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.schema.qdsl.QUserHolidayAmount;
+import org.everit.jira.configuration.plugin.util.AvatarUtil;
+import org.everit.jira.configuration.plugin.util.AvatarUtil.JoinAvatarQueryExtension;
 import org.everit.jira.configuration.plugin.util.QueryResultWithCount;
+import org.everit.jira.querydsl.schema.QAvatar;
 import org.everit.jira.querydsl.schema.QCwdUser;
 import org.everit.jira.querydsl.support.QuerydslSupport;
 import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
@@ -39,10 +43,15 @@ import org.everit.web.partialresponse.PartialResponseBuilder;
 
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.querydsl.core.types.ConstantImpl;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Coalesce;
+import com.querydsl.sql.Configuration;
 import com.querydsl.sql.SQLQuery;
+import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
 import com.querydsl.sql.dml.SQLUpdateClause;
 
@@ -53,6 +62,10 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
   public static class UserHolidayAmountDTO {
     public int amount;
+
+    public Long avatarId;
+
+    public String avatarOwner;
 
     public String description;
 
@@ -73,7 +86,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
   private static final int MILLISECS_IN_DAY = 3600 * 24 * 1000;
 
-  private static final int PAGE_SIZE = 3;
+  private static final int PAGE_SIZE = 50;
 
   private static final long serialVersionUID = 1073648466982165361L;
 
@@ -91,21 +104,44 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
         ComponentAccessor.getOSGiComponentInstanceOfType(TransactionTemplate.class);
   }
 
+  private void delete(final Long userHolidayAmountId) {
+    transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
+      Long dateRangeId = getDateRangeId(userHolidayAmountId, connection, configuration);
+
+      QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
+      new SQLDeleteClause(connection, configuration, qUserHolidayAmount)
+          .where(qUserHolidayAmount.userHolidayAmountId.eq(userHolidayAmountId)).execute();
+
+      QDateRange qDateRange = QDateRange.dateRange;
+      new SQLDeleteClause(connection, configuration, qDateRange)
+          .where(qDateRange.dateRangeId.eq(dateRangeId)).execute();
+      return null;
+    }));
+  }
+
   @Override
   protected void doGetInternal(final HttpServletRequest req, final HttpServletResponse resp,
       final Map<String, Object> vars) throws ServletException, IOException {
 
-    boolean currentTimeRanges = Boolean.valueOf(req.getParameter("showCurrentTimeRanges"));
-    String user = req.getParameter("user");
+    boolean currentTimeRangesFilter = Boolean.valueOf(req.getParameter("currentTimeRangesFilter"));
+    String userFilter = req.getParameter("userFilter");
     int pageIndex = Integer.parseInt(Objects.toString(req.getParameter("pageIndex"), "1"));
 
-    vars.put("currentTimeRanges", currentTimeRanges);
-    vars.put("user", user);
+    vars.put("currentTimeRangesFilter", currentTimeRangesFilter);
+    vars.put("userFilter", userFilter);
     vars.put("pageIndex", pageIndex);
     vars.put("pageSize", PAGE_SIZE);
-    vars.put("userHolidayAmounts", getUserHolidayAmounts(user, currentTimeRanges, pageIndex));
+    vars.put("userHolidayAmounts",
+        getUserHolidayAmounts(userFilter, currentTimeRangesFilter, pageIndex));
 
-    super.doGetInternal(req, resp, vars);
+    if ("XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
+      try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+        prb.replace("#holiday-amount-table",
+            (writer) -> pageTemplate.render(writer, vars, "holiday-amount-table"));
+      }
+    } else {
+      super.doGetInternal(req, resp, vars);
+    }
   }
 
   @Override
@@ -117,7 +153,16 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     }
 
     String action = req.getParameter("action");
+
+    if ("delete".equals(action)) {
+      Long userHolidayAmountId = Long.parseLong(req.getParameter("userholidayamount-id"));
+      delete(userHolidayAmountId);
+      renderPostAnswer(req, resp, "Record deleted");
+      return;
+    }
+
     String userParam = req.getParameter("user");
+
     String startDateParam = req.getParameter("start-date");
     String endDateParam = req.getParameter("end-date");
     String amountParam = req.getParameter("amount");
@@ -162,31 +207,32 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
     int amountInSeconds = amountInHours * 3600;
 
+    String message = null;
     if ("new".equals(action)) {
       saveNew(userId, startSqlDate, endSqlDateExcluded, amountInSeconds, description);
+      message = "New record saved";
     } else if ("edit".equals(action)) {
       update(userHolidayAmountId, userId, startSqlDate, endSqlDateExcluded, amountInSeconds,
           description);
+      message = "Record updated";
     }
 
-    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
-      renderAlertOnPrb("Record saved", "info", prb);
+    renderPostAnswer(req, resp, message);
+  }
 
-      boolean currentTimeRanges = Boolean.valueOf(req.getParameter("showCurrentTimeRanges"));
-      int pageIndex = Integer.parseInt(Objects.toString(req.getParameter("pageIndex"), "1"));
+  private Long getDateRangeId(final Long userHolidayAmountId, final Connection connection,
+      final Configuration configuration) {
 
-      Map<String, Object> vars = createCommonVars(req, resp);
-      vars.put("user", userParam);
-      vars.put("currentTimeRanges", currentTimeRanges);
-      vars.put("pageIndex", pageIndex);
-      vars.put("pageSize", PAGE_SIZE);
-      vars.put("userHolidayAmounts",
-          getUserHolidayAmounts(userParam, currentTimeRanges, pageIndex));
+    QDateRange qDateRange = QDateRange.dateRange;
+    QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
 
-      prb.replace("#holiday-amount-table", (writer) -> {
-        pageTemplate.render(writer, vars, "holiday-amount-table");
-      });
-    }
+    Long dateRangeId = new SQLQuery<Long>(connection, configuration)
+        .select(qDateRange.dateRangeId)
+        .from(qUserHolidayAmount)
+        .innerJoin(qUserHolidayAmount.fk.dateRangeFK, qDateRange)
+        .where(qUserHolidayAmount.userHolidayAmountId.eq(userHolidayAmountId))
+        .fetchOne();
+    return dateRangeId;
   }
 
   @Override
@@ -202,14 +248,23 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       QCwdUser qUser = QCwdUser.cwdUser;
       QDateRange qDateRange = QDateRange.dateRange;
       SQLQuery<UserHolidayAmountDTO> query = new SQLQuery<>(connection, configuration);
+      query.from(qUserHolidayAmount)
+          .innerJoin(qUser).on(qUserHolidayAmount.userId.eq(qUser.id))
+          .innerJoin(qDateRange).on(qUserHolidayAmount.dateRangeId.eq(qDateRange.dateRangeId));
+
+      JoinAvatarQueryExtension joinAvatarQueryExtension =
+          AvatarUtil.joinAvatarToCwdUser(query, qUser, "avatar");
+
+      Expression<Long> defaultAvatarId = ConstantImpl.create(AvatarUtil.DEFAULT_AVATAR_ID);
+      QAvatar qAvatar = joinAvatarQueryExtension.qAvatar;
+
       query
           .select(Projections.fields(UserHolidayAmountDTO.class,
               qUserHolidayAmount.userHolidayAmountId, qUser.userName, qUser.displayName,
               qDateRange.startDate, qDateRange.endDateExcluded, qUserHolidayAmount.amount,
-              qUserHolidayAmount.description))
-          .from(qUserHolidayAmount)
-          .innerJoin(qUser).on(qUserHolidayAmount.userId.eq(qUser.id))
-          .innerJoin(qDateRange).on(qUserHolidayAmount.dateRangeId.eq(qDateRange.dateRangeId));
+              qUserHolidayAmount.description,
+              new Coalesce<>(Long.class, qAvatar.id, defaultAvatarId).as("avatarId"),
+              qAvatar.owner.as("avatarOwner")));
 
       List<Predicate> predicates = new ArrayList<>();
       if (user != null) {
@@ -222,9 +277,9 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
                 .and(qDateRange.endDateExcluded.gt(currentDate)));
       }
 
-      if (!predicates.isEmpty()) {
-        query.where(predicates.toArray(new Predicate[0]));
-      }
+      predicates.add(joinAvatarQueryExtension.predicate);
+
+      query.where(predicates.toArray(new Predicate[0]));
 
       long count = query.fetchCount();
 
@@ -307,6 +362,38 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     prb.append("#aui-message-bar", (writer) -> pageTemplate.render(writer, vars, "alert"));
   }
 
+  private void renderPostAnswer(final HttpServletRequest req, final HttpServletResponse resp,
+      final String message) throws IOException {
+    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+      renderAlertOnPrb(message, "info", prb);
+
+      String userFilterParam = req.getParameter("userFilter");
+      boolean currentTimeRanges = Boolean.valueOf(req.getParameter("currentTimeRangesFilter"));
+      int pageIndex = Integer.parseInt(Objects.toString(req.getParameter("pageIndex"), "1"));
+
+      Map<String, Object> vars = createCommonVars(req, resp);
+      vars.put("userFilter", userFilterParam);
+      vars.put("currentTimeRangesFilter", currentTimeRanges);
+
+      QueryResultWithCount<UserHolidayAmountDTO> userHolidayAmounts =
+          getUserHolidayAmounts(userFilterParam, currentTimeRanges, pageIndex);
+
+      if (userHolidayAmounts.count > 0 && userHolidayAmounts.resultSet.size() == 0) {
+        pageIndex = 1;
+        userHolidayAmounts = getUserHolidayAmounts(userFilterParam, currentTimeRanges, pageIndex);
+      }
+
+      vars.put("pageIndex", pageIndex);
+      vars.put("pageSize", PAGE_SIZE);
+
+      vars.put("userHolidayAmounts", userHolidayAmounts);
+
+      prb.replace("#holiday-amount-table", (writer) -> {
+        pageTemplate.render(writer, vars, "holiday-amount-table");
+      });
+    }
+  }
+
   private void saveNew(final Long userId, final java.sql.Date startDate,
       final java.sql.Date endDateExcluded, final int amountInSeconds, final String description) {
 
@@ -339,17 +426,13 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       QDateRange qDateRange = QDateRange.dateRange;
       QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
 
-      Long dateRangeId = new SQLQuery<Long>(connection, configuration)
-          .select(qDateRange.dateRangeId)
-          .from(qUserHolidayAmount)
-          .innerJoin(qUserHolidayAmount.fk.dateRangeFK, qDateRange)
-          .where(qUserHolidayAmount.userHolidayAmountId.eq(userHolidayAmountId))
-          .fetchOne();
+      Long dateRangeId =
+          getDateRangeId(userHolidayAmountId, connection, configuration);
 
       new SQLUpdateClause(connection, configuration, qDateRange)
           .set(qDateRange.startDate, startSqlDate)
           .set(qDateRange.endDateExcluded, endSqlDateExcluded)
-          .where(qDateRange.dateRangeId.eq(dateRangeId));
+          .where(qDateRange.dateRangeId.eq(dateRangeId)).execute();
 
       new SQLUpdateClause(connection, configuration, qUserHolidayAmount)
           .set(qUserHolidayAmount.userId, userId)
