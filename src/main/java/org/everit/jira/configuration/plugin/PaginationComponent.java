@@ -24,7 +24,7 @@ import org.everit.jira.configuration.plugin.util.LocalizedTemplate;
 
 public class PaginationComponent {
 
-  private static final String TEMPLATE_BASE_PAGINATION = "META-INF/components/pagination";
+  private static final String TEMPLATE_BASE_PAGINATION = "META-INF/component/pagination";
 
   private static final LocalizedTemplate TEMPLATE_PAGINATION;
 

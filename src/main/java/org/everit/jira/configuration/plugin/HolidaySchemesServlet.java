@@ -15,12 +15,70 @@
  */
 package org.everit.jira.configuration.plugin;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.everit.jira.configuration.plugin.ManageSchemeComponent.SchemeDTO;
+import org.everit.jira.configuration.plugin.schema.qdsl.QHolidayScheme;
+import org.everit.web.partialresponse.PartialResponseBuilder;
+
+import com.querydsl.core.types.Projections;
+import com.querydsl.sql.SQLQuery;
+import com.querydsl.sql.dml.SQLDeleteClause;
+import com.querydsl.sql.dml.SQLInsertClause;
+import com.querydsl.sql.dml.SQLUpdateClause;
+
 /**
  * Managing holiday schemes.
  */
 public class HolidaySchemesServlet extends AbstractPageServlet {
 
   private static final long serialVersionUID = 1073648466982165361L;
+
+  private final ManageSchemeComponent manageSchemeComponent =
+      new ManageSchemeComponent(this::listWorkSchemes, this::saveScheme, this::updateScheme,
+          this::deleteScheme, this::applySchemeSelectionChange);
+
+  private void applySchemeSelectionChange(final Long schemeId, final PartialResponseBuilder prb,
+      final Locale locale) {
+    Map<String, Object> vars = new HashMap<>();
+    prb.replace("#holiday-schemes-tabs",
+        (writer) -> pageTemplate.render(writer, vars, locale, "holiday-schemes-tabs"));
+  }
+
+  private void deleteScheme(final long schemeId) {
+    querydslSupport.execute((connection, configuration) -> {
+      QHolidayScheme qHolidayScheme = QHolidayScheme.holidayScheme;
+      return new SQLDeleteClause(connection, configuration, qHolidayScheme)
+          .where(qHolidayScheme.holidaySchemeId.eq(schemeId)).execute();
+    });
+  }
+
+  @Override
+  protected void doGetInternal(final HttpServletRequest req, final HttpServletResponse resp,
+      final Map<String, Object> vars) throws ServletException, IOException {
+
+    vars.put("manageSchemeComponent", manageSchemeComponent);
+    vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
+    pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
+  }
+
+  @Override
+  protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
+      throws ServletException, IOException {
+
+    if (manageSchemeComponent.getSupportedActions().contains(req.getParameter("action"))) {
+      manageSchemeComponent.processAction(req, resp);
+      return;
+    }
+  }
 
   @Override
   protected String getTemplateBase() {
@@ -30,5 +88,35 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
   @Override
   protected boolean isWebSudoNecessary() {
     return true;
+  }
+
+  private Collection<SchemeDTO> listWorkSchemes() {
+    return querydslSupport.execute((connection, configuration) -> {
+      QHolidayScheme qHolidayScheme = QHolidayScheme.holidayScheme;
+      return new SQLQuery<SchemeDTO>(connection, configuration)
+          .select(Projections.fields(SchemeDTO.class, qHolidayScheme.holidaySchemeId.as("schemeId"),
+              qHolidayScheme.name_.as("name")))
+          .from(qHolidayScheme)
+          .fetch();
+    });
+  }
+
+  private long saveScheme(final String schemeName) {
+    return querydslSupport.execute((connection, configuration) -> {
+      QHolidayScheme qHolidayScheme = QHolidayScheme.holidayScheme;
+      return new SQLInsertClause(connection, configuration, qHolidayScheme)
+          .set(qHolidayScheme.name_, schemeName)
+          .executeWithKey(qHolidayScheme.holidaySchemeId);
+    });
+  }
+
+  private void updateScheme(final SchemeDTO scheme) {
+    querydslSupport.execute((connection, configuration) -> {
+      QHolidayScheme qHolidayScheme = QHolidayScheme.holidayScheme;
+      return new SQLUpdateClause(connection, configuration, qHolidayScheme)
+          .set(qHolidayScheme.name_, scheme.name)
+          .where(qHolidayScheme.holidaySchemeId.eq(scheme.schemeId))
+          .execute();
+    });
   }
 }
