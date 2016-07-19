@@ -47,7 +47,7 @@
     <label key="admin_plugins_menu.section_everit.holiday_schemes" />
     <link>/plugins/servlet/everit/holiday-schemes</link>
   </web-item>
-  
+
   <web-item key="user_holiday_amount" name="Everit User Holiday Amount" section="admin_plugins_menu/everit"
     weight="60">
     <label key="admin_plugins_menu.section_everit.user_holiday_amount" />
@@ -68,9 +68,27 @@
     key="everit-work-schemes">
     <url-pattern>/everit/work-schemes</url-pattern>
   </servlet>
-  
-    <servlet name="WorkSchemes" class="org.everit.jira.configuration.plugin.UserHolidayAmountServlet"
+
+  <servlet name="WorkSchemes" class="org.everit.jira.configuration.plugin.UserHolidayAmountServlet"
     key="everit-user-holiday-amount">
     <url-pattern>/everit/user-holiday-amount</url-pattern>
   </servlet>
+
+  <web-resource name="Everit Jira Manage Scheme" key="manage-schemes">
+    <resource name="manage-schemes.js" type="download"
+      location="META-INF/webresource/js/manage-schemes.js" />
+    <context>org.everit.jira.configuration</context>
+  </web-resource>
+  
+  <web-resource name="Everit Jira Configuration Common" key="common">
+    <resource name="common.js" type="download"
+      location="META-INF/webresource/js/common.js" />
+    <context>org.everit.jira.configuration</context>
+  </web-resource>
+  
+   <web-resource name="Everit Jira Configuration AreYouSure" key="are-you-sure">
+    <resource name="are-you-sure.js" type="download"
+      location="META-INF/webresource/js/are-you-sure.js" />
+    <context>org.everit.jira.configuration</context>
+  </web-resource>
 </atlassian-plugin>

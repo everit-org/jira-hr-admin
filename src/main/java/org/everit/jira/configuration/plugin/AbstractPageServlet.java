@@ -16,7 +16,6 @@
 package org.everit.jira.configuration.plugin;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,16 +24,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
-import org.everit.expression.ExpressionCompiler;
-import org.everit.expression.ParserConfiguration;
-import org.everit.expression.jexl.JexlExpressionCompiler;
-import org.everit.jira.configuration.plugin.util.TemplatingUtil;
-import org.everit.templating.CompiledTemplate;
-import org.everit.templating.TemplateCompiler;
-import org.everit.templating.html.HTMLTemplateCompiler;
+import org.everit.jira.configuration.plugin.util.LocalizedTemplate;
+import org.everit.jira.querydsl.support.QuerydslSupport;
+import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
 
 import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.atlassian.sal.api.websudo.WebSudoManager;
 
 /**
@@ -44,23 +39,26 @@ public abstract class AbstractPageServlet extends HttpServlet {
 
   private static final long serialVersionUID = -3661512830445457663L;
 
-  protected final CompiledTemplate pageTemplate;
+  protected final LocalizedTemplate pageTemplate;
+
+  protected final QuerydslSupport querydslSupport;
+
+  protected final TransactionTemplate transactionTemplate;
 
   /**
    * Initializes the compiled page template.
    */
   public AbstractPageServlet() {
-    ExpressionCompiler expressionCompiler = new JexlExpressionCompiler();
-    TemplateCompiler htmlTemplateCompiler = new HTMLTemplateCompiler(expressionCompiler);
-
     try {
-      ClassLoader classLoader = this.getClass().getClassLoader();
-      pageTemplate = htmlTemplateCompiler.compile(IOUtils
-          .toString(classLoader.getResource(getTemplateBase() + ".html"), "UTF8"),
-          new ParserConfiguration(classLoader));
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+      querydslSupport = new QuerydslSupportImpl();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+    transactionTemplate =
+        ComponentAccessor.getOSGiComponentInstanceOfType(TransactionTemplate.class);
+
+    ClassLoader classLoader = this.getClass().getClassLoader();
+    pageTemplate = new LocalizedTemplate(getTemplateBase(), classLoader);
   }
 
   protected boolean checkWebSudo(final HttpServletRequest req, final HttpServletResponse resp) {
@@ -84,11 +82,7 @@ public abstract class AbstractPageServlet extends HttpServlet {
     Map<String, Object> vars = new HashMap<String, Object>();
     vars.put("webResourceManager", webResourceManager);
     vars.put("request", req);
-    vars.put("commonTemplates", new CommonTemplates());
     vars.put("response", resp);
-    vars.put("messages",
-        TemplatingUtil.getMessages(getTemplateBase(), this.getClass().getClassLoader(),
-            resp.getLocale()));
     return vars;
   }
 
@@ -107,7 +101,7 @@ public abstract class AbstractPageServlet extends HttpServlet {
   protected void doGetInternal(final HttpServletRequest req, final HttpServletResponse resp,
       final Map<String, Object> vars) throws ServletException, IOException {
 
-    pageTemplate.render(resp.getWriter(), vars);
+    pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
   }
 
   protected abstract String getTemplateBase();

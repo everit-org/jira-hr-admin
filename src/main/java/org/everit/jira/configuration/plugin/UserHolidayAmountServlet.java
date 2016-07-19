@@ -21,8 +21,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -37,12 +37,8 @@ import org.everit.jira.configuration.plugin.util.AvatarUtil.JoinAvatarQueryExten
 import org.everit.jira.configuration.plugin.util.QueryResultWithCount;
 import org.everit.jira.querydsl.schema.QAvatar;
 import org.everit.jira.querydsl.schema.QCwdUser;
-import org.everit.jira.querydsl.support.QuerydslSupport;
-import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
-import com.atlassian.jira.component.ComponentAccessor;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
@@ -88,20 +84,19 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
   private static final int PAGE_SIZE = 50;
 
+  private static final PaginationComponent PAGINATION_TEMPLATE =
+      new PaginationComponent("holidayAmountPageSwitch");
+
   private static final long serialVersionUID = 1073648466982165361L;
 
-  private final QuerydslSupport querydslSupport;
+  @Override
+  protected Map<String, Object> createCommonVars(final HttpServletRequest req,
+      final HttpServletResponse resp)
+      throws IOException {
 
-  private final TransactionTemplate transactionTemplate;
-
-  public UserHolidayAmountServlet() {
-    try {
-      querydslSupport = new QuerydslSupportImpl();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    transactionTemplate =
-        ComponentAccessor.getOSGiComponentInstanceOfType(TransactionTemplate.class);
+    Map<String, Object> commonVars = super.createCommonVars(req, resp);
+    commonVars.put("paginationTemplate", PAGINATION_TEMPLATE);
+    return commonVars;
   }
 
   private void delete(final Long userHolidayAmountId) {
@@ -137,7 +132,8 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     if ("XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
       try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
         prb.replace("#holiday-amount-table",
-            (writer) -> pageTemplate.render(writer, vars, "holiday-amount-table"));
+            (writer) -> pageTemplate.render(writer, vars, resp.getLocale(),
+                "holiday-amount-table"));
       }
     } else {
       super.doGetInternal(req, resp, vars);
@@ -347,25 +343,24 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
   }
 
   private void renderAlert(final String message, final String alertType,
-      final HttpServletRequest req,
-      final HttpServletResponse resp) {
+      final HttpServletRequest req, final HttpServletResponse resp) {
+
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
-      renderAlertOnPrb(message, alertType, prb);
+      renderAlertOnPrb(message, alertType, prb, resp.getLocale());
     }
   }
 
   private void renderAlertOnPrb(final String message, final String alertType,
-      final PartialResponseBuilder prb) {
-    Map<String, Object> vars = new HashMap<>();
-    vars.put("alertType", alertType);
-    vars.put("alertMessage", message);
-    prb.append("#aui-message-bar", (writer) -> pageTemplate.render(writer, vars, "alert"));
+      final PartialResponseBuilder prb, final Locale locale) {
+
+    prb.append("#aui-message-bar",
+        (writer) -> AlertComponent.INSTANCE.render(writer, message, alertType, locale));
   }
 
   private void renderPostAnswer(final HttpServletRequest req, final HttpServletResponse resp,
       final String message) throws IOException {
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
-      renderAlertOnPrb(message, "info", prb);
+      renderAlertOnPrb(message, "info", prb, resp.getLocale());
 
       String userFilterParam = req.getParameter("userFilter");
       boolean currentTimeRanges = Boolean.valueOf(req.getParameter("currentTimeRangesFilter"));
@@ -389,7 +384,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       vars.put("userHolidayAmounts", userHolidayAmounts);
 
       prb.replace("#holiday-amount-table", (writer) -> {
-        pageTemplate.render(writer, vars, "holiday-amount-table");
+        pageTemplate.render(writer, vars, resp.getLocale(), "holiday-amount-table");
       });
     }
   }

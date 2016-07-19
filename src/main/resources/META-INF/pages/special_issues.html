@@ -26,34 +26,12 @@
 <script data-eht-text="webResourceManager.requireResource('jira.webresources:calendar')"
   data-eht-render="'content'"></script>
 <script
+  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration:common')"
+  data-eht-render="'content'"></script>
+<script
   data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
   data-eht-render="'content'"></script>
 <script type="text/javascript">
-  var processRuntimeAlerts = function() {
-    $('.everit-jira-runtimealert').each(function() {
-      var thisObj = $(this);
-      var alertType = thisObj.attr('data-everit-jira-alert-type');
-      var alertMessage = thisObj.attr('data-everit-jira-alert-message');
-      thisObj.remove();
-      if (alertType == 'info') {
-        AJS.messages.generic({
-          body : alertMessage
-        });
-      } else if (alertType == 'error') {
-        AJS.messages.error({
-          body : alertMessage
-        });
-      }
-    });
-  }
-
-  if (!$.parseHTML) {
-    $.parseHTML = function(str) {
-      var tmp = document.implementation.createHTMLDocument();
-      tmp.body.innerHTML = str;
-      return tmp.body.children;
-    }
-  }
   $(function() {
     var formSubmitInProgress = false;
     AJS.$("#specialElementsForm").submit(function(event) {
@@ -95,10 +73,6 @@
     <input type="hidden" name="action" value="save" />
     <h3>Holiday issues</h3>
     <div id="specialIssuesFormBody" data-eht-fragment="'specialIssuesFormBody'">
-      <everit-jira-alert class="everit-jira-runtimealert" data-eht-fragment="'alert'"
-        data-eht-render="template_ctx.fragmentId == 'alert'"
-        data-eht-attr-data-everit-jira-alert-type="alertType"
-        data-eht-attr-data-everit-jira-alert-message="alertMessage" />
       <div class="form-group">
         <label>Issues:</label> <input id="holidayIssuesInput" type="text" name="holidayIssues"
           class="text long-field" data-eht-attr-value="holidayIssues" />

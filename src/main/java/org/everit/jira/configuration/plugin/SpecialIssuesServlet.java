@@ -35,12 +35,8 @@ import org.everit.jira.configuration.plugin.schema.qdsl.QSpecialIssue;
 import org.everit.jira.configuration.plugin.schema.qdsl.QSpecialProject;
 import org.everit.jira.querydsl.schema.QJiraissue;
 import org.everit.jira.querydsl.schema.QProject;
-import org.everit.jira.querydsl.support.QuerydslSupport;
-import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
-import com.atlassian.jira.component.ComponentAccessor;
-import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.sql.SQLQuery;
@@ -53,20 +49,6 @@ import com.querydsl.sql.dml.SQLInsertClause;
 public class SpecialIssuesServlet extends AbstractPageServlet {
 
   private static final long serialVersionUID = -4733879091733857960L;
-
-  private final QuerydslSupport querydslSupport;
-
-  private final TransactionTemplate transactionTemplate;
-
-  public SpecialIssuesServlet() {
-    try {
-      querydslSupport = new QuerydslSupportImpl();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    transactionTemplate =
-        ComponentAccessor.getOSGiComponentInstanceOfType(TransactionTemplate.class);
-  }
 
   private void addInputDbContentsToVars(final Map<String, Object> vars) {
     Map<String, Collection<String>> specialIssues = querySpecialIssues();
@@ -140,7 +122,7 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
       addInputDbContentsToVars(vars);
     }
 
-    pageTemplate.render(resp.getWriter(), vars);
+    pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
   }
 
   @Override
@@ -177,14 +159,12 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
         Map<String, Object> vars = createCommonVars(req, resp);
         addInputDbContentsToVars(vars);
 
-        prb.replace("#specialIssuesFormBody", (writer) -> {
-          pageTemplate.render(writer, vars, "specialIssuesFormBody");
-        });
-        prb.append("#specialIssuesFormBody", (writer) -> {
-          vars.put("alertType", "info");
-          vars.put("alertMessage", "Saving changes successful");
-          pageTemplate.render(writer, vars, "alert");
-        });
+        prb.replace("#specialIssuesFormBody",
+            (writer) -> pageTemplate.render(writer, vars, resp.getLocale(),
+                "specialIssuesFormBody"));
+
+        prb.append("#specialIssuesFormBody", (writer) -> AlertComponent.INSTANCE
+            .render(writer, "Saving changes successful", "info", resp.getLocale()));
       }
     } else {
       doGet(req, resp);
@@ -259,13 +239,11 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
       final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
 
     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    PartialResponseBuilder prb = new PartialResponseBuilder(resp);
-    Map<String, Object> vars = createCommonVars(req, resp);
-    vars.put("alertType", "error");
-    vars.put("alertMessage", messageKey + ": " + targetObjectKey);
-    prb.append("#specialIssuesFormBody",
-        (writer) -> pageTemplate.render(writer, vars, "alert"));
-    prb.close();
+    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+      prb.append("#specialIssuesFormBody",
+          (writer) -> AlertComponent.INSTANCE.render(writer, messageKey + ": " + targetObjectKey,
+              "error", resp.getLocale()));
+    }
   }
 
   private Collection<Long> resolveIssueIds(final String issuesString) {

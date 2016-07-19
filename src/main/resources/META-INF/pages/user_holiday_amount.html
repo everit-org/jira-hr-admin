@@ -37,64 +37,13 @@ table.aui thead tr td {
 <script
   data-eht-text="webResourceManager.requireResource('com.atlassian.auiplugin:aui-date-picker')"
   data-eht-render="'content'"></script>
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:common')"
+  data-eht-render="'content'"></script>
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
+  data-eht-render="'content'"></script>
 <script type="text/javascript">
-  var processRuntimeAlerts = function() {
-    $('.everit-jira-runtimealert').each(function() {
-      var thisObj = $(this);
-      var alertType = thisObj.attr('data-everit-jira-alert-type');
-      var alertMessage = thisObj.attr('data-everit-jira-alert-message');
-      thisObj.remove();
-      if (alertType == 'info') {
-        AJS.messages.generic({
-          body : alertMessage
-        });
-      } else if (alertType == 'error') {
-        AJS.messages.error({
-          body : alertMessage
-        });
-      }
-    });
-  }
-
-  if (!$.parseHTML) {
-    $.parseHTML = function(str) {
-      var tmp = document.implementation.createHTMLDocument();
-      tmp.body.innerHTML = str;
-      return tmp.body.children;
-    }
-  }
-
-  var ajsDialogFromTemplate = function(templateElementSelector, configuration) {
-    var dialog = new AJS.Dialog(configuration);
-    var template = $(templateElementSelector);
-
-    dialog.addHeader(template.attr('data-jira-modal-title'));
-    dialog.addPanel("Panel", template.text(), "panel-body");
-
-    template.remove();
-    var dialogId = configuration["id"];
-
-    AJS.$('#' + dialogId + ' .aui-date-picker').each(function() {
-      new AJS.DatePicker(this, {
-        'overrideBrowserDefault' : true
-      });
-    });
-
-    JIRA.trigger(JIRA.Events.NEW_CONTENT_ADDED, [ $('#' + dialogId) ]);
-
-    var dialogElementObj = $('#' + dialogId);
-    dialogElementObj.find('select.aui-ss-select').each(function() {
-      var thisObj = $(this);
-      var thisObjRequired = thisObj.prop('required');
-      if (thisObjRequired) {
-        thisObj.prop('required', false);
-        $('#' + thisObj.prop('id') + '-field').prop('required', true);
-      }
-    });
-
-    return dialog;
-  }
-
   var createFormDataWithSearchFields = function() {
     var table = $("#holiday-amount-table");
     var userFilter = table.attr("data-holiday-amount-filter-user");
@@ -293,16 +242,10 @@ table.aui thead tr td {
     });
   }
 </script>
-<script
-  data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
-  data-eht-render="'content'"></script>
 </head>
 <body>
   <div id="aui-message-bar" style="position: fixed; z-index: 3005; top: 0; left: 0; width: 100%;">
-    <everit-jira-alert class="everit-jira-runtimealert" data-eht-fragment="'alert'"
-      data-eht-render="template_ctx.fragmentId == 'alert'"
-      data-eht-attr-data-everit-jira-alert-type="alertType"
-      data-eht-attr-data-everit-jira-alert-message="alertMessage" />
+
   </div>
   <div id="editDialogTemplate" data-jira-modal-title="User Holiday Amount"
     data-eht-text="template_ctx.renderFragment('editDialogTemplateBody')" style="display: none;">
@@ -418,7 +361,7 @@ table.aui thead tr td {
       data-eht-render="pageCount > 1">
       <tr>
         <td colspan="6" style="text-align: center;"
-          data-eht-utext="commonTemplates.renderPagination(pageIndex, pageCount, 'holidayAmountPageSwitch', response.locale)">
+          data-eht-utext="paginationTemplate.renderPagination(pageIndex, pageCount, response.locale)">
         </td>
       </tr>
     </tfoot>

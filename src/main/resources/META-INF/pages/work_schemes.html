@@ -24,29 +24,35 @@
 <script
   data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
   data-eht-render="'content'"></script>
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:common')"
+  data-eht-render="'content'"></script>
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:manage-schemes')"
+  data-eht-render="'content'"></script>
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:are-you-sure')"
+  data-eht-render="'content'"></script>
 <style type="text/css">
 .everit-tabs .tabs-pane {
     padding-top: 2em;
 }
+
 table.aui thead tr td {
-  font-weight: bold;
+    font-weight: bold;
 }
 </style>
 </head>
 <body>
-  <form class="aui">
-    <label for="working_scheme_selector">Work Scheme: </label> <select
-      id="working_scheme_selector" class="select">
-      <option value="0" selected="selected">Weekdays</option>
-      <option value="0" selected="selected">Weekdays with short Friday</option>
-      <option value="1">Double shift</option>
-      <option value="2">Triple shift</option>
-    </select>
+  <div data-eht-utext="areYouSureDialogComponent.render(response.locale)"></div>
+  <div id="aui-message-bar" style="position: fixed; z-index: 3005; top: 0; left: 0; width: 100%;">
 
-    <button class="aui-button">Edit</button>
-    <button class="aui-button">New</button>
-  </form>
-  <div class="aui-tabs horizontal-tabs everit-tabs">
+  </div>
+
+  <div data-eht-utext="manageSchemeComponent.render(request, response.locale)"></div>
+
+  <div id="work-schemes-tabs" data-eht-fragment="'work-schemes-tabs'"
+    class="aui-tabs horizontal-tabs everit-tabs">
     <ul class="tabs-menu">
       <li class="menu-item active-tab"><a href="#tab-regular">Regular Work Times</a></li>
       <li class="menu-item"><a href="#tab-exact-dates">Exact Times</a></li>
@@ -155,8 +161,9 @@ table.aui thead tr td {
         <div class="form-group">
           <label for="user-selector">User: </label> <select id="user-selector"
             class="js-default-user-picker single-user-picker" name="user"></select> <label
-            for="current-checkbox">Current time ranges only:</label> <input id="current-checkbox" type="checkbox" />
-            <button class="aui-button aui-button-primary">Filter</button>
+            for="current-checkbox">Current time ranges only:</label> <input id="current-checkbox"
+            type="checkbox" />
+          <button class="aui-button aui-button-primary">Filter</button>
         </div>
       </form>
 

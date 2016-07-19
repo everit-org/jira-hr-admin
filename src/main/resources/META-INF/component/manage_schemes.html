@@ -1,0 +1,50 @@
+<!--
+
+    Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
+<div data-eht-fragment="'body'">
+  <form id="scheme-selector-form" data-eht-fragment="'scheme-selector-form'" class="aui">
+    <label for="scheme-selector">Scheme: </label> <select
+      id="scheme-selector" data-eht-fragment="'scheme-selector'" class="select" onchange="handleClientSchemeChange();">
+      <option value="" data-eht-attr-selected="(empty(selectedSchemeId)) ? 'selected' : null">(Please
+        select)</option>
+      <option data-eht-foreach="{'scheme' : schemeCollection}" data-eht-attr-value="scheme.schemeId"
+        data-eht-text="scheme.name"
+        data-eht-attr-selected="(selectedSchemeId == scheme.schemeId) ? 'selected' : null">Weekdays</option>
+    </select>
+
+    <button id="scheme-edit-button" class="aui-button" onclick="openEditSchemeDialog();" data-eht-attr-disabled="(empty(selectedSchemeId)) ? 'disabled' : null">Edit</button>
+    <button id="scheme-delete-button" class="aui-button" onclick="areYouSureDialog.show(deleteScheme);" data-eht-attr-disabled="(empty(selectedSchemeId)) ? 'disabled' : null">Delete</button>
+    <button class="aui-button" onclick="openNewSchemeDialog();">New</button>
+  </form>
+
+  <div id="schemeDataDialog" data-jira-modal-title="Edit Scheme"
+    data-eht-text="template_ctx.renderFragment('schemeDataDialogBody')" style="display: none;">
+
+    <div data-eht-fragment="'schemeDataDialogBody'">
+      <form class="aui" action="#">
+        <input type="hidden" id="scheme-id-input" />
+        <div class="field-group">
+          <label for="scheme-name-input">Name</label><input id="scheme-name-input" class="text" />
+          <button class="aui-button aui-button-primary" onclick="saveScheme();">Save</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+</div>
