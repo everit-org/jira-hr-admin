@@ -24,16 +24,9 @@ import org.everit.jira.querydsl.support.QuerydslSupport;
 import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
 
 import com.querydsl.core.types.Path;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.sql.SQLQuery;
 
 public class AvatarUtil {
-
-  public static class JoinAvatarQueryExtension {
-    public Predicate predicate;
-
-    public QAvatar qAvatar;
-  }
 
   public static final long DEFAULT_AVATAR_ID;
 
@@ -50,7 +43,7 @@ public class AvatarUtil {
     }
   }
 
-  public static JoinAvatarQueryExtension joinAvatarToCwdUser(final SQLQuery<?> query,
+  public static QAvatar joinAvatarToCwdUser(final SQLQuery<?> query,
       final QCwdUser qCwdUser, final String variablePrefix) {
 
     QAppUser qAppUser = new QAppUser(resolveVariableName(QAppUser.appUser, variablePrefix));
@@ -63,17 +56,13 @@ public class AvatarUtil {
 
     QAvatar qAvatar = new QAvatar(resolveVariableName(QAvatar.avatar, variablePrefix));
 
-    query.join(qAppUser).on(qCwdUser.lowerUserName.eq(qAppUser.lowerUserName))
-        .leftJoin(qPropertyEntry).on(qPropertyEntry.entityId.eq(qAppUser.id))
+    query.innerJoin(qAppUser).on(qCwdUser.lowerUserName.eq(qAppUser.lowerUserName))
+        .leftJoin(qPropertyEntry).on(qPropertyEntry.entityId.eq(qAppUser.id)
+            .and(qPropertyEntry.propertyKey.eq("user.avatar.id")))
         .leftJoin(qPropertyNumber).on(qPropertyEntry.id.eq(qPropertyNumber.id))
         .leftJoin(qAvatar).on(qAvatar.id.eq(qPropertyNumber.propertyvalue));
 
-    JoinAvatarQueryExtension result = new JoinAvatarQueryExtension();
-    result.qAvatar = qAvatar;
-    result.predicate =
-        qPropertyEntry.propertyKey.eq("user.avatar.id").or(qPropertyEntry.id.isNull());
-
-    return result;
+    return qAvatar;
   }
 
   private static String resolveVariableName(final Path<?> path, final String variablePrefix) {

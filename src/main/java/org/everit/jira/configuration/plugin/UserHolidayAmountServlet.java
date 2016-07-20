@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.schema.qdsl.QUserHolidayAmount;
 import org.everit.jira.configuration.plugin.util.AvatarUtil;
-import org.everit.jira.configuration.plugin.util.AvatarUtil.JoinAvatarQueryExtension;
 import org.everit.jira.configuration.plugin.util.QueryResultWithCount;
 import org.everit.jira.querydsl.schema.QAvatar;
 import org.everit.jira.querydsl.schema.QCwdUser;
@@ -84,8 +83,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
   private static final int PAGE_SIZE = 50;
 
-  private static final PaginationComponent PAGINATION_TEMPLATE =
-      new PaginationComponent("holidayAmountPageSwitch");
+  private static final PaginationComponent PAGINATION_TEMPLATE = new PaginationComponent();
 
   private static final long serialVersionUID = 1073648466982165361L;
 
@@ -95,7 +93,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       throws IOException {
 
     Map<String, Object> commonVars = super.createCommonVars(req, resp);
-    commonVars.put("paginationTemplate", PAGINATION_TEMPLATE);
+    commonVars.put("pagination", PAGINATION_TEMPLATE);
     return commonVars;
   }
 
@@ -248,11 +246,9 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
           .innerJoin(qUser).on(qUserHolidayAmount.userId.eq(qUser.id))
           .innerJoin(qDateRange).on(qUserHolidayAmount.dateRangeId.eq(qDateRange.dateRangeId));
 
-      JoinAvatarQueryExtension joinAvatarQueryExtension =
-          AvatarUtil.joinAvatarToCwdUser(query, qUser, "avatar");
+      QAvatar qAvatar = AvatarUtil.joinAvatarToCwdUser(query, qUser, "avatar");
 
       Expression<Long> defaultAvatarId = ConstantImpl.create(AvatarUtil.DEFAULT_AVATAR_ID);
-      QAvatar qAvatar = joinAvatarQueryExtension.qAvatar;
 
       query
           .select(Projections.fields(UserHolidayAmountDTO.class,
@@ -272,8 +268,6 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
             qDateRange.startDate.loe(currentDate)
                 .and(qDateRange.endDateExcluded.gt(currentDate)));
       }
-
-      predicates.add(joinAvatarQueryExtension.predicate);
 
       query.where(predicates.toArray(new Predicate[0]));
 

@@ -27,7 +27,7 @@ function AreYouSureDialog() {
   });
   
   
-  this.show = function(yesHandler) {
+  this.show = function(yesHandler, event) {
     if (event) {
       event.preventDefault();
     }
@@ -35,7 +35,7 @@ function AreYouSureDialog() {
     _dialog.show();
   }
   
-  this._handleYes = function() {
+  this._handleYes = function(event) {
     event.preventDefault();
     if (_yesHandler) {
       _yesHandler();
@@ -43,7 +43,7 @@ function AreYouSureDialog() {
     _dialog.hide();
   }
   
-  this._handleNo = function() {
+  this._handleNo = function(event) {
     event.preventDefault();
     _dialog.hide();
   }

@@ -27,9 +27,9 @@
         data-eht-attr-selected="(selectedSchemeId == scheme.schemeId) ? 'selected' : null">Weekdays</option>
     </select>
 
-    <button id="scheme-edit-button" class="aui-button" onclick="openEditSchemeDialog();" data-eht-attr-disabled="(empty(selectedSchemeId)) ? 'disabled' : null">Edit</button>
-    <button id="scheme-delete-button" class="aui-button" onclick="areYouSureDialog.show(deleteScheme);" data-eht-attr-disabled="(empty(selectedSchemeId)) ? 'disabled' : null">Delete</button>
-    <button class="aui-button" onclick="openNewSchemeDialog();">New</button>
+    <button id="scheme-edit-button" class="aui-button" onclick="openEditSchemeDialog(event);" data-eht-attr-disabled="(empty(selectedSchemeId)) ? 'disabled' : null">Edit</button>
+    <button id="scheme-delete-button" class="aui-button" onclick="areYouSureDialog.show(deleteScheme, event);" data-eht-attr-disabled="(empty(selectedSchemeId)) ? 'disabled' : null">Delete</button>
+    <button class="aui-button" onclick="openNewSchemeDialog(event);">New</button>
   </form>
 
   <div id="schemeDataDialog" data-jira-modal-title="Edit Scheme"
@@ -40,7 +40,7 @@
         <input type="hidden" id="scheme-id-input" />
         <div class="field-group">
           <label for="scheme-name-input">Name</label><input id="scheme-name-input" class="text" />
-          <button class="aui-button aui-button-primary" onclick="saveScheme();">Save</button>
+          <button class="aui-button aui-button-primary" onclick="saveScheme(event);">Save</button>
         </div>
       </form>
     </div>

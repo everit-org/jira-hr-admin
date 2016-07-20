@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.util.AvatarUtil;
-import org.everit.jira.configuration.plugin.util.AvatarUtil.JoinAvatarQueryExtension;
 import org.everit.jira.configuration.plugin.util.LocalizedTemplate;
 import org.everit.jira.configuration.plugin.util.QueryResultWithCount;
+import org.everit.jira.querydsl.schema.QAvatar;
 import org.everit.jira.querydsl.schema.QCwdUser;
 import org.everit.jira.querydsl.support.QuerydslSupport;
 import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
@@ -103,12 +103,10 @@ public class SchemeUsersComponent {
           .on(qDateRange.dateRangeId.eq(qUserSchemeEntityParameter.dateRangeId))
           .innerJoin(qCwdUser).on(qCwdUser.id.eq(qUserSchemeEntityParameter.userId));
 
-      JoinAvatarQueryExtension avatarQueryExtension =
-          AvatarUtil.joinAvatarToCwdUser(query, qCwdUser, "avatar");
+      QAvatar qAvatar = AvatarUtil.joinAvatarToCwdUser(query, qCwdUser, "avatar");
 
       List<Predicate> predicates = new ArrayList<>();
       predicates.add(qUserSchemeEntityParameter.schemeId.eq(schemeId));
-      predicates.add(avatarQueryExtension.predicate);
 
       if (currentTimeRanges) {
         java.sql.Date currentDate = new java.sql.Date(new java.util.Date().getTime());
@@ -124,8 +122,7 @@ public class SchemeUsersComponent {
       query.select(Projections.fields(SchemeUserDTO.class,
           qUserSchemeEntityParameter.userSchemeId.as("userSchemeId"), qDateRange.dateRangeId,
           qCwdUser.userName, userDisplayNameExpression, qDateRange.startDate),
-          qDateRange.endDateExcluded, avatarQueryExtension.qAvatar.id.as("avatarId"),
-          avatarQueryExtension.qAvatar.owner.as("avatarOwner"));
+          qDateRange.endDateExcluded, qAvatar.id.as("avatarId"), qAvatar.owner.as("avatarOwner"));
 
       query.where(predicates.toArray(new Predicate[0]));
 

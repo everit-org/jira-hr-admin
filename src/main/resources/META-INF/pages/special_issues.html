@@ -25,51 +25,45 @@
   data-eht-render="'content'"></script>
 <script data-eht-text="webResourceManager.requireResource('jira.webresources:calendar')"
   data-eht-render="'content'"></script>
-<script
-  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration:common')"
+<script data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:common')"
   data-eht-render="'content'"></script>
 <script
   data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
   data-eht-render="'content'"></script>
 <script type="text/javascript">
-  $(function() {
-    var formSubmitInProgress = false;
-    AJS.$("#specialElementsForm").submit(function(event) {
-      var formdata = {
-        'holidayIssues' : $('#holidayIssuesInput').val(),
-        'holidayProjects' : $('#holidayProjectsInput').val(),
-        'nonWorkingIssues' : $('#nonWorkingIssuesInput').val(),
-        'nonWorkingProjects' : $('#nonWorkingProjectsInput').val(),
-        'action' : 'save'
-      };
-      event.preventDefault();
-      if (formSubmitInProgress) {
-        return;
-      }
-      AJS.$('#specialElementsSubmitButton').spin();
-      $.ajax({
-        url : '#',
-        type : 'POST',
-        data : formdata
-      }).success(function(content) {
-        everit.partialresponse.process(content);
-        processRuntimeAlerts();
-      }).error(function(resp) {
-        if (resp.status == 400) {
+  var saveSpecialElements = function(event) {
+    event.preventDefault();
+    var formdata = {
+      'holidayIssues' : $('#holidayIssuesInput').val(),
+      'holidayProjects' : $('#holidayProjectsInput').val(),
+      'nonWorkingIssues' : $('#nonWorkingIssuesInput').val(),
+      'nonWorkingProjects' : $('#nonWorkingProjectsInput').val(),
+      'action' : 'save'
+    };
+    AJS.$('#specialElementsSubmitButton').spin();
+    $.ajax({
+      url : '#',
+      type : 'POST',
+      data : formdata
+    }).success(function(content) {
+      everit.partialresponse.process(content);
+      processRuntimeAlerts();
+    }).error(function(resp) {
+      if (resp.status == 400) {
         everit.partialresponse.process(resp.responseText);
         processRuntimeAlerts();
-        }
-      }).complete(function() {
-        $('#specialElementsSubmitButton').spinStop();
-      });
+      }
+    }).complete(function() {
+      $('#specialElementsSubmitButton').spinStop();
     });
-  });
+  };
 </script>
 </head>
 <body>
   <div id="aui-message-bar"></div>
   <h2>Special Issues</h2>
-  <form id="specialElementsForm" action="" class="aui" method="post">
+  <form id="specialElementsForm" action="" class="aui" method="post"
+    onsubmit="saveSpecialElements(event);">
     <input type="hidden" name="action" value="save" />
     <h3>Holiday issues</h3>
     <div id="specialIssuesFormBody" data-eht-fragment="'specialIssuesFormBody'">

@@ -25,14 +25,14 @@ $(function() {
   });
 });
 
-var openNewSchemeDialog = function() {
+var openNewSchemeDialog = function(event) {
   event.preventDefault();
   $("#scheme-id-input").val("");
   $("#scheme-name-input").val("");
   schemeDataDialog.show();
 }
 
-var openEditSchemeDialog = function() {
+var openEditSchemeDialog = function(event) {
   event.preventDefault();
 
   var schemeId = $("#scheme-selector").prop("value");
@@ -43,7 +43,6 @@ var openEditSchemeDialog = function() {
 }
 
 var saveNewScheme = function() {
-  event.preventDefault();
   var schemeName = $("#scheme-name-input").val();
   $.ajax({
     url : '#',
@@ -60,7 +59,6 @@ var saveNewScheme = function() {
 }
 
 var updateScheme = function() {
-  event.preventDefault();
   var schemeId = $("#scheme-id-input").val();
   var schemeName = $("#scheme-name-input").val();
   $.ajax({
@@ -78,7 +76,8 @@ var updateScheme = function() {
   })
 }
 
-var saveScheme = function() {
+var saveScheme = function(event) {
+  event.preventDefault();
   var schemeId = $("#scheme-id-input").val();
   
   if (schemeId == "") {

@@ -33,19 +33,14 @@ public class PaginationComponent {
     TEMPLATE_PAGINATION = new LocalizedTemplate(TEMPLATE_BASE_PAGINATION, classLoader);
   }
 
-  private final String pageSwitchJavascriptFunction;
-
-  public PaginationComponent(final String pageSwitchJavascriptFunction) {
-    this.pageSwitchJavascriptFunction = pageSwitchJavascriptFunction;
-  }
-
-  public String renderPagination(final int currentPage, final int pageCount, final Locale locale) {
+  public String render(final int pageIndex, final int pageCount,
+      final String pageSwitchJavascriptFunction, final Locale locale) {
     Map<String, Object> vars = new HashMap<>();
-    vars.put("currentPage", currentPage);
+    vars.put("currentPage", pageIndex);
     vars.put("pageCount", pageCount);
 
-    int firstSelectablePage = currentPage;
-    int lastSelectablePage = currentPage;
+    int firstSelectablePage = pageIndex;
+    int lastSelectablePage = pageIndex;
 
     final int maxSelectablePageCount = 5;
     int i = maxSelectablePageCount - 1;

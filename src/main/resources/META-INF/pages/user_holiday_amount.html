@@ -157,7 +157,7 @@ table.aui thead tr td {
     })
   }
 
-  var saveRecord = function() {
+  var saveRecord = function(event) {
     var editDialogObj = $('new-user-holiday-amount-dialog');
     var form = $('#dataForm')[0];
     var formValid = form.checkValidity();
@@ -196,7 +196,7 @@ table.aui thead tr td {
     });
   }
 
-  var submitFilterForm = function() {
+  var submitFilterForm = function(event) {
     var userFilter = $("#filter-user-selector").val();
     var currentTimeRangesFilter = $("#filter-current-time-ranges").prop(
         "checked");
@@ -224,12 +224,13 @@ table.aui thead tr td {
     $("#delete-user-holiday-amount-id").val(userHolidayAmountId);
     deleteDialog.show();
   }
-  var doDeleteHolidayAmount = function() {
+  var doDeleteHolidayAmount = function(event) {
     event.preventDefault();
 
     var formdata = createFormDataWithSearchFields();
     formdata['action'] = 'delete';
-    formdata['userholidayamount-id'] = $("#delete-user-holiday-amount-id").val();
+    formdata['userholidayamount-id'] = $("#delete-user-holiday-amount-id")
+        .val();
 
     $.ajax({
       url : '#',
@@ -277,7 +278,7 @@ table.aui thead tr td {
         </div>
         <div class="field-group">
           <button id="dataform-savebutton" class="aui-button aui-button-primary"
-            onclick="saveRecord();">Save</button>
+            onclick="saveRecord(event);">Save</button>
         </div>
       </form>
     </div>
@@ -290,7 +291,7 @@ table.aui thead tr td {
       <input type="hidden" id="delete-user-holiday-amount-id" />
       <p>Are you sure?</p>
       <div style="text-align: center; padding-top: 2em;">
-        <button class="aui-button aui-button-primary" onclick="doDeleteHolidayAmount();">Yes</button>
+        <button class="aui-button aui-button-primary" onclick="doDeleteHolidayAmount(event);">Yes</button>
         <button class="aui-button aui-button-primary"
           onclick="event.preventDefault();deleteDialog.hide();">No</button>
       </div>
@@ -301,7 +302,7 @@ table.aui thead tr td {
 
   <form id="holiday-amount-filter-form" class="aui"
     data-eht-attr-action="request.contextPath + request.servletPath"
-    data-eht-attr-data-jira-uri-prefix="request.contextPath" onsubmit="submitFilterForm();">
+    data-eht-attr-data-jira-uri-prefix="request.contextPath" onsubmit="submitFilterForm(event);">
     <div>
       <label for="user-selector">User </label> <select id="filter-user-selector"
         class="js-default-user-picker single-user-picker" name="userFilter"></select> <label
@@ -361,7 +362,7 @@ table.aui thead tr td {
       data-eht-render="pageCount > 1">
       <tr>
         <td colspan="6" style="text-align: center;"
-          data-eht-utext="paginationTemplate.renderPagination(pageIndex, pageCount, response.locale)">
+          data-eht-utext="pagination.render(pageIndex, pageCount, 'holidayAmountPageSwitch', response.locale)">
         </td>
       </tr>
     </tfoot>
