@@ -37,14 +37,17 @@
         <th id="working-scheme-user-name">User</th>
         <th id="working-scheme-user-start-date">Start date</th>
         <th id="working-scheme-user-end-date">End date</th>
-        <td id="working-scheme-user-actions"><a href="#">Add</a></td>
+        <td id="working-scheme-user-actions"><a href="javascript:openAddSchemeUserDialog();">Add</a></td>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td headers="working-scheme-user-name">balazs.zsoldos@everit.biz</td>
-        <td headers="working-scheme-user-start-date">2016-05-19</td>
-        <td headers="working-scheme-user-end-date">2016-11-30</td>
+      <tr data-eht-foreach="{'schemeUser' : schemeUsers.resultSet}"
+        data-eht-code="avatarOwner = (!empty(schemeUser.avatarOwner)) ? schemeUser.avatarOwner : (empty(schemeUser.avatarId) ? schemeUser.userName.toLowerCase() : null); avatarUrl = request.contextPath + '/secure/useravatar?size=small' + ((!empty(schemeUser.avatarOwner)) ? '&ownerId=' + schemeUser.avatarOwner : '') + ((schemeUser.avatarId != null) ? '&avatarId=' + schemeUser.avatarId : '')">
+        <td headers="working-scheme-user-name"><img width="24" height="24"
+          data-eht-attr-src="avatarUrl" /><span data-eht-attr="schemeUser.userDisplayName"
+          style="margin-left: 1em;">balazs.zsoldos@everit.biz</span></td>
+        <td headers="working-scheme-user-start-date" data-eht-text="schemeUser.startDate">2016-05-19</td>
+        <td headers="working-scheme-user-end-date" data-eht-text="schemeUser.endDate">2016-11-30</td>
         <td headers="working-scheme-user-actions">
           <ul class="menu">
             <li><a href="#">Edit</a></li>
@@ -52,19 +55,47 @@
           </ul>
         </td>
       </tr>
-      <tr>
-        <td headers="working-scheme-user-name">balazs.zsoldos@everit.biz</td>
-        <td headers="working-scheme-user-start-date">2016-01-01</td>
-        <td headers="working-scheme-user-end-date">2016-05-18</td>
-        <td headers="working-scheme-user-actions">
-          <ul class="menu">
-            <li><a href="#">Edit</a></li>
-            <li><a href="#">Delete</a></li>
-          </ul>
-        </td>
+      <tr data-eht-render="empty(schemeUsers.resultSet.size())">
+        <td colspan="4">No record to show</td>
       </tr>
     </tbody>
   </table>
 
+  <div id="userSchemeDataDialogTemplate" data-eht-render="empty(request.getHeader('XMLHttpRequest'))"
+    data-jira-modal-title="User data"
+    data-eht-text="template_ctx.renderFragment('dataDialogTemplateBody')" style="display: none;">
+
+    <div data-eht-fragment="'dataDialogTemplateBody'">
+      <form id="userSchemeDataForm" class="aui">
+        <input type="hidden" id="dataform-action" name="action" /> <input type="hidden"
+          id="dataform-userholidayamount-id" name="userholidayamount-id" />
+        <div id="dataform-messages"></div>
+        <div class="field-group">
+          <label>User</label> <select id="userscheme-dataform-user-selector" class="single-user-picker"
+            name="user" required="required"></select>
+        </div>
+        <div class="field-group">
+          <label>Start date</label> <input id="userscheme-dataform-start-date" class="text aui-date-picker"
+            name="start-date" type="date" required="required" />
+        </div>
+        <div class="field-group">
+          <label>End date</label> <input id="userscheme-dataform-end-date" class="text aui-date-picker"
+            name="end-date" type="date" required="required" />
+        </div>
+        <div class="field-group">
+          <label>Amount (hours)</label> <input id="userscheme-dataform-amount" class="text short-field"
+            name="amount" type="number" required="required" />
+        </div>
+        <div class="field-group">
+          <label>Description</label> <input id="userscheme-dataform-description" class="text long-field"
+            name="description" type="text" />
+        </div>
+        <div class="field-group">
+          <button id="userscheme-dataform-savebutton" class="aui-button aui-button-primary"
+            onclick="saveRecord(event);">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 </html>

@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.configuration.plugin.ManageSchemeComponent.SchemeDTO;
+import org.everit.jira.configuration.plugin.SchemeUsersComponent.QUserSchemeEntityParameter;
+import org.everit.jira.configuration.plugin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.configuration.plugin.schema.qdsl.QWorkScheme;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
@@ -48,6 +50,20 @@ public class WorkSchemesServlet extends AbstractPageServlet {
       new ManageSchemeComponent(this::listWorkSchemes, this::saveScheme, this::updateScheme,
           this::deleteScheme, this::applySchemeSelectionChange);
 
+  private final SchemeUsersComponent schemeUsersComponent;
+
+  public WorkSchemesServlet() {
+    QUserSchemeEntityParameter qUserSchemeEntityParameter = new QUserSchemeEntityParameter();
+    QUserWorkScheme userworkscheme = QUserWorkScheme.userWorkScheme;
+    qUserSchemeEntityParameter.entityPath = userworkscheme;
+    qUserSchemeEntityParameter.dateRangeId = userworkscheme.dateRangeId;
+    qUserSchemeEntityParameter.schemeId = userworkscheme.workSchemeId;
+    qUserSchemeEntityParameter.userId = userworkscheme.userId;
+    qUserSchemeEntityParameter.userSchemeId = userworkscheme.userWorkSchemeId;
+
+    schemeUsersComponent = new SchemeUsersComponent(qUserSchemeEntityParameter);
+  }
+
   private void applySchemeSelectionChange(final Long schemeId, final PartialResponseBuilder prb,
       final Locale locale) {
     Map<String, Object> vars = new HashMap<>();
@@ -69,6 +85,8 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
     vars.put("manageSchemeComponent", manageSchemeComponent);
     vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
+    vars.put("schemeUsers", schemeUsersComponent);
+
     pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
   }
 

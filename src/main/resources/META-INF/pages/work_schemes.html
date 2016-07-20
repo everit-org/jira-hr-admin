@@ -22,6 +22,9 @@
 <meta charset="UTF-8">
 <meta name="decorator" content="atl.admin">
 <script
+  data-eht-text="webResourceManager.requireResource('com.atlassian.auiplugin:aui-date-picker')"
+  data-eht-render="'content'"></script>
+<script
   data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
   data-eht-render="'content'"></script>
 <script
@@ -32,6 +35,9 @@
   data-eht-render="'content'"></script>
 <script
   data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:are-you-sure')"
+  data-eht-render="'content'"></script>
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:scheme-users')"
   data-eht-render="'content'"></script>
 <style type="text/css">
 .everit-tabs .tabs-pane {
@@ -154,54 +160,8 @@ table.aui thead tr td {
         </tbody>
       </table>
     </div>
-    <div class="tabs-pane" id="tab-users">
-      <h2>Users</h2>
-
-      <form class="aui">
-        <div class="form-group">
-          <label for="user-selector">User: </label> <select id="user-selector"
-            class="js-default-user-picker single-user-picker" name="user"></select> <label
-            for="current-checkbox">Current time ranges only:</label> <input id="current-checkbox"
-            type="checkbox" />
-          <button class="aui-button aui-button-primary">Filter</button>
-        </div>
-      </form>
-
-      <table class="aui">
-        <thead>
-          <tr>
-            <th id="working-scheme-user-name">User</th>
-            <th id="working-scheme-user-start-date">Start date</th>
-            <th id="working-scheme-user-end-date">End date</th>
-            <td id="working-scheme-user-actions"><a href="#">Add</a></td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td headers="working-scheme-user-name">balazs.zsoldos@everit.biz</td>
-            <td headers="working-scheme-user-start-date">2016-05-19</td>
-            <td headers="working-scheme-user-end-date">2016-11-30</td>
-            <td headers="working-scheme-user-actions">
-              <ul class="menu">
-                <li><a href="#">Edit</a></li>
-                <li><a href="#">Delete</a></li>
-              </ul>
-            </td>
-          </tr>
-          <tr>
-            <td headers="working-scheme-user-name">balazs.zsoldos@everit.biz</td>
-            <td headers="working-scheme-user-start-date">2016-01-01</td>
-            <td headers="working-scheme-user-end-date">2016-05-18</td>
-            <td headers="working-scheme-user-actions">
-              <ul class="menu">
-                <li><a href="#">Edit</a></li>
-                <li><a href="#">Delete</a></li>
-              </ul>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div class="tabs-pane" id="tab-users"
+      data-eht-utext="schemeUsers.render(request, response.locale)"></div>
   </div>
 </body>
 </html>

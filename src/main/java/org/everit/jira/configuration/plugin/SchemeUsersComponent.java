@@ -15,9 +15,17 @@
  */
 package org.everit.jira.configuration.plugin;
 
+import java.io.StringWriter;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.util.AvatarUtil;
@@ -44,6 +52,10 @@ public class SchemeUsersComponent {
     public Date startDate;
 
     public String userName;
+
+    public Date getEndDate() {
+      return new Date(endDateExcluded.getTime() - MILLISECS_IN_DAY);
+    }
 
   }
 
@@ -73,6 +85,8 @@ public class SchemeUsersComponent {
 
   }
 
+  private static final int MILLISECS_IN_DAY = 3600 * 24 * 1000;
+
   private static final int PAGE_SIZE = 50;
 
   private static final LocalizedTemplate TEMPLATE =
@@ -91,13 +105,13 @@ public class SchemeUsersComponent {
     }
   }
 
-  public QueryResultWithCount<SchemeUserDTO> querySchemeUsers(final int pageIndex,
+  private QueryResultWithCount<SchemeUserDTO> querySchemeUsers(final int pageIndex,
       final long schemeId, final String userName, final boolean currentTimeRanges) {
     return querydslSupport.execute((connection, configuration) -> {
       QDateRange qDateRange = QDateRange.dateRange;
       QCwdUser qCwdUser = QCwdUser.cwdUser;
 
-      SQLQuery<SchemeUserDTO> query = new SQLQuery<>();
+      SQLQuery<SchemeUserDTO> query = new SQLQuery<>(connection, configuration);
       query.from(qUserSchemeEntityParameter.entityPath)
           .innerJoin(qDateRange)
           .on(qDateRange.dateRangeId.eq(qUserSchemeEntityParameter.dateRangeId))
@@ -136,10 +150,39 @@ public class SchemeUsersComponent {
           offset = 0;
         }
       }
-      List<SchemeUserDTO> resultSet = query.limit(PAGE_SIZE).offset(offset).fetch();
+
+      List<SchemeUserDTO> resultSet;
+      if (offset < count) {
+        resultSet = Collections.emptyList();
+      } else {
+        resultSet = query.limit(PAGE_SIZE).offset(offset).fetch();
+      }
 
       QueryResultWithCount<SchemeUserDTO> result = new QueryResultWithCount<>(resultSet, count);
       return result;
     });
+  }
+
+  public String render(final HttpServletRequest request, final Locale locale) {
+    String userFilter = request.getParameter("schemeUsersUserFilter");
+    boolean currentOnly = Boolean.parseBoolean(request.getParameter("schemeUsersCurrentFilter"));
+    String schemeIdParam = request.getParameter("schemeId");
+    Long schemeId = (schemeIdParam != null) ? Long.parseLong(schemeIdParam) : null;
+    int pageIndex = Integer.parseInt(Objects.toString(request.getParameter("pageIndex"), "1"));
+
+    QueryResultWithCount<SchemeUserDTO> schemeUsers;
+    if (schemeId != null) {
+      schemeUsers =
+          querySchemeUsers(pageIndex, schemeId, userFilter, currentOnly);
+    } else {
+      schemeUsers = new QueryResultWithCount<>(Collections.emptyList(), 0);
+    }
+
+    Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("schemeUsers", schemeUsers);
+
+    StringWriter sw = new StringWriter();
+    TEMPLATE.render(sw, vars, locale, "body");
+    return sw.toString();
   }
 }

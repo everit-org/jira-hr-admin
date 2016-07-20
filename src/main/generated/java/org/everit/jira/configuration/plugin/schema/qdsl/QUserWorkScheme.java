@@ -56,15 +56,15 @@ public class QUserWorkScheme extends com.querydsl.sql.RelationalPathBase<QUserWo
 
   public final NumberPath<Long> dateRangeId = createNumber("dateRangeId", Long.class);
 
-  public final ForeignKeys fk = new ForeignKeys();
-
-  public final PrimaryKeys pk = new PrimaryKeys();
-
   public final NumberPath<Long> userId = createNumber("userId", Long.class);
 
   public final NumberPath<Long> userWorkSchemeId = createNumber("userWorkSchemeId", Long.class);
 
   public final NumberPath<Long> workSchemeId = createNumber("workSchemeId", Long.class);
+
+  public final ForeignKeys fk = new ForeignKeys();
+
+  public final PrimaryKeys pk = new PrimaryKeys();
 
   public QUserWorkScheme(final Path<? extends QUserWorkScheme> path) {
     super(path.getType(), path.getMetadata(), "public", "everit_jira_user_work_scheme");

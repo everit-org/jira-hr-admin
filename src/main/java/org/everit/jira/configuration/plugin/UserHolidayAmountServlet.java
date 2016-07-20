@@ -226,6 +226,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
         .innerJoin(qUserHolidayAmount.fk.dateRangeFK, qDateRange)
         .where(qUserHolidayAmount.userHolidayAmountId.eq(userHolidayAmountId))
         .fetchOne();
+
     return dateRangeId;
   }
 
