@@ -31,6 +31,8 @@ import org.everit.jira.configuration.plugin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.configuration.plugin.schema.qdsl.QWorkScheme;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
+import com.atlassian.jira.component.ComponentAccessor;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
@@ -52,23 +54,37 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
   private final SchemeUsersComponent schemeUsersComponent;
 
+  private final TransactionTemplate transactionTemplate =
+      ComponentAccessor.getOSGiComponentInstanceOfType(TransactionTemplate.class);
+
   public WorkSchemesServlet() {
     QUserSchemeEntityParameter qUserSchemeEntityParameter = new QUserSchemeEntityParameter();
     QUserWorkScheme userworkscheme = QUserWorkScheme.userWorkScheme;
-    qUserSchemeEntityParameter.entityPath = userworkscheme;
+    QWorkScheme workscheme = QWorkScheme.workScheme;
+    qUserSchemeEntityParameter.userSchemeEntityPath = userworkscheme;
+    qUserSchemeEntityParameter.schemeEntityPath = workscheme;
+    qUserSchemeEntityParameter.schemeSchemeId = workscheme.workSchemeId;
+    qUserSchemeEntityParameter.schemeName = workscheme.name_;
     qUserSchemeEntityParameter.dateRangeId = userworkscheme.dateRangeId;
-    qUserSchemeEntityParameter.schemeId = userworkscheme.workSchemeId;
+    qUserSchemeEntityParameter.userSchemeSchemeId = userworkscheme.workSchemeId;
     qUserSchemeEntityParameter.userId = userworkscheme.userId;
     qUserSchemeEntityParameter.userSchemeId = userworkscheme.userWorkSchemeId;
 
-    schemeUsersComponent = new SchemeUsersComponent(qUserSchemeEntityParameter);
+    schemeUsersComponent =
+        new SchemeUsersComponent(qUserSchemeEntityParameter, transactionTemplate);
   }
 
-  private void applySchemeSelectionChange(final Long schemeId, final PartialResponseBuilder prb,
+  private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
+      final PartialResponseBuilder prb,
       final Locale locale) {
     Map<String, Object> vars = new HashMap<>();
-    prb.replace("#work-schemes-tabs",
-        (writer) -> pageTemplate.render(writer, vars, locale, "work-schemes-tabs"));
+    vars.put("schemeId", schemeId);
+    vars.put("schemeUsers", schemeUsersComponent);
+    vars.put("request", request);
+    vars.put("locale", locale);
+    prb.replace("#work-schemes-tabs-container", (writer) -> {
+      pageTemplate.render(writer, vars, locale, "work-schemes-tabs-container");
+    });
   }
 
   private void deleteScheme(final long schemeId) {
@@ -83,9 +99,22 @@ public class WorkSchemesServlet extends AbstractPageServlet {
   protected void doGetInternal(final HttpServletRequest req, final HttpServletResponse resp,
       final Map<String, Object> vars) throws ServletException, IOException {
 
+    vars.put("schemeId", req.getParameter("schemeId"));
+    vars.put("schemeUsers", schemeUsersComponent);
+    vars.put("locale", resp.getLocale());
+
+    String event = req.getParameter("event");
+    if ("schemeChange".equals(event)) {
+      try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+        prb.replace("#work-schemes-tabs-container", (writer) -> {
+          pageTemplate.render(writer, vars, resp.getLocale(), "work-schemes-tabs-container");
+        });
+      }
+      return;
+    }
     vars.put("manageSchemeComponent", manageSchemeComponent);
     vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
-    vars.put("schemeUsers", schemeUsersComponent);
+    vars.put("schemeUsersComponent", schemeUsersComponent);
 
     pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
   }
@@ -94,8 +123,13 @@ public class WorkSchemesServlet extends AbstractPageServlet {
   protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
       throws ServletException, IOException {
 
-    if (manageSchemeComponent.getSupportedActions().contains(req.getParameter("action"))) {
+    String action = req.getParameter("action");
+    if (manageSchemeComponent.getSupportedActions().contains(action)) {
       manageSchemeComponent.processAction(req, resp);
+      return;
+    }
+    if (schemeUsersComponent.getSupportedActions().contains(action)) {
+      schemeUsersComponent.processAction(req, resp);
       return;
     }
   }
@@ -118,6 +152,7 @@ public class WorkSchemesServlet extends AbstractPageServlet {
               qWorkScheme.name_.as("name")))
           .from(qWorkScheme)
           .where(qWorkScheme.scope_.eq(WORK_SCHEME_SCOPE_GLOBAL))
+          .orderBy(qWorkScheme.name_.asc())
           .fetch();
     });
   }

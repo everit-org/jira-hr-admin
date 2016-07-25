@@ -20,12 +20,16 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.util.AvatarUtil;
@@ -35,13 +39,21 @@ import org.everit.jira.querydsl.schema.QAvatar;
 import org.everit.jira.querydsl.schema.QCwdUser;
 import org.everit.jira.querydsl.support.QuerydslSupport;
 import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
+import org.everit.web.partialresponse.PartialResponseBuilder;
 
-import com.querydsl.core.types.EntityPath;
+import com.atlassian.sal.api.transaction.TransactionTemplate;
+import com.querydsl.core.types.ConstantImpl;
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Coalesce;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringExpression;
+import com.querydsl.sql.RelationalPath;
 import com.querydsl.sql.SQLQuery;
+import com.querydsl.sql.dml.SQLDeleteClause;
+import com.querydsl.sql.dml.SQLInsertClause;
 
 public class SchemeUsersComponent {
 
@@ -53,29 +65,31 @@ public class SchemeUsersComponent {
 
     public String userName;
 
-    public Date getEndDate() {
-      return new Date(endDateExcluded.getTime() - MILLISECS_IN_DAY);
-    }
-
   }
 
   public static class QUserSchemeEntityParameter {
     public NumberPath<Long> dateRangeId;
 
-    public EntityPath<?> entityPath;
+    public RelationalPath<?> schemeEntityPath;
 
-    public NumberPath<Long> schemeId;
+    public StringExpression schemeName;
+
+    public NumberPath<Long> schemeSchemeId;
 
     public NumberPath<Long> userId;
 
+    public RelationalPath<?> userSchemeEntityPath;
+
     public NumberPath<Long> userSchemeId;
+
+    public NumberPath<Long> userSchemeSchemeId;
   }
 
   public static class SchemeUserDTO extends NewSchemeUserDTO {
 
     public Long avatarId;
 
-    public Long avatarOwner;
+    public String avatarOwner;
 
     public long dateRangeId;
 
@@ -83,25 +97,168 @@ public class SchemeUsersComponent {
 
     public long userSchemeId;
 
+    public Date getEndDate() {
+      return new Date(endDateExcluded.getTime() - MILLISECS_IN_DAY);
+    }
+
   }
 
   private static final int MILLISECS_IN_DAY = 3600 * 24 * 1000;
 
   private static final int PAGE_SIZE = 50;
 
+  private static final Set<String> SUPPORTED_ACTIONS;
+
   private static final LocalizedTemplate TEMPLATE =
       new LocalizedTemplate("/META-INF/component/scheme_users",
           ManageSchemeComponent.class.getClassLoader());
 
+  static {
+    Set<String> supportedActions = new HashSet<>();
+    supportedActions.add("scheme-user-savenew");
+    supportedActions.add("scheme-user-delete");
+    supportedActions.add("scheme-user-edit");
+    SUPPORTED_ACTIONS = Collections.unmodifiableSet(supportedActions);
+  }
+
   private final QuerydslSupport querydslSupport;
   private final QUserSchemeEntityParameter qUserSchemeEntityParameter;
 
-  public SchemeUsersComponent(final QUserSchemeEntityParameter qUserSchemeEntityParameter) {
+  private final TransactionTemplate transactionTemplate;
+
+  public SchemeUsersComponent(final QUserSchemeEntityParameter qUserSchemeEntityParameter,
+      final TransactionTemplate transactionTemplate) {
     this.qUserSchemeEntityParameter = qUserSchemeEntityParameter;
+    this.transactionTemplate = transactionTemplate;
     try {
       this.querydslSupport = new QuerydslSupportImpl();
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private void delete(final Long userSchemeId) {
+    transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
+      QDateRange qDateRange = QDateRange.dateRange;
+      Long dateRangeId = new SQLQuery<Long>(connection, configuration)
+          .select(qDateRange.dateRangeId)
+          .from(qDateRange)
+          .innerJoin(qUserSchemeEntityParameter.userSchemeEntityPath)
+          .on(qUserSchemeEntityParameter.dateRangeId.eq(qDateRange.dateRangeId))
+          .where(qUserSchemeEntityParameter.userSchemeId.eq(userSchemeId))
+          .fetchOne();
+
+      new SQLDeleteClause(connection, configuration,
+          qUserSchemeEntityParameter.userSchemeEntityPath)
+              .where(qUserSchemeEntityParameter.userSchemeId.eq(userSchemeId))
+              .execute();
+
+      new SQLDeleteClause(connection, configuration, qDateRange)
+          .where(qDateRange.dateRangeId.eq(dateRangeId)).execute();
+      return null;
+    }));
+  }
+
+  private Set<String> getSchemeNamesWithOverlappingTimeRange(final Long userId,
+      final Date startDate, final Date endDateExcluded, final Long userSchemeIdToExclude) {
+
+    List<String> schemeNames = querydslSupport.execute((connection, configuration) -> {
+      QDateRange qDateRange = QDateRange.dateRange;
+      SQLQuery<String> query = new SQLQuery<>(connection, configuration)
+          .select(qUserSchemeEntityParameter.schemeName)
+          .from(qDateRange)
+          .innerJoin(qUserSchemeEntityParameter.userSchemeEntityPath)
+          .on(qDateRange.dateRangeId.eq(qUserSchemeEntityParameter.dateRangeId))
+          .innerJoin(qUserSchemeEntityParameter.schemeEntityPath)
+          .on(qUserSchemeEntityParameter.userSchemeSchemeId
+              .eq(qUserSchemeEntityParameter.schemeSchemeId));
+
+      List<Predicate> predicates = new ArrayList<>();
+      predicates.add(qUserSchemeEntityParameter.userId.eq(userId));
+
+      if (userSchemeIdToExclude != null) {
+        predicates.add(qUserSchemeEntityParameter.userSchemeId.ne(userSchemeIdToExclude));
+      }
+
+      predicates.add(rangeOverlaps(qDateRange, startDate, endDateExcluded));
+
+      query.where(predicates.toArray(new Predicate[predicates.size()]));
+      return query.fetch();
+    });
+    return new TreeSet<>(schemeNames);
+  }
+
+  public Set<String> getSupportedActions() {
+    return SUPPORTED_ACTIONS;
+  }
+
+  private Long getUserId(final String user) {
+    if (user == null) {
+      return null;
+    }
+    return querydslSupport.execute((connection, configuration) -> {
+      QCwdUser qUser = QCwdUser.cwdUser;
+      return new SQLQuery<Long>(connection, configuration)
+          .select(qUser.id).from(qUser)
+          .where(qUser.lowerUserName.eq(user.toLowerCase()))
+          .fetchOne();
+    });
+  }
+
+  public void processAction(final HttpServletRequest req, final HttpServletResponse resp) {
+    String action = req.getParameter("action");
+    if ("scheme-user-savenew".equals(action)) {
+      processSave(req, resp);
+    } else if ("scheme-user-delete".equals(action)) {
+      processDelete(req, resp);
+    }
+  }
+
+  private void processDelete(final HttpServletRequest req, final HttpServletResponse resp) {
+    Long userSchemeId = Long.parseLong(req.getParameter("scheme-user-userscheme-id"));
+    delete(userSchemeId);
+
+    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+      renderAlertOnPrb("Record deleted", "info", prb, resp.getLocale());
+      prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
+    }
+  }
+
+  private void processSave(final HttpServletRequest req, final HttpServletResponse resp) {
+    long schemeId = Long.parseLong(req.getParameter("schemeId"));
+    String userName = req.getParameter("user");
+    Date startDate = Date.valueOf(req.getParameter("start-date"));
+    Date endDate = Date.valueOf(req.getParameter("end-date"));
+    Date endDateExcluded = new Date(endDate.getTime() + +MILLISECS_IN_DAY);
+
+    Long userId = getUserId(userName);
+    if (userId == null) {
+      renderAlert("User does not exist", "error", resp);
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    if (startDate.compareTo(endDate) > 0) {
+      renderAlert("Start date must not be after end date", "error", resp);
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    Set<String> schemeNamesWithOverlappingTimeRange =
+        getSchemeNamesWithOverlappingTimeRange(userId, startDate, endDateExcluded, null);
+    if (!schemeNamesWithOverlappingTimeRange.isEmpty()) {
+      renderAlert(
+          "The user is assigned overlapping with the specified date range to the"
+              + " following scheme(s): " + schemeNamesWithOverlappingTimeRange.toString(),
+          "error", resp);
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    save(schemeId, userName, startDate, endDateExcluded);
+    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+      renderAlertOnPrb("Assiging user successful", "info", prb, resp.getLocale());
+      prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
     }
   }
 
@@ -112,7 +269,7 @@ public class SchemeUsersComponent {
       QCwdUser qCwdUser = QCwdUser.cwdUser;
 
       SQLQuery<SchemeUserDTO> query = new SQLQuery<>(connection, configuration);
-      query.from(qUserSchemeEntityParameter.entityPath)
+      query.from(qUserSchemeEntityParameter.userSchemeEntityPath)
           .innerJoin(qDateRange)
           .on(qDateRange.dateRangeId.eq(qUserSchemeEntityParameter.dateRangeId))
           .innerJoin(qCwdUser).on(qCwdUser.id.eq(qUserSchemeEntityParameter.userId));
@@ -120,10 +277,10 @@ public class SchemeUsersComponent {
       QAvatar qAvatar = AvatarUtil.joinAvatarToCwdUser(query, qCwdUser, "avatar");
 
       List<Predicate> predicates = new ArrayList<>();
-      predicates.add(qUserSchemeEntityParameter.schemeId.eq(schemeId));
+      predicates.add(qUserSchemeEntityParameter.userSchemeSchemeId.eq(schemeId));
 
       if (currentTimeRanges) {
-        java.sql.Date currentDate = new java.sql.Date(new java.util.Date().getTime());
+        Date currentDate = new Date(new java.util.Date().getTime());
         predicates.add(qDateRange.startDate.loe(currentDate)
             .and(qDateRange.endDateExcluded.gt(currentDate)));
       }
@@ -132,11 +289,15 @@ public class SchemeUsersComponent {
         predicates.add(qCwdUser.userName.eq(userName));
       }
 
+      Expression<Long> defaultAvatarId = ConstantImpl.create(AvatarUtil.DEFAULT_AVATAR_ID);
+
       StringExpression userDisplayNameExpression = qCwdUser.displayName.as("userDisplayName");
       query.select(Projections.fields(SchemeUserDTO.class,
           qUserSchemeEntityParameter.userSchemeId.as("userSchemeId"), qDateRange.dateRangeId,
-          qCwdUser.userName, userDisplayNameExpression, qDateRange.startDate),
-          qDateRange.endDateExcluded, qAvatar.id.as("avatarId"), qAvatar.owner.as("avatarOwner"));
+          qCwdUser.userName, userDisplayNameExpression, qDateRange.startDate,
+          qDateRange.endDateExcluded,
+          new Coalesce<>(Long.class, qAvatar.id, defaultAvatarId).as("avatarId"),
+          qAvatar.owner.as("avatarOwner")));
 
       query.where(predicates.toArray(new Predicate[0]));
 
@@ -152,7 +313,7 @@ public class SchemeUsersComponent {
       }
 
       List<SchemeUserDTO> resultSet;
-      if (offset < count) {
+      if (offset >= count) {
         resultSet = Collections.emptyList();
       } else {
         resultSet = query.limit(PAGE_SIZE).offset(offset).fetch();
@@ -163,7 +324,21 @@ public class SchemeUsersComponent {
     });
   }
 
+  private BooleanExpression rangeOverlaps(final QDateRange qDateRange,
+      final java.sql.Date startSQLDate,
+      final java.sql.Date endSQLDate) {
+    return qDateRange.startDate.loe(startSQLDate)
+        .and(qDateRange.endDateExcluded.gt(startSQLDate))
+        .or(qDateRange.startDate.lt(endSQLDate)
+            .and(qDateRange.endDateExcluded.goe(endSQLDate)));
+  }
+
   public String render(final HttpServletRequest request, final Locale locale) {
+    return render(request, locale, "body");
+  }
+
+  public String render(final HttpServletRequest request, final Locale locale,
+      final String fragment) {
     String userFilter = request.getParameter("schemeUsersUserFilter");
     boolean currentOnly = Boolean.parseBoolean(request.getParameter("schemeUsersCurrentFilter"));
     String schemeIdParam = request.getParameter("schemeId");
@@ -179,10 +354,64 @@ public class SchemeUsersComponent {
     }
 
     Map<String, Object> vars = new HashMap<String, Object>();
+    vars.put("request", request);
     vars.put("schemeUsers", schemeUsers);
+    vars.put("userFilter", userFilter);
+    vars.put("currentTimeRangesFilter", currentOnly);
+    vars.put("pageIndex", pageIndex);
 
     StringWriter sw = new StringWriter();
-    TEMPLATE.render(sw, vars, locale, "body");
+    TEMPLATE.render(sw, vars, locale, fragment);
     return sw.toString();
+  }
+
+  private void renderAlert(final String message, final String alertType,
+      final HttpServletResponse resp) {
+
+    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+      renderAlertOnPrb(message, alertType, prb, resp.getLocale());
+    }
+  }
+
+  private void renderAlertOnPrb(final String message, final String alertType,
+      final PartialResponseBuilder prb, final Locale locale) {
+
+    prb.append("#aui-message-bar",
+        (writer) -> AlertComponent.INSTANCE.render(writer, message, alertType, locale));
+  }
+
+  public String renderInitialFragments(final HttpServletRequest req,
+      final HttpServletResponse resp) {
+    StringWriter writer = new StringWriter();
+    Map<String, Object> vars = new HashMap<>();
+    vars.put("request", req);
+    vars.put("response", resp);
+    TEMPLATE.render(writer, vars, resp.getLocale(), "dialogs");
+    return writer.toString();
+  }
+
+  private void save(final long schemeId, final String userName, final Date startDate,
+      final Date endDateExcluded) {
+    transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
+      QCwdUser qCwdUser = QCwdUser.cwdUser;
+      Long userId = new SQLQuery<Long>(connection, configuration)
+          .select(qCwdUser.id)
+          .from(qCwdUser)
+          .where(qCwdUser.userName.eq(userName)).fetchOne();
+
+      QDateRange qDateRange = QDateRange.dateRange;
+      Long dateRangeId = new SQLInsertClause(connection, configuration, qDateRange)
+          .set(qDateRange.startDate, startDate)
+          .set(qDateRange.endDateExcluded, new Date(endDateExcluded.getTime()))
+          .executeWithKey(qDateRange.dateRangeId);
+
+      new SQLInsertClause(connection, configuration,
+          qUserSchemeEntityParameter.userSchemeEntityPath)
+              .set(qUserSchemeEntityParameter.dateRangeId, dateRangeId)
+              .set(qUserSchemeEntityParameter.userId, userId)
+              .set(qUserSchemeEntityParameter.userSchemeSchemeId, schemeId).execute();
+
+      return null;
+    }));
   }
 }

@@ -46,9 +46,11 @@ public class LocalizedTemplate {
   public LocalizedTemplate(final String baseName, final ClassLoader classLoader) {
     this.baseName = baseName;
     try {
+      ParserConfiguration parserConfiguration = new ParserConfiguration(classLoader);
+      parserConfiguration.setName(baseName + ".html");
       compiledTemplate = TEMPLATE_COMPILER.compile(
           IOUtils.toString(classLoader.getResource(baseName + ".html"), "UTF8"),
-          new ParserConfiguration(classLoader));
+          parserConfiguration);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

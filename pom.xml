@@ -141,6 +141,38 @@
         </configuration>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.atlassian.maven.plugins</groupId>
+                    <artifactId>maven-jira-plugin</artifactId>
+                    <versionRange>[6.2.4,)</versionRange>
+                    <goals>
+                      <goal>filter-test-plugin-descriptor</goal>
+                      <goal>generate-rest-docs</goal>
+                      <goal>filter-plugin-descriptor</goal>
+                      <goal>compress-resources</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
   <dependencies>
@@ -215,6 +247,12 @@
       <artifactId>jira-api</artifactId>
       <version>7.1.7</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>jta</artifactId>
+          <groupId>jta</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.atlassian.jira</groupId>

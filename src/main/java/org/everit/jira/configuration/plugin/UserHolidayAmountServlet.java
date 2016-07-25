@@ -164,7 +164,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
     Long userId = getUserId(userParam);
     if (userId == null) {
-      renderAlert("User does not exist", "error", req, resp);
+      renderAlert("User does not exist", "error", resp);
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
@@ -185,7 +185,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     Integer amountInHours = Integer.parseInt(amountParam);
 
     if (startDate.compareTo(endDate) > 0) {
-      renderAlert("Start date must be before end date", "error", req, resp);
+      renderAlert("Start date must be before end date", "error", resp);
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
@@ -194,7 +194,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
         ("edit".equals(action)) ? Long.parseLong(req.getParameter("userholidayamount-id")) : null;
 
     if (hasOverlapping(userId, startSqlDate, endSqlDateExcluded, userHolidayAmountId)) {
-      renderAlert("Another range overlaps this one for the same user", "error", req, resp);
+      renderAlert("Another range overlaps this one for the same user", "error", resp);
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
@@ -338,7 +338,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
   }
 
   private void renderAlert(final String message, final String alertType,
-      final HttpServletRequest req, final HttpServletResponse resp) {
+      final HttpServletResponse resp) {
 
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
       renderAlertOnPrb(message, alertType, prb, resp.getLocale());

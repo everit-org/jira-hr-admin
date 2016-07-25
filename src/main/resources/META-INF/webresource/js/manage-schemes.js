@@ -37,7 +37,7 @@ var openEditSchemeDialog = function(event) {
 
   var schemeId = $("#scheme-selector").prop("value");
   $("#scheme-id-input").val(schemeId);
-  $("#scheme-name-input").val($( "#scheme-selector option:selected" ).text());
+  $("#scheme-name-input").val($("#scheme-selector option:selected").text());
 
   schemeDataDialog.show();
 }
@@ -79,14 +79,13 @@ var updateScheme = function() {
 var saveScheme = function(event) {
   event.preventDefault();
   var schemeId = $("#scheme-id-input").val();
-  
+
   if (schemeId == "") {
     saveNewScheme();
   } else {
     updateScheme();
   }
 }
-
 
 var deleteScheme = function() {
   var schemeId = $("#scheme-selector").prop("value");
@@ -107,17 +106,18 @@ var deleteScheme = function() {
 var handleClientSchemeChange = function() {
   var schemeId = $("#scheme-selector").prop("value");
 
-  var formdata = null;
+  var formdata = {
+    event : "schemeChange"
+  };
   if (schemeId == "") {
     $("#scheme-edit-button").prop('disabled', true);
     $("#scheme-delete-button").prop('disabled', true);
-    formdata = {};
   } else {
     $("#scheme-edit-button").prop('disabled', false);
     $("#scheme-delete-button").prop('disabled', false);
-    formdata = { "schemeId" : schemeId };
+    formdata["schemeId"] = schemeId;
   }
-  
+
   $.ajax({
     url : '#',
     type : 'GET',
@@ -125,5 +125,7 @@ var handleClientSchemeChange = function() {
   }).success(function(content) {
     everit.partialresponse.process(content);
     processRuntimeAlerts();
+    AJS.tabs.setup();
+    JIRA.trigger(JIRA.Events.NEW_CONTENT_ADDED, [$(".scheme-change-target")]);
   })
 }

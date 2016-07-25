@@ -43,7 +43,8 @@ public class ManageSchemeComponent {
   }
 
   public static interface SchemeSelectionChangeProcessor {
-    void apply(Long schemeId, PartialResponseBuilder prb, Locale locale);
+    void apply(HttpServletRequest request, Long schemeId, PartialResponseBuilder prb,
+        Locale locale);
   }
 
   private static final String ACTION_DELETE_SCHEME = "deleteScheme";
@@ -117,7 +118,7 @@ public class ManageSchemeComponent {
       prb.replace("#scheme-selector-form",
           (writer) -> renderFragment(null, writer, resp.getLocale(), "scheme-selector-form"));
 
-      schemeSelectionChangeConsumer.apply(schemeId, prb, resp.getLocale());
+      schemeSelectionChangeConsumer.apply(req, schemeId, prb, resp.getLocale());
     }
   }
 
@@ -133,7 +134,7 @@ public class ManageSchemeComponent {
       prb.replace("#scheme-selector-form",
           (writer) -> renderFragment(schemeId, writer, resp.getLocale(), "scheme-selector-form"));
 
-      schemeSelectionChangeConsumer.apply(schemeId, prb, resp.getLocale());
+      schemeSelectionChangeConsumer.apply(req, schemeId, prb, resp.getLocale());
     }
   }
 

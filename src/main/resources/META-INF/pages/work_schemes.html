@@ -18,9 +18,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Everit - Working Schemes</title>
+<title>Everit - Work Schemes</title>
 <meta charset="UTF-8">
 <meta name="decorator" content="atl.admin">
+<style type="text/css">
+.everit-tabs .tabs-pane {
+	padding-top: 2em;
+}
+
+table.aui thead tr td {
+	font-weight: bold;
+}
+
+.aui-inline-dialog.aui-datepicker-dialog {
+	z-index: 4000;
+}
+</style>
 <script
   data-eht-text="webResourceManager.requireResource('com.atlassian.auiplugin:aui-date-picker')"
   data-eht-render="'content'"></script>
@@ -41,127 +54,129 @@
   data-eht-render="'content'"></script>
 <style type="text/css">
 .everit-tabs .tabs-pane {
-    padding-top: 2em;
+	padding-top: 2em;
 }
 
 table.aui thead tr td {
-    font-weight: bold;
+	font-weight: bold;
 }
 </style>
 </head>
 <body>
   <div data-eht-utext="areYouSureDialogComponent.render(response.locale)"></div>
   <div id="aui-message-bar" style="position: fixed; z-index: 3005; top: 0; left: 0; width: 100%;">
-
   </div>
-
+  <div data-eht-utext="schemeUsersComponent.renderInitialFragments(request, response)"
+    data-eht-render="'content'"></div>
   <div data-eht-utext="manageSchemeComponent.render(request, response.locale)"></div>
 
-  <div id="work-schemes-tabs" data-eht-fragment="'work-schemes-tabs'"
-    class="aui-tabs horizontal-tabs everit-tabs">
-    <ul class="tabs-menu">
-      <li class="menu-item active-tab"><a href="#tab-regular">Regular Work Times</a></li>
-      <li class="menu-item"><a href="#tab-exact-dates">Exact Times</a></li>
-      <li class="menu-item"><a href="#tab-users">Users</a></li>
-    </ul>
-    <div class="tabs-pane active-pane" id="tab-regular">
-      <h2>Weekdays</h2>
-      <table class="aui">
-        <thead>
-          <tr>
-            <th id="regular-work-scheme-weekday">Day of week</th>
-            <th id="regular-work-scheme-start-time">Start time</th>
-            <th id="regular-work-scheme-duration">Duration</th>
-            <td id="regular-work-scheme-actions"><a href="#">Add</a></td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td headers="regular-work-scheme-weekday">Monday</td>
-            <td headers="regular-work-scheme-start-time">08:00</td>
-            <td headers="regular-work-scheme-duration">4h</td>
-            <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-          <tr>
-            <td headers="regular-work-scheme-weekday">Monday</td>
-            <td headers="regular-work-scheme-start-time">13:00</td>
-            <td headers="regular-work-scheme-duration">4h</td>
-            <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-          <tr>
-            <td headers="regular-work-scheme-weekday">Tuesday</td>
-            <td headers="regular-work-scheme-start-time">08:00</td>
-            <td headers="regular-work-scheme-duration">4h</td>
-            <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-          <tr>
-            <td headers="regular-work-scheme-weekday">Tuesday</td>
-            <td headers="regular-work-scheme-start-time">13:00</td>
-            <td headers="regular-work-scheme-duration">4h</td>
-            <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-          <tr>
-            <td headers="regular-work-scheme-weekday">Wednesday</td>
-            <td headers="regular-work-scheme-start-time">08:00</td>
-            <td headers="regular-work-scheme-duration">4h</td>
-            <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-          <tr>
-            <td headers="regular-work-scheme-weekday">Wednesday</td>
-            <td headers="regular-work-scheme-start-time">13:00</td>
-            <td headers="regular-work-scheme-duration">4h</td>
-            <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-          <tr>
-            <td headers="regular-work-scheme-weekday">Thursday</td>
-            <td headers="regular-work-scheme-start-time">08:00</td>
-            <td headers="regular-work-scheme-duration">4h</td>
-            <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-          <tr>
-            <td headers="regular-work-scheme-weekday">Thursday</td>
-            <td headers="regular-work-scheme-start-time">13:00</td>
-            <td headers="regular-work-scheme-duration">4h</td>
-            <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-          <tr>
-            <td headers="regular-work-scheme-weekday">Friday</td>
-            <td headers="regular-work-scheme-start-time">08:00</td>
-            <td headers="regular-work-scheme-duration">4h</td>
-            <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-        </tbody>
-      </table>
+  <div id="work-schemes-tabs-container" data-eht-fragment="'work-schemes-tabs-container'" style="padding-top: 2em;">
+    <div id="work-schemes-tabs" class="aui-tabs horizontal-tabs everit-tabs scheme-change-target"
+      data-eht-render="!empty(schemeId)">
+      <ul class="tabs-menu">
+        <li class="menu-item active-tab"><a href="#tab-regular">Regular Work Times</a></li>
+        <li class="menu-item"><a href="#tab-exact-dates">Exact Times</a></li>
+        <li class="menu-item"><a href="#tab-users">Users</a></li>
+      </ul>
+      <div class="tabs-pane active-pane" id="tab-regular">
+        <h2>Weekdays</h2>
+        <table class="aui">
+          <thead>
+            <tr>
+              <th id="regular-work-scheme-weekday">Day of week</th>
+              <th id="regular-work-scheme-start-time">Start time</th>
+              <th id="regular-work-scheme-duration">Duration</th>
+              <td id="regular-work-scheme-actions"><a href="#">Add</a></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td headers="regular-work-scheme-weekday">Monday</td>
+              <td headers="regular-work-scheme-start-time">08:00</td>
+              <td headers="regular-work-scheme-duration">4h</td>
+              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+            <tr>
+              <td headers="regular-work-scheme-weekday">Monday</td>
+              <td headers="regular-work-scheme-start-time">13:00</td>
+              <td headers="regular-work-scheme-duration">4h</td>
+              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+            <tr>
+              <td headers="regular-work-scheme-weekday">Tuesday</td>
+              <td headers="regular-work-scheme-start-time">08:00</td>
+              <td headers="regular-work-scheme-duration">4h</td>
+              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+            <tr>
+              <td headers="regular-work-scheme-weekday">Tuesday</td>
+              <td headers="regular-work-scheme-start-time">13:00</td>
+              <td headers="regular-work-scheme-duration">4h</td>
+              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+            <tr>
+              <td headers="regular-work-scheme-weekday">Wednesday</td>
+              <td headers="regular-work-scheme-start-time">08:00</td>
+              <td headers="regular-work-scheme-duration">4h</td>
+              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+            <tr>
+              <td headers="regular-work-scheme-weekday">Wednesday</td>
+              <td headers="regular-work-scheme-start-time">13:00</td>
+              <td headers="regular-work-scheme-duration">4h</td>
+              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+            <tr>
+              <td headers="regular-work-scheme-weekday">Thursday</td>
+              <td headers="regular-work-scheme-start-time">08:00</td>
+              <td headers="regular-work-scheme-duration">4h</td>
+              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+            <tr>
+              <td headers="regular-work-scheme-weekday">Thursday</td>
+              <td headers="regular-work-scheme-start-time">13:00</td>
+              <td headers="regular-work-scheme-duration">4h</td>
+              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+            <tr>
+              <td headers="regular-work-scheme-weekday">Friday</td>
+              <td headers="regular-work-scheme-start-time">08:00</td>
+              <td headers="regular-work-scheme-duration">4h</td>
+              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tabs-pane" id="tab-exact-dates">
+        <h2>Exact work times</h2>
+        <table class="aui">
+          <thead>
+            <tr>
+              <th id="exact-work-scheme-date">Date</th>
+              <th id="exact-work-scheme-start-time">Start time</th>
+              <th id="exact-work-scheme-duration">Duration</th>
+              <td id="exact-work-scheme-actions"><a href="#">Add</a></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td headers="exact-work-scheme-date">2016-05-01</td>
+              <td headers="exact-work-scheme-start-time">08:00</td>
+              <td headers="exact-work-scheme-duration">8h</td>
+              <td headers="exact-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+            <tr>
+              <td headers="exact-work-scheme-date">2016-05-02</td>
+              <td headers="exact-work-scheme-start-time">08:00</td>
+              <td headers="exact-work-scheme-duration">4h</td>
+              <td headers="exact-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tabs-pane" id="tab-users"
+        data-eht-utext="schemeUsers.render(request, locale)"></div>
     </div>
-    <div class="tabs-pane" id="tab-exact-dates">
-      <h2>Exact work times</h2>
-      <table class="aui">
-        <thead>
-          <tr>
-            <th id="exact-work-scheme-date">Date</th>
-            <th id="exact-work-scheme-start-time">Start time</th>
-            <th id="exact-work-scheme-duration">Duration</th>
-            <td id="exact-work-scheme-actions"><a href="#">Add</a></td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td headers="exact-work-scheme-date">2016-05-01</td>
-            <td headers="exact-work-scheme-start-time">08:00</td>
-            <td headers="exact-work-scheme-duration">8h</td>
-            <td headers="exact-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-          <tr>
-            <td headers="exact-work-scheme-date">2016-05-02</td>
-            <td headers="exact-work-scheme-start-time">08:00</td>
-            <td headers="exact-work-scheme-duration">4h</td>
-            <td headers="exact-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="tabs-pane" id="tab-users"
-      data-eht-utext="schemeUsers.render(request, response.locale)"></div>
   </div>
 </body>
 </html>

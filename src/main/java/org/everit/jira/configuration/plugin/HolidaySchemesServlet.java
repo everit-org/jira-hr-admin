@@ -26,7 +26,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.configuration.plugin.ManageSchemeComponent.SchemeDTO;
+import org.everit.jira.configuration.plugin.SchemeUsersComponent.QUserSchemeEntityParameter;
 import org.everit.jira.configuration.plugin.schema.qdsl.QHolidayScheme;
+import org.everit.jira.configuration.plugin.schema.qdsl.QUserHolidayScheme;
+import org.everit.jira.configuration.plugin.schema.qdsl.QWorkScheme;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
 import com.querydsl.core.types.Projections;
@@ -46,11 +49,34 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
       new ManageSchemeComponent(this::listWorkSchemes, this::saveScheme, this::updateScheme,
           this::deleteScheme, this::applySchemeSelectionChange);
 
-  private void applySchemeSelectionChange(final Long schemeId, final PartialResponseBuilder prb,
+  private final SchemeUsersComponent schemeUsersComponent;
+
+  public HolidaySchemesServlet() {
+    QUserSchemeEntityParameter qUserSchemeEntityParameter = new QUserSchemeEntityParameter();
+    QUserHolidayScheme userworkscheme = QUserHolidayScheme.userHolidayScheme;
+    QWorkScheme workscheme = QWorkScheme.workScheme;
+    qUserSchemeEntityParameter.userSchemeEntityPath = userworkscheme;
+    qUserSchemeEntityParameter.schemeEntityPath = workscheme;
+    qUserSchemeEntityParameter.schemeSchemeId = workscheme.workSchemeId;
+    qUserSchemeEntityParameter.schemeName = workscheme.name_;
+    qUserSchemeEntityParameter.dateRangeId = userworkscheme.dateRangeId;
+    qUserSchemeEntityParameter.userSchemeSchemeId = userworkscheme.holidaySchemeId;
+    qUserSchemeEntityParameter.userId = userworkscheme.userId;
+    qUserSchemeEntityParameter.userSchemeId = userworkscheme.userHolidaySchemeId;
+
+    schemeUsersComponent =
+        new SchemeUsersComponent(qUserSchemeEntityParameter, transactionTemplate);
+  }
+
+  private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
+      final PartialResponseBuilder prb,
       final Locale locale) {
     Map<String, Object> vars = new HashMap<>();
-    prb.replace("#holiday-schemes-tabs",
-        (writer) -> pageTemplate.render(writer, vars, locale, "holiday-schemes-tabs"));
+    vars.put("schemeId", schemeId);
+    vars.put("schemeUsers", schemeUsersComponent);
+    vars.put("request", request);
+    prb.replace("#holiday-schemes-tabs-container",
+        (writer) -> pageTemplate.render(writer, vars, locale, "holiday-schemes-tabs-container"));
   }
 
   private void deleteScheme(final long schemeId) {
