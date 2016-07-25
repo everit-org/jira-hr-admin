@@ -51,11 +51,15 @@ var saveNewScheme = function() {
       "action" : "saveNewScheme",
       "schemeName" : schemeName
     }
-  }).success(function(content) {
-    everit.partialresponse.process(content);
-    schemeDataDialog.hide();
-    processRuntimeAlerts();
-  })
+  }).success(
+      function(content) {
+        everit.partialresponse.process(content);
+        schemeDataDialog.hide();
+        processRuntimeAlerts();
+        AJS.tabs.setup();
+        JIRA.trigger(JIRA.Events.NEW_CONTENT_ADDED,
+            [ $(".scheme-change-target") ]);
+      })
 }
 
 var updateScheme = function() {
@@ -100,7 +104,7 @@ var deleteScheme = function() {
     everit.partialresponse.process(content);
     schemeDataDialog.hide();
     processRuntimeAlerts();
-  })
+  });
 }
 
 var handleClientSchemeChange = function() {
@@ -122,10 +126,12 @@ var handleClientSchemeChange = function() {
     url : '#',
     type : 'GET',
     data : formdata
-  }).success(function(content) {
-    everit.partialresponse.process(content);
-    processRuntimeAlerts();
-    AJS.tabs.setup();
-    JIRA.trigger(JIRA.Events.NEW_CONTENT_ADDED, [$(".scheme-change-target")]);
-  })
+  }).success(
+      function(content) {
+        everit.partialresponse.process(content);
+        processRuntimeAlerts();
+        AJS.tabs.setup();
+        JIRA.trigger(JIRA.Events.NEW_CONTENT_ADDED,
+            [ $(".scheme-change-target") ]);
+      })
 }

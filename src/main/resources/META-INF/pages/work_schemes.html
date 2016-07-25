@@ -23,15 +23,15 @@
 <meta name="decorator" content="atl.admin">
 <style type="text/css">
 .everit-tabs .tabs-pane {
-	padding-top: 2em;
+    padding-top: 2em;
 }
 
 table.aui thead tr td {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .aui-inline-dialog.aui-datepicker-dialog {
-	z-index: 4000;
+    z-index: 4000;
 }
 </style>
 <script
@@ -52,25 +52,20 @@ table.aui thead tr td {
 <script
   data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:scheme-users')"
   data-eht-render="'content'"></script>
-<style type="text/css">
-.everit-tabs .tabs-pane {
-	padding-top: 2em;
-}
-
-table.aui thead tr td {
-	font-weight: bold;
-}
-</style>
+<script
+  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:unknown-error')"
+  data-eht-render="'content'"></script>
 </head>
 <body>
   <div data-eht-utext="areYouSureDialogComponent.render(response.locale)"></div>
   <div id="aui-message-bar" style="position: fixed; z-index: 3005; top: 0; left: 0; width: 100%;">
   </div>
-  <div data-eht-utext="schemeUsersComponent.renderInitialFragments(request, response)"
+  <div data-eht-utext="schemeUsers.renderInitialFragments(request, response)"
     data-eht-render="'content'"></div>
   <div data-eht-utext="manageSchemeComponent.render(request, response.locale)"></div>
 
-  <div id="work-schemes-tabs-container" data-eht-fragment="'work-schemes-tabs-container'" style="padding-top: 2em;">
+  <div id="work-schemes-tabs-container" data-eht-fragment="'work-schemes-tabs-container'"
+    style="padding-top: 2em;">
     <div id="work-schemes-tabs" class="aui-tabs horizontal-tabs everit-tabs scheme-change-target"
       data-eht-render="!empty(schemeId)">
       <ul class="tabs-menu">
@@ -174,8 +169,7 @@ table.aui thead tr td {
           </tbody>
         </table>
       </div>
-      <div class="tabs-pane" id="tab-users"
-        data-eht-utext="schemeUsers.render(request, locale)"></div>
+      <div class="tabs-pane" id="tab-users" data-eht-utext="schemeUsers.render(request, locale)"></div>
     </div>
   </div>
 </body>

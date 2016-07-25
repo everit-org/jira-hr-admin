@@ -21,11 +21,11 @@
 
   <h2>Users</h2>
 
-  <form class="aui">
+  <form class="aui" onsubmit="filterSchemeUsers(event);">
     <div class="form-group">
-      <label for="user-selector">User: </label> <select id="user-selector"
+      <label for="user-selector">User: </label> <select id="scheme-user-user-selector"
         class="js-default-user-picker single-user-picker" name="user"></select> <label
-        for="current-checkbox">Current time ranges only:</label> <input id="current-checkbox"
+        for="current-checkbox">Current time ranges only:</label> <input id="scheme-user-current-checkbox"
         type="checkbox" />
       <button class="aui-button aui-button-primary">Filter</button>
     </div>

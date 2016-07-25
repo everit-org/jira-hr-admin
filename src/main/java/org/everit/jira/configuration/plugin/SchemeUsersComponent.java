@@ -35,6 +35,7 @@ import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.util.AvatarUtil;
 import org.everit.jira.configuration.plugin.util.LocalizedTemplate;
 import org.everit.jira.configuration.plugin.util.QueryResultWithCount;
+import org.everit.jira.configuration.plugin.util.QueryUtil;
 import org.everit.jira.querydsl.schema.QAvatar;
 import org.everit.jira.querydsl.schema.QCwdUser;
 import org.everit.jira.querydsl.support.QuerydslSupport;
@@ -46,7 +47,6 @@ import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Coalesce;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringExpression;
@@ -56,16 +56,6 @@ import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
 
 public class SchemeUsersComponent {
-
-  public static class NewSchemeUserDTO {
-
-    public Date endDateExcluded;
-
-    public Date startDate;
-
-    public String userName;
-
-  }
 
   public static class QUserSchemeEntityParameter {
     public NumberPath<Long> dateRangeId;
@@ -85,7 +75,7 @@ public class SchemeUsersComponent {
     public NumberPath<Long> userSchemeSchemeId;
   }
 
-  public static class SchemeUserDTO extends NewSchemeUserDTO {
+  public static class SchemeUserDTO {
 
     public Long avatarId;
 
@@ -93,7 +83,13 @@ public class SchemeUsersComponent {
 
     public long dateRangeId;
 
+    public Date endDateExcluded;
+
+    public Date startDate;
+
     public String userDisplayName;
+
+    public String userName;
 
     public long userSchemeId;
 
@@ -118,6 +114,7 @@ public class SchemeUsersComponent {
     supportedActions.add("scheme-user-savenew");
     supportedActions.add("scheme-user-delete");
     supportedActions.add("scheme-user-edit");
+    supportedActions.add("scheme-user-filter");
     SUPPORTED_ACTIONS = Collections.unmodifiableSet(supportedActions);
   }
 
@@ -180,7 +177,8 @@ public class SchemeUsersComponent {
         predicates.add(qUserSchemeEntityParameter.userSchemeId.ne(userSchemeIdToExclude));
       }
 
-      predicates.add(rangeOverlaps(qDateRange, startDate, endDateExcluded));
+      predicates.add(QueryUtil.dateRangeOverlaps(qDateRange, ConstantImpl.create(startDate),
+          ConstantImpl.create(endDateExcluded)));
 
       query.where(predicates.toArray(new Predicate[predicates.size()]));
       return query.fetch();
@@ -207,10 +205,19 @@ public class SchemeUsersComponent {
 
   public void processAction(final HttpServletRequest req, final HttpServletResponse resp) {
     String action = req.getParameter("action");
-    if ("scheme-user-savenew".equals(action)) {
-      processSave(req, resp);
-    } else if ("scheme-user-delete".equals(action)) {
-      processDelete(req, resp);
+
+    switch (action) {
+      case "scheme-user-filter":
+        processFilter(req, resp);
+        break;
+      case "scheme-user-savenew":
+        processSave(req, resp);
+        break;
+      case "scheme-user-delete":
+        processDelete(req, resp);
+        break;
+      default:
+        break;
     }
   }
 
@@ -219,7 +226,12 @@ public class SchemeUsersComponent {
     delete(userSchemeId);
 
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
-      renderAlertOnPrb("Record deleted", "info", prb, resp.getLocale());
+      prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
+    }
+  }
+
+  private void processFilter(final HttpServletRequest req, final HttpServletResponse resp) {
+    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
       prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
     }
   }
@@ -322,15 +334,6 @@ public class SchemeUsersComponent {
       QueryResultWithCount<SchemeUserDTO> result = new QueryResultWithCount<>(resultSet, count);
       return result;
     });
-  }
-
-  private BooleanExpression rangeOverlaps(final QDateRange qDateRange,
-      final java.sql.Date startSQLDate,
-      final java.sql.Date endSQLDate) {
-    return qDateRange.startDate.loe(startSQLDate)
-        .and(qDateRange.endDateExcluded.gt(startSQLDate))
-        .or(qDateRange.startDate.lt(endSQLDate)
-            .and(qDateRange.endDateExcluded.goe(endSQLDate)));
   }
 
   public String render(final HttpServletRequest request, final Locale locale) {

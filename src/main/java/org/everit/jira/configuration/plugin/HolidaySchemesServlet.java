@@ -16,8 +16,10 @@
 package org.everit.jira.configuration.plugin;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -27,12 +29,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.configuration.plugin.ManageSchemeComponent.SchemeDTO;
 import org.everit.jira.configuration.plugin.SchemeUsersComponent.QUserSchemeEntityParameter;
+import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.schema.qdsl.QHolidayScheme;
 import org.everit.jira.configuration.plugin.schema.qdsl.QUserHolidayScheme;
 import org.everit.jira.configuration.plugin.schema.qdsl.QWorkScheme;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.sql.Configuration;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
@@ -69,27 +73,49 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
   }
 
   private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
-      final PartialResponseBuilder prb,
-      final Locale locale) {
+      final PartialResponseBuilder prb, final Locale locale) {
     Map<String, Object> vars = new HashMap<>();
     vars.put("schemeId", schemeId);
     vars.put("schemeUsers", schemeUsersComponent);
     vars.put("request", request);
+    vars.put("locale", locale);
     prb.replace("#holiday-schemes-tabs-container",
         (writer) -> pageTemplate.render(writer, vars, locale, "holiday-schemes-tabs-container"));
   }
 
   private void deleteScheme(final long schemeId) {
-    querydslSupport.execute((connection, configuration) -> {
+    transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
+      removeAllUsersFromScheme(schemeId, connection, configuration);
+
       QHolidayScheme qHolidayScheme = QHolidayScheme.holidayScheme;
       return new SQLDeleteClause(connection, configuration, qHolidayScheme)
           .where(qHolidayScheme.holidaySchemeId.eq(schemeId)).execute();
-    });
+    }));
   }
 
   @Override
   protected void doGetInternal(final HttpServletRequest req, final HttpServletResponse resp,
       final Map<String, Object> vars) throws ServletException, IOException {
+
+    String action = req.getParameter("action");
+    if (schemeUsersComponent.getSupportedActions().contains(action)) {
+      schemeUsersComponent.processAction(req, resp);
+      return;
+    }
+
+    vars.put("schemeId", req.getParameter("schemeId"));
+    vars.put("schemeUsers", schemeUsersComponent);
+    vars.put("locale", resp.getLocale());
+
+    String event = req.getParameter("event");
+    if ("schemeChange".equals(event)) {
+      try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+        prb.replace("#holiday-schemes-tabs-container", (writer) -> {
+          pageTemplate.render(writer, vars, resp.getLocale(), "holiday-schemes-tabs-container");
+        });
+      }
+      return;
+    }
 
     vars.put("manageSchemeComponent", manageSchemeComponent);
     vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
@@ -100,9 +126,11 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
   protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
       throws ServletException, IOException {
 
-    if (manageSchemeComponent.getSupportedActions().contains(req.getParameter("action"))) {
+    String action = req.getParameter("action");
+    if (manageSchemeComponent.getSupportedActions().contains(action)) {
       manageSchemeComponent.processAction(req, resp);
-      return;
+    } else if (schemeUsersComponent.getSupportedActions().contains(action)) {
+      schemeUsersComponent.processAction(req, resp);
     }
   }
 
@@ -125,6 +153,29 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
           .from(qHolidayScheme)
           .fetch();
     });
+  }
+
+  private void removeAllUsersFromScheme(final long schemeId, final Connection connection,
+      final Configuration configuration) {
+
+    final int batchSize = 100;
+    QUserHolidayScheme qUserHolidayScheme = QUserHolidayScheme.userHolidayScheme;
+
+    SQLQuery<Long> sqlQuery = new SQLQuery<Long>(connection, configuration)
+        .select(qUserHolidayScheme.dateRangeId).from(qUserHolidayScheme)
+        .where(qUserHolidayScheme.holidaySchemeId.eq(schemeId)).limit(batchSize);
+
+    List<Long> dateRangeIds = sqlQuery.fetch();
+
+    while (!dateRangeIds.isEmpty()) {
+      new SQLDeleteClause(connection, configuration, qUserHolidayScheme)
+          .where(qUserHolidayScheme.dateRangeId.in(dateRangeIds)).execute();
+
+      new SQLDeleteClause(connection, configuration, QDateRange.dateRange)
+          .where(QDateRange.dateRange.dateRangeId.in(dateRangeIds));
+      dateRangeIds = sqlQuery.fetch();
+    }
+
   }
 
   private long saveScheme(final String schemeName) {

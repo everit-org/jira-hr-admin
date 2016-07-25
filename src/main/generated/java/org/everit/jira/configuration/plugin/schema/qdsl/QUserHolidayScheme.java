@@ -59,16 +59,16 @@ public class QUserHolidayScheme extends com.querydsl.sql.RelationalPathBase<QUse
 
   public final StringPath description_ = createString("description_");
 
-  public final ForeignKeys fk = new ForeignKeys();
-
   public final NumberPath<Long> holidaySchemeId = createNumber("holidaySchemeId", Long.class);
-
-  public final PrimaryKeys pk = new PrimaryKeys();
 
   public final NumberPath<Long> userHolidaySchemeId =
       createNumber("userHolidaySchemeId", Long.class);
 
   public final NumberPath<Long> userId = createNumber("userId", Long.class);
+
+  public final PrimaryKeys pk = new PrimaryKeys();
+
+  public final ForeignKeys fk = new ForeignKeys();
 
   public QUserHolidayScheme(final Path<? extends QUserHolidayScheme> path) {
     super(path.getType(), path.getMetadata(), "public", "everit_jira_user_hday_schm");

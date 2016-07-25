@@ -93,4 +93,9 @@
     <resource name="scheme-users.js" type="download" location="META-INF/webresource/js/scheme-users.js" />
     <context>org.everit.jira.configuration</context>
   </web-resource>
+
+  <web-resource name="Everit Jira Unknown error after Ajax" key="unknown-error">
+    <resource name="unknown-error.js" type="download" location="META-INF/webresource/js/unknown-error.js" />
+    <context>org.everit.jira.configuration</context>
+  </web-resource>
 </atlassian-plugin>

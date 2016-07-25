@@ -18,13 +18,14 @@ var userSchemeDataDialog = null;
 var userSchemeDataDialogUserPicker = null;
 
 $(function() {
-  userSchemeDataDialog = ajsDialogFromTemplate("#scheme-user-data-dialog-template", {
-    width : 500,
-    height : 280,
-    id : "scheme-user-data-dialog",
-    closeOnOutsideClick : true
-  });
-  
+  userSchemeDataDialog = ajsDialogFromTemplate(
+      "#scheme-user-data-dialog-template", {
+        width : 500,
+        height : 280,
+        id : "scheme-user-data-dialog",
+        closeOnOutsideClick : true
+      });
+
   userSchemeDataDialogUserPicker = new AJS.SingleSelect({
     element : $("#scheme-user-dataform-user-selector"),
     submitInputVal : true,
@@ -39,7 +40,7 @@ $(function() {
       formatResponse : JIRA.UserPickerUtil.formatResponse
     }
   });
-  
+
 });
 
 var openAddSchemeUserDialog = function() {
@@ -54,34 +55,34 @@ var openAddSchemeUserDialog = function() {
 }
 
 var createUserSchemeFormDataWithSearchFields = function() {
-    var table = $("#scheme-user-table");
-    var userFilter = table.attr("data-scheme-user-filter-user");
-    var currentTimeRangesFilter = table
-        .attr("data-scheme-user-filter-currentTimeRanges");
-    var pageIndex = table.attr("data-scheme-user-page-index");
-    var schemeId = $("#scheme-selector").prop('value');
+  var table = $("#scheme-user-table");
+  var userFilter = table.attr("data-scheme-user-filter-user");
+  var currentTimeRangesFilter = table
+      .attr("data-scheme-user-filter-currentTimeRanges");
+  var pageIndex = table.attr("data-scheme-user-page-index");
+  var schemeId = $("#scheme-selector").prop('value');
 
-    var formdata = {
-      'schemeUsersCurrentFilter' : currentTimeRangesFilter,
-      'pageIndex' : pageIndex
-    };
+  var formdata = {
+    'schemeUsersCurrentFilter' : currentTimeRangesFilter,
+    'pageIndex' : pageIndex
+  };
 
-    if (userFilter) {
-      formdata['schemeUsersUserFilter'] = userFilter;
-    }
-    
-    if (schemeId) {
-      formdata['schemeId'] = schemeId;
-    }
-
-    return formdata;
+  if (userFilter) {
+    formdata['schemeUsersUserFilter'] = userFilter;
   }
+
+  if (schemeId) {
+    formdata['schemeId'] = schemeId;
+  }
+
+  return formdata;
+}
 
 var deleteSchemeUserRecord = function(userSchemeId) {
   var formdata = createUserSchemeFormDataWithSearchFields();
   formdata['action'] = 'scheme-user-delete';
   formdata['scheme-user-userscheme-id'] = userSchemeId;
-  
+
   $.ajax({
     url : '#',
     type : 'POST',
@@ -98,37 +99,71 @@ var deleteSchemeUserRecord = function(userSchemeId) {
 }
 
 var saveSchemeUserRecord = function(event) {
-    var form = $('#scheme-user-dataform')[0];
-    var formValid = form.checkValidity();
-    if (!formValid) {
-      return;
-    }
+  var form = $('#scheme-user-dataform')[0];
+  var formValid = form.checkValidity();
+  if (!formValid) {
+    return;
+  }
 
-    event.preventDefault();
+  event.preventDefault();
 
-    var formdata = createUserSchemeFormDataWithSearchFields();
-    formdata['action'] = $('#scheme-user-dataform-action').val();
-    formdata['record-id'] = $('#scheme-user-dataform-record-id')
-        .val();
-    formdata['user'] = $('#scheme-user-dataform-user-selector').prop('value');
-    formdata['start-date'] = $('#scheme-user-dataform-start-date').val();
-    formdata['end-date'] = $('#scheme-user-dataform-end-date').val();
+  var formdata = createUserSchemeFormDataWithSearchFields();
+  formdata['action'] = $('#scheme-user-dataform-action').val();
+  formdata['record-id'] = $('#scheme-user-dataform-record-id').val();
+  formdata['user'] = $('#scheme-user-dataform-user-selector').prop('value');
+  formdata['start-date'] = $('#scheme-user-dataform-start-date').val();
+  formdata['end-date'] = $('#scheme-user-dataform-end-date').val();
 
-    AJS.$('#scheme-user-dataform-savebutton').spin();
-    $.ajax({
-      url : '#',
-      type : 'POST',
-      data : formdata
-    }).success(function(content) {
-      everit.partialresponse.process(content);
-      userSchemeDataDialog.hide();
+  AJS.$('#scheme-user-dataform-savebutton').spin();
+  $.ajax({
+    url : '#',
+    type : 'POST',
+    data : formdata
+  }).success(function(content) {
+    everit.partialresponse.process(content);
+    userSchemeDataDialog.hide();
+    processRuntimeAlerts();
+  }).error(function(resp) {
+    if (resp.status == 400) {
+      everit.partialresponse.process(resp.responseText);
       processRuntimeAlerts();
-    }).error(function(resp) {
-      if (resp.status == 400) {
-        everit.partialresponse.process(resp.responseText);
-        processRuntimeAlerts();
-      }
-    }).complete(function() {
-      $('#scheme-user-dataform-savebutton').spinStop();
-    });
+    }
+  }).complete(function() {
+    $('#scheme-user-dataform-savebutton').spinStop();
+  });
+}
+
+var filterSchemeUsers = function(event) {
+  event.preventDefault();
+
+  var schemeId = $("#scheme-selector").prop('value');
+  
+  
+  var formdata = {
+    'action' : 'scheme-user-filter',
+    'schemeUsersCurrentFilter' : $('#scheme-user-current-checkbox').is(":checked")
+  };
+
+  var userFilter = $('#scheme-user-user-selector').val();
+  if (userFilter) {
+    formdata['schemeUsersUserFilter'] = userFilter;
+  }
+  
+  if (schemeId) {
+    formdata['schemeId'] = schemeId;
+  }
+
+  $.ajax({
+    url : '#',
+    type : 'GET',
+    data : formdata
+  }).success(function(content) {
+    everit.partialresponse.process(content);
+    processRuntimeAlerts();
+  }).error(function(resp) {
+    if (resp.status == 400) {
+      everit.partialresponse.process(resp.responseText);
+      processRuntimeAlerts();
+    }
+  });
 }

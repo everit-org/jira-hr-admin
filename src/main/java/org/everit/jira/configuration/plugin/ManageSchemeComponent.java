@@ -118,7 +118,7 @@ public class ManageSchemeComponent {
       prb.replace("#scheme-selector-form",
           (writer) -> renderFragment(null, writer, resp.getLocale(), "scheme-selector-form"));
 
-      schemeSelectionChangeConsumer.apply(req, schemeId, prb, resp.getLocale());
+      schemeSelectionChangeConsumer.apply(req, null, prb, resp.getLocale());
     }
   }
 

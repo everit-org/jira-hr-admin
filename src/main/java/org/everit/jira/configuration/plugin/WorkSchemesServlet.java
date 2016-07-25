@@ -16,8 +16,10 @@
 package org.everit.jira.configuration.plugin;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -27,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.configuration.plugin.ManageSchemeComponent.SchemeDTO;
 import org.everit.jira.configuration.plugin.SchemeUsersComponent.QUserSchemeEntityParameter;
+import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.configuration.plugin.schema.qdsl.QWorkScheme;
 import org.everit.web.partialresponse.PartialResponseBuilder;
@@ -34,6 +37,7 @@ import org.everit.web.partialresponse.PartialResponseBuilder;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.sal.api.transaction.TransactionTemplate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.sql.Configuration;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
@@ -75,29 +79,35 @@ public class WorkSchemesServlet extends AbstractPageServlet {
   }
 
   private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
-      final PartialResponseBuilder prb,
-      final Locale locale) {
+      final PartialResponseBuilder prb, final Locale locale) {
     Map<String, Object> vars = new HashMap<>();
     vars.put("schemeId", schemeId);
     vars.put("schemeUsers", schemeUsersComponent);
     vars.put("request", request);
     vars.put("locale", locale);
-    prb.replace("#work-schemes-tabs-container", (writer) -> {
-      pageTemplate.render(writer, vars, locale, "work-schemes-tabs-container");
-    });
+    prb.replace("#work-schemes-tabs-container",
+        (writer) -> pageTemplate.render(writer, vars, locale, "work-schemes-tabs-container"));
   }
 
   private void deleteScheme(final long schemeId) {
-    querydslSupport.execute((connection, configuration) -> {
+    transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
+      removeAllUsersFromScheme(schemeId, connection, configuration);
+
       QWorkScheme qWorkScheme = QWorkScheme.workScheme;
       return new SQLDeleteClause(connection, configuration, qWorkScheme)
           .where(qWorkScheme.workSchemeId.eq(schemeId)).execute();
-    });
+    }));
   }
 
   @Override
   protected void doGetInternal(final HttpServletRequest req, final HttpServletResponse resp,
       final Map<String, Object> vars) throws ServletException, IOException {
+
+    String action = req.getParameter("action");
+    if (schemeUsersComponent.getSupportedActions().contains(action)) {
+      schemeUsersComponent.processAction(req, resp);
+      return;
+    }
 
     vars.put("schemeId", req.getParameter("schemeId"));
     vars.put("schemeUsers", schemeUsersComponent);
@@ -112,9 +122,9 @@ public class WorkSchemesServlet extends AbstractPageServlet {
       }
       return;
     }
+
     vars.put("manageSchemeComponent", manageSchemeComponent);
     vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
-    vars.put("schemeUsersComponent", schemeUsersComponent);
 
     pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
   }
@@ -155,6 +165,29 @@ public class WorkSchemesServlet extends AbstractPageServlet {
           .orderBy(qWorkScheme.name_.asc())
           .fetch();
     });
+  }
+
+  private void removeAllUsersFromScheme(final long schemeId, final Connection connection,
+      final Configuration configuration) {
+
+    final int batchSize = 100;
+    QUserWorkScheme qUserWorkScheme = QUserWorkScheme.userWorkScheme;
+
+    SQLQuery<Long> sqlQuery = new SQLQuery<Long>(connection, configuration)
+        .select(qUserWorkScheme.dateRangeId).from(qUserWorkScheme)
+        .where(qUserWorkScheme.workSchemeId.eq(schemeId)).limit(batchSize);
+
+    List<Long> dateRangeIds = sqlQuery.fetch();
+
+    while (!dateRangeIds.isEmpty()) {
+      new SQLDeleteClause(connection, configuration, qUserWorkScheme)
+          .where(qUserWorkScheme.dateRangeId.in(dateRangeIds)).execute();
+
+      new SQLDeleteClause(connection, configuration, QDateRange.dateRange)
+          .where(QDateRange.dateRange.dateRangeId.in(dateRangeIds));
+      dateRangeIds = sqlQuery.fetch();
+    }
+
   }
 
   private long saveScheme(final String schemeName) {
