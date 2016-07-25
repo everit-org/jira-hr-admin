@@ -54,6 +54,7 @@ import com.querydsl.sql.RelationalPath;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
+import com.querydsl.sql.dml.SQLUpdateClause;
 
 public class SchemeUsersComponent {
 
@@ -113,7 +114,7 @@ public class SchemeUsersComponent {
     Set<String> supportedActions = new HashSet<>();
     supportedActions.add("scheme-user-savenew");
     supportedActions.add("scheme-user-delete");
-    supportedActions.add("scheme-user-edit");
+    supportedActions.add("scheme-user-update");
     supportedActions.add("scheme-user-filter");
     SUPPORTED_ACTIONS = Collections.unmodifiableSet(supportedActions);
   }
@@ -213,6 +214,9 @@ public class SchemeUsersComponent {
       case "scheme-user-savenew":
         processSave(req, resp);
         break;
+      case "scheme-user-update":
+        processEdit(req, resp);
+        break;
       case "scheme-user-delete":
         processDelete(req, resp);
         break;
@@ -226,6 +230,47 @@ public class SchemeUsersComponent {
     delete(userSchemeId);
 
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+      prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
+    }
+  }
+
+  private void processEdit(final HttpServletRequest req, final HttpServletResponse resp) {
+    long recordId = Long.parseLong(req.getParameter("record-id"));
+    long schemeId = Long.parseLong(req.getParameter("schemeId"));
+    String userName = req.getParameter("user");
+    Date startDate = Date.valueOf(req.getParameter("start-date"));
+    Date endDate = Date.valueOf(req.getParameter("end-date"));
+    Date endDateExcluded = new Date(endDate.getTime() + +MILLISECS_IN_DAY);
+
+    Long userId = getUserId(userName);
+    if (userId == null) {
+      renderAlert("User does not exist", "error", resp);
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    if (startDate.compareTo(endDate) > 0) {
+      renderAlert("Start date must not be after end date", "error", resp);
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    Set<String> schemeNamesWithOverlappingTimeRange =
+        getSchemeNamesWithOverlappingTimeRange(userId, startDate, endDateExcluded, recordId);
+
+    if (!schemeNamesWithOverlappingTimeRange.isEmpty()) {
+      renderAlert(
+          "The user is assigned overlapping with the specified date range to the"
+              + " following scheme(s): " + schemeNamesWithOverlappingTimeRange.toString(),
+          "error", resp);
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+
+    update(recordId, schemeId, userId, startDate, endDateExcluded);
+
+    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+      renderAlertOnPrb("Updating user successful", "info", prb, resp.getLocale());
       prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
     }
   }
@@ -416,5 +461,29 @@ public class SchemeUsersComponent {
 
       return null;
     }));
+  }
+
+  private void update(final long recordId, final long schemeId, final long userId,
+      final Date startDate, final Date endDateExcluded) {
+    transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
+      QDateRange qDateRange = QDateRange.dateRange;
+
+      Long dateRangeId = new SQLQuery<Long>(connection, configuration)
+          .select(qUserSchemeEntityParameter.dateRangeId)
+          .from(qUserSchemeEntityParameter.userSchemeEntityPath)
+          .where(qUserSchemeEntityParameter.userSchemeId.eq(recordId)).fetchOne();
+
+      new SQLUpdateClause(connection, configuration, qDateRange)
+          .set(qDateRange.startDate, startDate)
+          .set(qDateRange.endDateExcluded, endDateExcluded)
+          .where(qDateRange.dateRangeId.eq(dateRangeId)).execute();
+
+      new SQLUpdateClause(connection, configuration,
+          qUserSchemeEntityParameter.userSchemeEntityPath)
+              .set(qUserSchemeEntityParameter.userId, userId)
+              .where(qUserSchemeEntityParameter.userSchemeId.eq(recordId));
+      return null;
+    }));
+
   }
 }

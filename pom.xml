@@ -133,7 +133,7 @@
       <plugin>
         <groupId>org.everit.persistence</groupId>
         <artifactId>lqmg-maven-plugin</artifactId>
-        <version>4.1.0</version>
+        <version>4.1.1-SNAPSHOT</version>
         <configuration>
           <defaultSchema>public</defaultSchema>
           <capability>org.everit.jira.configuration</capability>

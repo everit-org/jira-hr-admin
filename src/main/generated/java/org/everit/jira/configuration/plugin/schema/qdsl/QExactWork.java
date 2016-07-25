@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2011 Everit Kft. (http://www.everit.org)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.everit.jira.configuration.plugin.schema.qdsl;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
@@ -30,18 +15,18 @@ import java.sql.Types;
 
 
 /**
- * QExactWorkScheme is a Querydsl query type for QExactWorkScheme
+ * QExactWork is a Querydsl query type for QExactWork
  */
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
-public class QExactWorkScheme extends com.querydsl.sql.RelationalPathBase<QExactWorkScheme> {
+public class QExactWork extends com.querydsl.sql.RelationalPathBase<QExactWork> {
 
-    private static final long serialVersionUID = 1589362231;
+    private static final long serialVersionUID = -1992795662;
 
-    public static final QExactWorkScheme exactWorkScheme = new QExactWorkScheme("everit_jira_exact_work_scheme");
+    public static final QExactWork exactWork = new QExactWork("everit_jira_exact_work");
 
     public class PrimaryKeys {
 
-        public final com.querydsl.sql.PrimaryKey<QExactWorkScheme> exactWorkSchemePK = createPrimaryKey(exactWorkSchemeId);
+        public final com.querydsl.sql.PrimaryKey<QExactWork> exactWorkPK = createPrimaryKey(exactWorkSchemeId);
 
     }
 
@@ -65,23 +50,23 @@ public class QExactWorkScheme extends com.querydsl.sql.RelationalPathBase<QExact
 
     public final ForeignKeys fk = new ForeignKeys();
 
-    public QExactWorkScheme(String variable) {
-        super(QExactWorkScheme.class, forVariable(variable), "public", "everit_jira_exact_work_scheme");
+    public QExactWork(String variable) {
+        super(QExactWork.class, forVariable(variable), "public", "everit_jira_exact_work");
         addMetadata();
     }
 
-    public QExactWorkScheme(String variable, String schema, String table) {
-        super(QExactWorkScheme.class, forVariable(variable), schema, table);
+    public QExactWork(String variable, String schema, String table) {
+        super(QExactWork.class, forVariable(variable), schema, table);
         addMetadata();
     }
 
-    public QExactWorkScheme(Path<? extends QExactWorkScheme> path) {
-        super(path.getType(), path.getMetadata(), "public", "everit_jira_exact_work_scheme");
+    public QExactWork(Path<? extends QExactWork> path) {
+        super(path.getType(), path.getMetadata(), "public", "everit_jira_exact_work");
         addMetadata();
     }
 
-    public QExactWorkScheme(PathMetadata metadata) {
-        super(QExactWorkScheme.class, metadata, "public", "everit_jira_exact_work_scheme");
+    public QExactWork(PathMetadata metadata) {
+        super(QExactWork.class, metadata, "public", "everit_jira_exact_work");
         addMetadata();
     }
 

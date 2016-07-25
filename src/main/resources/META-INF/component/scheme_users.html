@@ -45,7 +45,13 @@
     </thead>
     <tbody>
       <tr data-eht-foreach="{'schemeUser' : schemeUsers.resultSet}"
-        data-eht-code="avatarOwner = (!empty(schemeUser.avatarOwner)) ? schemeUser.avatarOwner : (empty(schemeUser.avatarId) ? schemeUser.userName.toLowerCase() : null); avatarUrl = request.contextPath + '/secure/useravatar?size=small' + ((!empty(schemeUser.avatarOwner)) ? '&ownerId=' + schemeUser.avatarOwner : '') + ((schemeUser.avatarId != null) ? '&avatarId=' + schemeUser.avatarId : '')">
+        data-eht-code="avatarOwner = (!empty(schemeUser.avatarOwner)) ? schemeUser.avatarOwner : (empty(schemeUser.avatarId) ? schemeUser.userName.toLowerCase() : null); avatarUrl = request.contextPath + '/secure/useravatar?size=small' + ((!empty(schemeUser.avatarOwner)) ? '&ownerId=' + schemeUser.avatarOwner : '') + ((schemeUser.avatarId != null) ? '&avatarId=' + schemeUser.avatarId : '')"
+        data-eht-attr-id="'scheme_user_id_' + schemeUser.userSchemeId"
+        data-eht-attr-data-scheme-user-start-date="schemeUser.startDate"
+        data-eht-attr-data-scheme-user-end-date="schemeUser.endDate"
+        data-eht-attr-data-scheme-user-user-name="schemeUser.userName"
+        data-eht-attr-data-scheme-user-display-name="schemeUser.userDisplayName"
+        data-eht-attr-data-scheme-user-avatar-url="avatarUrl">
         <td headers="scheme-user-name"><img width="24" height="24"
           data-eht-attr-src="avatarUrl" /><span data-eht-text="schemeUser.userDisplayName"
           style="margin-left: 1em;">balazs.zsoldos@everit.biz</span></td>
@@ -53,7 +59,7 @@
         <td headers="scheme-user-end-date" data-eht-text="schemeUser.endDate">2016-11-30</td>
         <td headers="scheme-user-actions">
           <ul class="menu">
-            <li><a href="#">Edit</a></li>
+            <li><a data-eht-attr-href="'javascript:openEditSchemeUserDialog(' + schemeUser.userSchemeId + ');'">Edit</a></li>
             <li><a data-eht-attr-href="'javascript:areYouSureDialog.show(function() {deleteSchemeUserRecord(' + schemeUser.userSchemeId + ')});'">Delete</a></li>
           </ul>
         </td>

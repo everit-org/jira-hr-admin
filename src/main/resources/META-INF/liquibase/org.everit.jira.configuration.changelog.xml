@@ -75,9 +75,9 @@
       <column name="scope_" />
     </createIndex>
 
-    <createTable tableName="everit_jira_exact_work_scheme">
+    <createTable tableName="everit_jira_exact_work">
       <column name="exact_work_scheme_id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_ex_work_scheme" />
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_exact_work" />
       </column>
       <column name="date_" type="date">
         <constraints nullable="false" />
@@ -93,13 +93,13 @@
           referencedColumnNames="work_scheme_id" />
       </column>
     </createTable>
-    <createIndex tableName="everit_jira_exact_work_scheme" indexName="i_everit_jira_ex_work_sch_d">
+    <createIndex tableName="everit_jira_exact_work" indexName="i_everit_jira_ex_work_date">
       <column name="date_" />
     </createIndex>
 
-    <createTable tableName="everit_jira_wd_work_scheme">
-      <column name="wd_work_scheme_id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_wd_work_scheme" />
+    <createTable tableName="everit_jira_weekday_work">
+      <column name="weekday_work_id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_everit_jira_weekday_work" />
       </column>
       <column name="weekday" type="tinyint">
         <constraints nullable="false" />
@@ -111,11 +111,11 @@
         <constraints nullable="false" />
       </column>
       <column name="work_scheme_id" type="bigint">
-        <constraints foreignKeyName="fk_everit_jira_wd_w_sch_wsch" referencedTableName="everit_jira_work_scheme"
+        <constraints foreignKeyName="fk_everit_jira_wd_w_wsch" referencedTableName="everit_jira_work_scheme"
           referencedColumnNames="work_scheme_id" />
       </column>
     </createTable>
-    <createIndex tableName="everit_jira_wd_work_scheme" indexName="i_everit_jira_wd_w_sch_wd">
+    <createIndex tableName="everit_jira_weekday_work" indexName="i_everit_jira_wd_w_weekday">
       <column name="weekday" />
     </createIndex>
 

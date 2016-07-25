@@ -49,12 +49,12 @@
     </classNameRule>
 
     <classNameRule>
-      <entity>everit_jira_exact_work_scheme</entity>
-      <class>ExactWorkScheme</class>
+      <entity>everit_jira_exact_work</entity>
+      <class>ExactWork</class>
       <propertyMappings>
         <primaryKey>
-          <name>pk_everit_jira_ex_work_scheme</name>
-          <property>exactWorkSchemePK</property>
+          <name>pk_everit_jira_exact_work</name>
+          <property>exactWorkPK</property>
         </primaryKey>
         <foreignKey>
           <name>fk_everit_jira_ex_w_sch_wsch</name>
@@ -64,15 +64,15 @@
     </classNameRule>
 
     <classNameRule>
-      <entity>everit_jira_wd_work_scheme</entity>
-      <class>WeekdayWorkScheme</class>
+      <entity>everit_jira_weekday_work</entity>
+      <class>WeekdayWork</class>
       <propertyMappings>
         <primaryKey>
-          <name>pk_everit_jira_wd_work_scheme</name>
-          <property>weekdayWorkSchemePK</property>
+          <name>pk_everit_jira_weekday_work</name>
+          <property>weekdayWorkPK</property>
         </primaryKey>
         <foreignKey>
-          <name>fk_everit_jira_wd_w_sch_wsch</name>
+          <name>fk_everit_jira_wd_w_wsch</name>
           <property>workSchemeFK</property>
         </foreignKey>
       </propertyMappings>
