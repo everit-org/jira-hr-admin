@@ -31,6 +31,7 @@ import org.everit.jira.configuration.plugin.ManageSchemeComponent.SchemeDTO;
 import org.everit.jira.configuration.plugin.SchemeUsersComponent.QUserSchemeEntityParameter;
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.schema.qdsl.QUserWorkScheme;
+import org.everit.jira.configuration.plugin.schema.qdsl.QWeekdayWork;
 import org.everit.jira.configuration.plugin.schema.qdsl.QWorkScheme;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
@@ -47,6 +48,10 @@ import com.querydsl.sql.dml.SQLUpdateClause;
  * Servlet that allows the users to view and edit working schemes.
  */
 public class WorkSchemesServlet extends AbstractPageServlet {
+
+  public static class WeekdayWorkDTO {
+
+  }
 
   private static final long serialVersionUID = 5855299893731146143L;
 
@@ -68,7 +73,7 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     qUserSchemeEntityParameter.userSchemeEntityPath = userworkscheme;
     qUserSchemeEntityParameter.schemeEntityPath = workscheme;
     qUserSchemeEntityParameter.schemeSchemeId = workscheme.workSchemeId;
-    qUserSchemeEntityParameter.schemeName = workscheme.name_;
+    qUserSchemeEntityParameter.schemeName = workscheme.name;
     qUserSchemeEntityParameter.dateRangeId = userworkscheme.dateRangeId;
     qUserSchemeEntityParameter.userSchemeSchemeId = userworkscheme.workSchemeId;
     qUserSchemeEntityParameter.userId = userworkscheme.userId;
@@ -76,6 +81,16 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
     schemeUsersComponent =
         new SchemeUsersComponent(qUserSchemeEntityParameter, transactionTemplate);
+  }
+
+  private void addWeekdaysTableToVariables(final long schemeId, final Map<String, Object> vars) {
+    querydslSupport.execute((connection, configuration) -> {
+      QWeekdayWork qWeekdayWork = QWeekdayWork.weekdayWork;
+      new SQLQuery<WeekdayWorkDTO>(connection, configuration)
+          .select(Projections.fields(WeekdayWorkDTO.class, qWeekdayWork.duration_));
+      // TODO
+      return null;
+    });
   }
 
   private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
@@ -109,22 +124,27 @@ public class WorkSchemesServlet extends AbstractPageServlet {
       return;
     }
 
-    vars.put("schemeId", req.getParameter("schemeId"));
+    String schemeIdParameter = req.getParameter("schemeId");
+    vars.put("schemeId", schemeIdParameter);
     vars.put("schemeUsers", schemeUsersComponent);
     vars.put("locale", resp.getLocale());
-
-    String event = req.getParameter("event");
-    if ("schemeChange".equals(event)) {
-      try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
-        prb.replace("#work-schemes-tabs-container", (writer) -> {
-          pageTemplate.render(writer, vars, resp.getLocale(), "work-schemes-tabs-container");
-        });
-      }
-      return;
-    }
-
     vars.put("manageSchemeComponent", manageSchemeComponent);
     vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
+
+    if (schemeIdParameter != null) {
+      long schemeId = Long.parseLong(schemeIdParameter);
+      addWeekdaysTableToVariables(schemeId, vars);
+
+      String event = req.getParameter("event");
+      if ("schemeChange".equals(event)) {
+        try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+          prb.replace("#work-schemes-tabs-container", (writer) -> {
+            pageTemplate.render(writer, vars, resp.getLocale(), "work-schemes-tabs-container");
+          });
+        }
+        return;
+      }
+    }
 
     pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
   }
@@ -159,10 +179,10 @@ public class WorkSchemesServlet extends AbstractPageServlet {
       QWorkScheme qWorkScheme = QWorkScheme.workScheme;
       return new SQLQuery<SchemeDTO>(connection, configuration)
           .select(Projections.fields(SchemeDTO.class, qWorkScheme.workSchemeId.as("schemeId"),
-              qWorkScheme.name_.as("name")))
+              qWorkScheme.name.as("name")))
           .from(qWorkScheme)
-          .where(qWorkScheme.scope_.eq(WORK_SCHEME_SCOPE_GLOBAL))
-          .orderBy(qWorkScheme.name_.asc())
+          .where(qWorkScheme.scope.eq(WORK_SCHEME_SCOPE_GLOBAL))
+          .orderBy(qWorkScheme.name.asc())
           .fetch();
     });
   }
@@ -194,8 +214,8 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     return querydslSupport.execute((connection, configuration) -> {
       QWorkScheme qWorkScheme = QWorkScheme.workScheme;
       return new SQLInsertClause(connection, configuration, qWorkScheme)
-          .set(qWorkScheme.name_, schemeName)
-          .set(qWorkScheme.scope_, WORK_SCHEME_SCOPE_GLOBAL)
+          .set(qWorkScheme.name, schemeName)
+          .set(qWorkScheme.scope, WORK_SCHEME_SCOPE_GLOBAL)
           .executeWithKey(qWorkScheme.workSchemeId);
     });
   }
@@ -204,7 +224,7 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     querydslSupport.execute((connection, configuration) -> {
       QWorkScheme qWorkScheme = QWorkScheme.workScheme;
       return new SQLUpdateClause(connection, configuration, qWorkScheme)
-          .set(qWorkScheme.name_, scheme.name)
+          .set(qWorkScheme.name, scheme.name)
           .where(qWorkScheme.workSchemeId.eq(scheme.schemeId))
           .execute();
     });

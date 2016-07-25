@@ -62,7 +62,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
     qUserSchemeEntityParameter.userSchemeEntityPath = userworkscheme;
     qUserSchemeEntityParameter.schemeEntityPath = workscheme;
     qUserSchemeEntityParameter.schemeSchemeId = workscheme.workSchemeId;
-    qUserSchemeEntityParameter.schemeName = workscheme.name_;
+    qUserSchemeEntityParameter.schemeName = workscheme.name;
     qUserSchemeEntityParameter.dateRangeId = userworkscheme.dateRangeId;
     qUserSchemeEntityParameter.userSchemeSchemeId = userworkscheme.holidaySchemeId;
     qUserSchemeEntityParameter.userId = userworkscheme.userId;
@@ -149,7 +149,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
       QHolidayScheme qHolidayScheme = QHolidayScheme.holidayScheme;
       return new SQLQuery<SchemeDTO>(connection, configuration)
           .select(Projections.fields(SchemeDTO.class, qHolidayScheme.holidaySchemeId.as("schemeId"),
-              qHolidayScheme.name_.as("name")))
+              qHolidayScheme.name.as("name")))
           .from(qHolidayScheme)
           .fetch();
     });
@@ -182,7 +182,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
     return querydslSupport.execute((connection, configuration) -> {
       QHolidayScheme qHolidayScheme = QHolidayScheme.holidayScheme;
       return new SQLInsertClause(connection, configuration, qHolidayScheme)
-          .set(qHolidayScheme.name_, schemeName)
+          .set(qHolidayScheme.name, schemeName)
           .executeWithKey(qHolidayScheme.holidaySchemeId);
     });
   }
@@ -191,7 +191,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
     querydslSupport.execute((connection, configuration) -> {
       QHolidayScheme qHolidayScheme = QHolidayScheme.holidayScheme;
       return new SQLUpdateClause(connection, configuration, qHolidayScheme)
-          .set(qHolidayScheme.name_, scheme.name)
+          .set(qHolidayScheme.name, scheme.name)
           .where(qHolidayScheme.holidaySchemeId.eq(scheme.schemeId))
           .execute();
     });
