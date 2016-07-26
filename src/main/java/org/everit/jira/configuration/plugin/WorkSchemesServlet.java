@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.ServletException;
@@ -60,9 +61,9 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
     public Time startTime;
 
-    byte weekday;
+    public byte weekday;
 
-    long weekdayWorkId;
+    public long weekdayWorkId;
 
     public DayOfWeek getDayOfWeek() {
       // Convert the data stored in db to ISO format. DB format starts on Sunday, while ISO starts
@@ -136,25 +137,6 @@ public class WorkSchemesServlet extends AbstractPageServlet {
         new SchemeUsersComponent(qUserSchemeEntityParameter, transactionTemplate);
   }
 
-  private void addWeekdaysTableToVariables(final long workSchemeId,
-      final Map<String, Object> vars) {
-
-    List<WeekdayWorkDTO> resultSet = querydslSupport.execute((connection, configuration) -> {
-      QWeekdayWork qWeekdayWork = QWeekdayWork.weekdayWork;
-      return new SQLQuery<WeekdayWorkDTO>(connection, configuration)
-          .select(
-              Projections.fields(WeekdayWorkDTO.class, qWeekdayWork.weekdayWorkId,
-                  qWeekdayWork.weekday, qWeekdayWork.startTime, qWeekdayWork.duration))
-          .from(qWeekdayWork)
-          .where(qWeekdayWork.workSchemeId.eq(workSchemeId))
-          .fetch();
-    });
-    TreeSet<WeekdayWorkDTO> weekdayWorks = new TreeSet<WeekdayWorkDTO>(WEEKDAY_WORK_DTO_COMPARATOR);
-    weekdayWorks.addAll(resultSet);
-    vars.put("weekdayWorks", weekdayWorks);
-
-  }
-
   private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
       final PartialResponseBuilder prb, final Locale locale) {
     Map<String, Object> vars = new HashMap<>();
@@ -186,6 +168,15 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     }));
   }
 
+  private void deleteWeekday(final long weekdayRecordId) {
+    querydslSupport.execute((connection, configuration) -> {
+      QWeekdayWork qWeekdayWork = QWeekdayWork.weekdayWork;
+      new SQLDeleteClause(connection, configuration, qWeekdayWork)
+          .where(qWeekdayWork.weekdayWorkId.eq(weekdayRecordId)).execute();
+      return null;
+    });
+  }
+
   @Override
   protected void doGetInternal(final HttpServletRequest req, final HttpServletResponse resp,
       final Map<String, Object> vars) throws ServletException, IOException {
@@ -205,7 +196,7 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
     if (schemeIdParameter != null) {
       long schemeId = Long.parseLong(schemeIdParameter);
-      addWeekdaysTableToVariables(schemeId, vars);
+      vars.put("weekdayWorks", getWeekdayWorks(schemeId));
     }
 
     String event = req.getParameter("event");
@@ -242,7 +233,9 @@ public class WorkSchemesServlet extends AbstractPageServlet {
       case "newWeekday":
         processNewWeekday(req, resp);
         break;
-
+      case "deleteWeekday":
+        processDeleteWeekday(req, resp);
+        break;
       default:
         break;
     }
@@ -251,6 +244,24 @@ public class WorkSchemesServlet extends AbstractPageServlet {
   @Override
   protected String getTemplateBase() {
     return "/META-INF/pages/work_schemes";
+  }
+
+  private Set<WeekdayWorkDTO> getWeekdayWorks(final long workSchemeId) {
+
+    List<WeekdayWorkDTO> resultSet = querydslSupport.execute((connection, configuration) -> {
+      QWeekdayWork qWeekdayWork = QWeekdayWork.weekdayWork;
+      return new SQLQuery<WeekdayWorkDTO>(connection, configuration)
+          .select(
+              Projections.fields(WeekdayWorkDTO.class, qWeekdayWork.weekdayWorkId,
+                  qWeekdayWork.weekday, qWeekdayWork.startTime, qWeekdayWork.duration))
+          .from(qWeekdayWork)
+          .where(qWeekdayWork.workSchemeId.eq(workSchemeId))
+          .fetch();
+    });
+    TreeSet<WeekdayWorkDTO> weekdayWorks = new TreeSet<WeekdayWorkDTO>(WEEKDAY_WORK_DTO_COMPARATOR);
+    weekdayWorks.addAll(resultSet);
+
+    return weekdayWorks;
   }
 
   @Override
@@ -271,6 +282,19 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     });
   }
 
+  private void processDeleteWeekday(final HttpServletRequest req, final HttpServletResponse resp)
+      throws IOException {
+    long schemeId = Long.parseLong(req.getParameter("schemeId"));
+    long weekdayRecordId = Long.parseLong(req.getParameter("weekdayRecordId"));
+
+    deleteWeekday(weekdayRecordId);
+
+    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+      renderAlertOnPrb("Record deleted", "info", prb, resp.getLocale());
+      renderWeekdayTableOnPrb(req, resp, schemeId, prb);
+    }
+  }
+
   private void processNewWeekday(final HttpServletRequest req, final HttpServletResponse resp)
       throws IOException {
     long schemeId = Long.parseLong(req.getParameter("schemeId"));
@@ -281,12 +305,8 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     saveWeekday(schemeId, DayOfWeek.of(weekdayIndex), startTime, durationInSeconds);
 
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
-      Map<String, Object> vars = createCommonVars(req, resp);
-      vars.put("schemeId", schemeId);
-      addWeekdaysTableToVariables(schemeId, vars);
       renderAlertOnPrb("Weekday record saved", "info", prb, resp.getLocale());
-      prb.replace("#weekday-table",
-          (writer) -> pageTemplate.render(writer, vars, resp.getLocale(), "weekday-table"));
+      renderWeekdayTableOnPrb(req, resp, schemeId, prb);
     }
   }
 
@@ -318,6 +338,15 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
     prb.append("#aui-message-bar",
         (writer) -> AlertComponent.INSTANCE.render(writer, message, alertType, locale));
+  }
+
+  private void renderWeekdayTableOnPrb(final HttpServletRequest req, final HttpServletResponse resp,
+      final long schemeId, final PartialResponseBuilder prb) throws IOException {
+    Map<String, Object> vars = createCommonVars(req, resp);
+    vars.put("schemeId", schemeId);
+    vars.put("weekdayWorks", getWeekdayWorks(schemeId));
+    prb.replace("#weekday-table",
+        (writer) -> pageTemplate.render(writer, vars, resp.getLocale(), "weekday-table"));
   }
 
   private long saveScheme(final String schemeName) {

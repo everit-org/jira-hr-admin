@@ -78,17 +78,17 @@ table.aui thead tr td {
           </select>
         </div>
         <div class="field-group">
-          <label>Start time</label> <input id="weekday-dataform-start-time"
-            class="text short-field" name="start-date" type="text" placeholder="hh:mm"
+          <label>Start time</label> <input id="weekday-dataform-start-time" class="text short-field"
+            name="start-date" type="text" placeholder="hh:mm"
             pattern="[([0-1]?\d)(2[0-4])]:[0-5]?\d" required="required" />
         </div>
         <div class="field-group">
           <label>Amount (minutes)</label> <input id="weekday-dataform-duration"
-            class="text short-field" name="end-date" type="number"
-            required="required" />
+            class="text short-field" name="end-date" type="number" required="required" />
         </div>
         <div class="field-group">
-          <button id="weekday-dataform-savebutton" class="aui-button aui-button-primary" onclick="saveNewWeekday(event);">Save</button>
+          <button id="weekday-dataform-savebutton" class="aui-button aui-button-primary"
+            onclick="saveNewWeekday(event);">Save</button>
         </div>
       </form>
     </div>
@@ -128,7 +128,8 @@ table.aui thead tr td {
               <td headers="regular-work-scheme-start-time" data-eht-text="weekdayWork.startTime">08:00</td>
               <td headers="regular-work-scheme-duration"
                 data-eht-text="weekdayWork.durationInMinutes + ' min'">480 min</td>
-              <td headers="regular-work-scheme-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
+              <td headers="regular-work-scheme-actions"><a href="#" data-eht-render="false">Edit</a> <a
+                data-eht-attr-href="'javascript:areYouSureDialog.show(function() {deleteWeekdayRecord(' + weekdayWork.weekdayWorkId + ')});'">Delete</a></td>
             </tr>
             <tr data-eht-render="empty(weekdayWorks)">
               <td colspan="4">No record to show</td>

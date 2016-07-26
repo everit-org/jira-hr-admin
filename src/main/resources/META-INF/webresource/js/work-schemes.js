@@ -59,3 +59,25 @@ var saveNewWeekday = function(event) {
     }
   });
 }
+
+var deleteWeekdayRecord = function(recordId) {
+  var formdata = {
+      "schemeId" : $("#scheme-selector").prop('value'),
+      "action" : 'deleteWeekday',
+      "weekdayRecordId" : recordId
+    }
+
+  $.ajax({
+    url : '#',
+    type : 'POST',
+    data : formdata
+  }).success(function(content) {
+    everit.partialresponse.process(content);
+    processRuntimeAlerts();
+  }).error(function(resp) {
+    if (resp.status == 400) {
+      everit.partialresponse.process(resp.responseText);
+      processRuntimeAlerts();
+    }
+  });
+}
