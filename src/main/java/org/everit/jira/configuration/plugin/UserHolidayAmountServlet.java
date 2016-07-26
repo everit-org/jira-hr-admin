@@ -17,10 +17,9 @@ package org.everit.jira.configuration.plugin;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,7 +31,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.schema.qdsl.QUserHolidayAmount;
+import org.everit.jira.configuration.plugin.schema.qdsl.QUserHolidayAmountDate;
 import org.everit.jira.configuration.plugin.util.AvatarUtil;
+import org.everit.jira.configuration.plugin.util.DateUtil;
 import org.everit.jira.configuration.plugin.util.QueryResultWithCount;
 import org.everit.jira.querydsl.schema.QAvatar;
 import org.everit.jira.querydsl.schema.QCwdUser;
@@ -56,7 +57,7 @@ import com.querydsl.sql.dml.SQLUpdateClause;
 public class UserHolidayAmountServlet extends AbstractPageServlet {
 
   public static class UserHolidayAmountDTO {
-    public int amount;
+    public long amount;
 
     public Long avatarId;
 
@@ -75,11 +76,9 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     public String userName;
 
     public Date getEndDate() {
-      return new java.sql.Date(endDateExcluded.getTime() - MILLISECS_IN_DAY);
+      return DateUtil.addDays(endDateExcluded, -1);
     }
   }
-
-  private static final int MILLISECS_IN_DAY = 3600 * 24 * 1000;
 
   private static final int PAGE_SIZE = 50;
 
@@ -104,6 +103,8 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
       new SQLDeleteClause(connection, configuration, qUserHolidayAmount)
           .where(qUserHolidayAmount.userHolidayAmountId.eq(userHolidayAmountId)).execute();
+
+      vacuumDates(connection, configuration);
 
       QDateRange qDateRange = QDateRange.dateRange;
       new SQLDeleteClause(connection, configuration, qDateRange)
@@ -169,19 +170,10 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       return;
     }
 
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    Date startDate;
-    Date endDate;
+    Date startDate = Date.valueOf(startDateParam);
+    Date endDate = Date.valueOf(endDateParam);
 
-    try {
-      startDate = simpleDateFormat.parse(startDateParam);
-      endDate = simpleDateFormat.parse(endDateParam);
-    } catch (ParseException e) {
-      throw new RuntimeException(e);
-    }
-
-    java.sql.Date startSqlDate = new java.sql.Date(startDate.getTime());
-    java.sql.Date endSqlDateExcluded = new java.sql.Date(endDate.getTime() + MILLISECS_IN_DAY);
+    Date endDateExcluded = DateUtil.addDays(endDate, 1);
     long amountInHours = Long.parseLong(amountParam);
 
     if (startDate.compareTo(endDate) > 0) {
@@ -193,25 +185,66 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     Long userHolidayAmountId =
         ("edit".equals(action)) ? Long.parseLong(req.getParameter("userholidayamount-id")) : null;
 
-    if (hasOverlapping(userId, startSqlDate, endSqlDateExcluded, userHolidayAmountId)) {
+    if (hasOverlapping(userId, startDate, endDateExcluded, userHolidayAmountId)) {
       renderAlert("Another range overlaps this one for the same user", "error", resp);
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
-    long amountInSeconds = amountInHours * 3600;
+    final long amountInSeconds = amountInHours * 3600;
 
     String message = null;
     if ("new".equals(action)) {
-      saveNew(userId, startSqlDate, endSqlDateExcluded, amountInSeconds, description);
+      saveNew(userId, startDate, endDateExcluded, amountInSeconds, description);
       message = "New record saved";
     } else if ("edit".equals(action)) {
-      update(userHolidayAmountId, userId, startSqlDate, endSqlDateExcluded, amountInSeconds,
+      update(userHolidayAmountId, userId, startDate, endDateExcluded, amountInSeconds,
           description);
       message = "Record updated";
     }
 
     renderPostAnswer(req, resp, message);
+  }
+
+  private void fillDateTable(final Date startDate, final Date endDateExcluded,
+      final Connection connection, final Configuration configuration) {
+    Date dateCursor = startDate;
+    final int batchSize = 100;
+    QUserHolidayAmountDate qDates = QUserHolidayAmountDate.userHolidayAmountDate;
+
+    while (dateCursor.before(endDateExcluded)) {
+      Date batchEndDateExcluded = DateUtil.addDays(dateCursor, batchSize);
+
+      if (batchEndDateExcluded.after(endDateExcluded)) {
+        batchEndDateExcluded = endDateExcluded;
+      }
+
+      List<Date> existingDates =
+          new SQLQuery<Date>(connection, configuration)
+              .select(qDates.date)
+              .from(qDates)
+              .where(qDates.date.goe(dateCursor).and(qDates.date.lt(batchEndDateExcluded)))
+              .orderBy(qDates.date.asc()).fetch();
+
+      Date[] existingDateArray =
+          existingDates.toArray(new Date[existingDates.size()]);
+
+      List<Date> dateBatch = new ArrayList<>(batchSize);
+      while (dateCursor.before(batchEndDateExcluded)) {
+        if (Arrays.binarySearch(existingDateArray, dateCursor) < 0) {
+          dateBatch.add(dateCursor);
+        }
+        dateCursor = DateUtil.addDays(dateCursor, 1);
+      }
+
+      if (!dateBatch.isEmpty()) {
+        SQLInsertClause dateInsert = new SQLInsertClause(connection, configuration, qDates);
+        for (Date date : dateBatch) {
+          dateInsert.set(qDates.date, date).addBatch();
+        }
+        dateInsert.execute();
+      }
+    }
   }
 
   private Long getDateRangeId(final Long userHolidayAmountId, final Connection connection,
@@ -254,7 +287,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       query
           .select(Projections.fields(UserHolidayAmountDTO.class,
               qUserHolidayAmount.userHolidayAmountId, qUser.userName, qUser.displayName,
-              qDateRange.startDate, qDateRange.endDateExcluded, qUserHolidayAmount.holidayAmount,
+              qDateRange.startDate, qDateRange.endDateExcluded, qUserHolidayAmount.amount,
               qUserHolidayAmount.description,
               new Coalesce<>(Long.class, qAvatar.id, defaultAvatarId).as("avatarId"),
               qAvatar.owner.as("avatarOwner")));
@@ -264,7 +297,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
         predicates.add(qUser.userName.eq(user));
       }
       if (currentTimeRanges) {
-        java.sql.Date currentDate = new java.sql.Date(new Date().getTime());
+        Date currentDate = new Date(new java.util.Date().getTime());
         predicates.add(
             qDateRange.startDate.loe(currentDate)
                 .and(qDateRange.endDateExcluded.gt(currentDate)));
@@ -297,8 +330,8 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     });
   }
 
-  private boolean hasOverlapping(final Long userId, final java.sql.Date startDate,
-      final java.sql.Date endDateExcluded, final Long userHolidayAmountIdToExclude) {
+  private boolean hasOverlapping(final Long userId, final Date startDate,
+      final Date endDateExcluded, final Long userHolidayAmountIdToExclude) {
     Long count = querydslSupport.execute((connection, configuration) -> {
       QDateRange qDateRange = QDateRange.dateRange;
       QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
@@ -329,8 +362,8 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
   }
 
   private BooleanExpression rangeOverlaps(final QDateRange qDateRange,
-      final java.sql.Date startSQLDate,
-      final java.sql.Date endSQLDate) {
+      final Date startSQLDate,
+      final Date endSQLDate) {
     return qDateRange.startDate.loe(startSQLDate)
         .and(qDateRange.endDateExcluded.gt(startSQLDate))
         .or(qDateRange.startDate.lt(endSQLDate)
@@ -384,11 +417,12 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     }
   }
 
-  private void saveNew(final Long userId, final java.sql.Date startDate,
-      final java.sql.Date endDateExcluded, final long amountInSeconds, final String description) {
+  private void saveNew(final Long userId, final Date startDate,
+      final Date endDateExcluded, final long amountInSeconds, final String description) {
 
     transactionTemplate.execute(() -> {
       return querydslSupport.execute((connection, configuration) -> {
+        fillDateTable(startDate, endDateExcluded, connection, configuration);
         QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
         QDateRange qDateRange = QDateRange.dateRange;
 
@@ -400,7 +434,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
         new SQLInsertClause(connection, configuration, qUserHolidayAmount)
             .set(qUserHolidayAmount.userId, userId)
             .set(qUserHolidayAmount.dateRangeId, dateRangeId)
-            .set(qUserHolidayAmount.holidayAmount, amountInSeconds)
+            .set(qUserHolidayAmount.amount, amountInSeconds)
             .set(qUserHolidayAmount.description, description).execute();
         return null;
       });
@@ -409,7 +443,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
   }
 
   private void update(final Long userHolidayAmountId, final Long userId,
-      final java.sql.Date startSqlDate, final java.sql.Date endSqlDateExcluded,
+      final Date startSqlDate, final Date endSqlDateExcluded,
       final long amountInSeconds, final String description) {
 
     transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
@@ -426,11 +460,29 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
       new SQLUpdateClause(connection, configuration, qUserHolidayAmount)
           .set(qUserHolidayAmount.userId, userId)
-          .set(qUserHolidayAmount.holidayAmount, amountInSeconds)
+          .set(qUserHolidayAmount.amount, amountInSeconds)
           .set(qUserHolidayAmount.description, description)
           .where(qUserHolidayAmount.userHolidayAmountId.eq(userHolidayAmountId))
           .execute();
+
+      vacuumDates(connection, configuration);
       return null;
     }));
+  }
+
+  private void vacuumDates(final Connection connection, final Configuration configuration) {
+    QUserHolidayAmountDate qDates = QUserHolidayAmountDate.userHolidayAmountDate;
+    QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
+    QDateRange qDateRange = QDateRange.dateRange;
+    new SQLDeleteClause(connection, configuration, qDates)
+        .where(
+            new SQLQuery<Boolean>()
+                .from(qUserHolidayAmount)
+                .innerJoin(qDateRange)
+                .on(qDateRange.dateRangeId.eq(qUserHolidayAmount.dateRangeId))
+                .where(qDateRange.startDate.loe(qDates.date)
+                    .and(qDateRange.endDateExcluded.gt(qDates.date)))
+                .notExists())
+        .execute();
   }
 }

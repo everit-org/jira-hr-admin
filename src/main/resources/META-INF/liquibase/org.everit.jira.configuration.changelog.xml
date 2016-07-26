@@ -133,6 +133,13 @@
       <column name="end_date_excluded" />
     </createIndex>
 
+    <createTable tableName="everit_jira_u_hday_am_date"
+      remarks="Helper table to be able to query expected work within a holiday amount. The table contains all dates that exist in any of the user holiday amount date ranges.">
+      <column name="date_" type="date">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_u_hday_am_date" />
+      </column>
+    </createTable>
+
     <createTable tableName="everit_jira_user_hday_amount">
       <column name="user_hday_amount_id" type="bigint" autoIncrement="true">
         <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_user_hday_am" />
@@ -145,11 +152,10 @@
         <constraints foreignKeyName="fk_everit_jira_user_hday_am_u" referencedTableName="cwd_user"
           referencedColumnNames="id" nullable="false" />
       </column>
-      <column name="holiday_amount" type="bigint"
+      <column name="amount_" type="bigint"
         remarks="Calculated column by an async job that is null until calculation is done">
         <constraints nullable="false" />
       </column>
-      <column name="expected_work_amount" type="bigint" />
       <column name="description_" type="varchar(2000)" />
     </createTable>
 
@@ -218,7 +224,7 @@
       <column name="date_" />
     </createIndex>
     <createIndex tableName="everit_jira_public_holiday" indexName="i_everit_jira_public_hday_rd">
-      <column name="date_" />
+      <column name="replacement_date" />
     </createIndex>
   </changeSet>
 

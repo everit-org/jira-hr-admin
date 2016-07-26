@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.util.AvatarUtil;
+import org.everit.jira.configuration.plugin.util.DateUtil;
 import org.everit.jira.configuration.plugin.util.LocalizedTemplate;
 import org.everit.jira.configuration.plugin.util.QueryResultWithCount;
 import org.everit.jira.configuration.plugin.util.QueryUtil;
@@ -95,12 +96,10 @@ public class SchemeUsersComponent {
     public long userSchemeId;
 
     public Date getEndDate() {
-      return new Date(endDateExcluded.getTime() - MILLISECS_IN_DAY);
+      return DateUtil.addDays(endDateExcluded, -1);
     }
 
   }
-
-  private static final int MILLISECS_IN_DAY = 3600 * 24 * 1000;
 
   private static final int PAGE_SIZE = 50;
 
@@ -240,7 +239,7 @@ public class SchemeUsersComponent {
     String userName = req.getParameter("user");
     Date startDate = Date.valueOf(req.getParameter("start-date"));
     Date endDate = Date.valueOf(req.getParameter("end-date"));
-    Date endDateExcluded = new Date(endDate.getTime() + +MILLISECS_IN_DAY);
+    Date endDateExcluded = DateUtil.addDays(endDate, 1);
 
     Long userId = getUserId(userName);
     if (userId == null) {
@@ -286,7 +285,7 @@ public class SchemeUsersComponent {
     String userName = req.getParameter("user");
     Date startDate = Date.valueOf(req.getParameter("start-date"));
     Date endDate = Date.valueOf(req.getParameter("end-date"));
-    Date endDateExcluded = new Date(endDate.getTime() + +MILLISECS_IN_DAY);
+    Date endDateExcluded = DateUtil.addDays(endDate, 1);
 
     Long userId = getUserId(userName);
     if (userId == null) {

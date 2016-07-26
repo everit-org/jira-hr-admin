@@ -110,6 +110,21 @@
     </classNameRule>
 
     <classNameRule>
+      <entity>everit_jira_u_hday_am_date</entity>
+      <class>UserHolidayAmountDate</class>
+      <propertyMappings>
+        <primaryKey>
+          <name>pk_everit_jira_u_hday_am_date</name>
+          <property>userHolidayAmountDatePK</property>
+        </primaryKey>
+        <column>
+          <name>date_</name>
+          <property>date</property>
+        </column>
+      </propertyMappings>
+    </classNameRule>
+
+    <classNameRule>
       <entity>everit_jira_user_hday_amount</entity>
       <class>UserHolidayAmount</class>
       <propertyMappings>
@@ -125,6 +140,10 @@
           <name>fk_everit_jira_user_hday_a_dr</name>
           <property>dateRangeFK</property>
         </foreignKey>
+        <column>
+          <name>amount_</name>
+          <property>amount</property>
+        </column>
         <column>
           <name>description_</name>
           <property>description</property>
