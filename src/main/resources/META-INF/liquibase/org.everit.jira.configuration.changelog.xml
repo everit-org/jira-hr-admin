@@ -145,9 +145,11 @@
         <constraints foreignKeyName="fk_everit_jira_user_hday_am_u" referencedTableName="cwd_user"
           referencedColumnNames="id" nullable="false" />
       </column>
-      <column name="amount_" type="int">
+      <column name="holiday_amount" type="bigint"
+        remarks="Calculated column by an async job that is null until calculation is done">
         <constraints nullable="false" />
       </column>
+      <column name="expected_work_amount" type="bigint" />
       <column name="description_" type="varchar(2000)" />
     </createTable>
 

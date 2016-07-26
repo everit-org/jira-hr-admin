@@ -182,7 +182,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
     java.sql.Date startSqlDate = new java.sql.Date(startDate.getTime());
     java.sql.Date endSqlDateExcluded = new java.sql.Date(endDate.getTime() + MILLISECS_IN_DAY);
-    Integer amountInHours = Integer.parseInt(amountParam);
+    long amountInHours = Long.parseLong(amountParam);
 
     if (startDate.compareTo(endDate) > 0) {
       renderAlert("Start date must be before end date", "error", resp);
@@ -199,7 +199,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       return;
     }
 
-    int amountInSeconds = amountInHours * 3600;
+    long amountInSeconds = amountInHours * 3600;
 
     String message = null;
     if ("new".equals(action)) {
@@ -254,7 +254,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       query
           .select(Projections.fields(UserHolidayAmountDTO.class,
               qUserHolidayAmount.userHolidayAmountId, qUser.userName, qUser.displayName,
-              qDateRange.startDate, qDateRange.endDateExcluded, qUserHolidayAmount.amount,
+              qDateRange.startDate, qDateRange.endDateExcluded, qUserHolidayAmount.holidayAmount,
               qUserHolidayAmount.description,
               new Coalesce<>(Long.class, qAvatar.id, defaultAvatarId).as("avatarId"),
               qAvatar.owner.as("avatarOwner")));
@@ -385,7 +385,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
   }
 
   private void saveNew(final Long userId, final java.sql.Date startDate,
-      final java.sql.Date endDateExcluded, final int amountInSeconds, final String description) {
+      final java.sql.Date endDateExcluded, final long amountInSeconds, final String description) {
 
     transactionTemplate.execute(() -> {
       return querydslSupport.execute((connection, configuration) -> {
@@ -400,7 +400,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
         new SQLInsertClause(connection, configuration, qUserHolidayAmount)
             .set(qUserHolidayAmount.userId, userId)
             .set(qUserHolidayAmount.dateRangeId, dateRangeId)
-            .set(qUserHolidayAmount.amount, amountInSeconds)
+            .set(qUserHolidayAmount.holidayAmount, amountInSeconds)
             .set(qUserHolidayAmount.description, description).execute();
         return null;
       });
@@ -409,8 +409,8 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
   }
 
   private void update(final Long userHolidayAmountId, final Long userId,
-      final java.sql.Date startSqlDate,
-      final java.sql.Date endSqlDateExcluded, final int amountInSeconds, final String description) {
+      final java.sql.Date startSqlDate, final java.sql.Date endSqlDateExcluded,
+      final long amountInSeconds, final String description) {
 
     transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
       QDateRange qDateRange = QDateRange.dateRange;
@@ -426,7 +426,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
       new SQLUpdateClause(connection, configuration, qUserHolidayAmount)
           .set(qUserHolidayAmount.userId, userId)
-          .set(qUserHolidayAmount.amount, amountInSeconds)
+          .set(qUserHolidayAmount.holidayAmount, amountInSeconds)
           .set(qUserHolidayAmount.description, description)
           .where(qUserHolidayAmount.userHolidayAmountId.eq(userHolidayAmountId))
           .execute();

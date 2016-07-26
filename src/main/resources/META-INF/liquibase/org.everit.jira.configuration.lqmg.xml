@@ -126,10 +126,6 @@
           <property>dateRangeFK</property>
         </foreignKey>
         <column>
-          <name>amount_</name>
-          <property>amount</property>
-        </column>
-        <column>
           <name>description_</name>
           <property>description</property>
         </column>
