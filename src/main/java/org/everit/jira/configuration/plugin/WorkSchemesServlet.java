@@ -17,11 +17,16 @@ package org.everit.jira.configuration.plugin;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Time;
+import java.time.DayOfWeek;
+import java.time.format.TextStyle;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -51,9 +56,57 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
   public static class WeekdayWorkDTO {
 
+    public int duration;
+
+    public Time startTime;
+
+    byte weekday;
+
+    long weekdayWorkId;
+
+    public DayOfWeek getDayOfWeek() {
+      // Convert the data stored in db to ISO format. DB format starts on Sunday, while ISO starts
+      // on Monday.
+      if (weekday == 1) {
+        return DayOfWeek.SUNDAY;
+      } else {
+        return DayOfWeek.of(weekday - 1);
+      }
+    }
+
+    public String getDayOfWeekDisplayName(final Locale locale) {
+      return getDayOfWeek().getDisplayName(TextStyle.FULL, locale);
+    }
+
+    public int getDurationInMinutes() {
+      return duration / SECONDS_IN_MINUTE;
+    }
+
   }
 
+  private static class WeekdayWorkDTOComparator implements Comparator<WeekdayWorkDTO> {
+
+    @Override
+    public int compare(final WeekdayWorkDTO o1, final WeekdayWorkDTO o2) {
+      int result = o1.getDayOfWeek().compareTo(o2.getDayOfWeek());
+      if (result != 0) {
+        return result;
+      }
+      result = o1.startTime.compareTo(o2.startTime);
+      if (result != 0) {
+        return result;
+      }
+      return Long.compare(o1.weekdayWorkId, o2.weekdayWorkId);
+    }
+
+  }
+
+  private static final int SECONDS_IN_MINUTE = 60;
+
   private static final long serialVersionUID = 5855299893731146143L;
+
+  private static final Comparator<WeekdayWorkDTO> WEEKDAY_WORK_DTO_COMPARATOR =
+      new WeekdayWorkDTOComparator();
 
   public static final String WORK_SCHEME_SCOPE_GLOBAL = "GLOBAL";
 
@@ -83,14 +136,23 @@ public class WorkSchemesServlet extends AbstractPageServlet {
         new SchemeUsersComponent(qUserSchemeEntityParameter, transactionTemplate);
   }
 
-  private void addWeekdaysTableToVariables(final long schemeId, final Map<String, Object> vars) {
-    querydslSupport.execute((connection, configuration) -> {
+  private void addWeekdaysTableToVariables(final long workSchemeId,
+      final Map<String, Object> vars) {
+
+    List<WeekdayWorkDTO> resultSet = querydslSupport.execute((connection, configuration) -> {
       QWeekdayWork qWeekdayWork = QWeekdayWork.weekdayWork;
-      new SQLQuery<WeekdayWorkDTO>(connection, configuration)
-          .select(Projections.fields(WeekdayWorkDTO.class, qWeekdayWork.duration_));
-      // TODO
-      return null;
+      return new SQLQuery<WeekdayWorkDTO>(connection, configuration)
+          .select(
+              Projections.fields(WeekdayWorkDTO.class, qWeekdayWork.weekdayWorkId,
+                  qWeekdayWork.weekday, qWeekdayWork.startTime, qWeekdayWork.duration))
+          .from(qWeekdayWork)
+          .where(qWeekdayWork.workSchemeId.eq(workSchemeId))
+          .fetch();
     });
+    TreeSet<WeekdayWorkDTO> weekdayWorks = new TreeSet<WeekdayWorkDTO>(WEEKDAY_WORK_DTO_COMPARATOR);
+    weekdayWorks.addAll(resultSet);
+    vars.put("weekdayWorks", weekdayWorks);
+
   }
 
   private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
@@ -102,6 +164,16 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     vars.put("locale", locale);
     prb.replace("#work-schemes-tabs-container",
         (writer) -> pageTemplate.render(writer, vars, locale, "work-schemes-tabs-container"));
+  }
+
+  private byte convertDbDayOfWeek(final DayOfWeek dayOfWeek) {
+    int index = dayOfWeek.getValue();
+    if (index == DayOfWeek.SUNDAY.getValue()) {
+      index = 1;
+    } else {
+      index++;
+    }
+    return (byte) index;
   }
 
   private void deleteScheme(final long schemeId) {
@@ -134,17 +206,20 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     if (schemeIdParameter != null) {
       long schemeId = Long.parseLong(schemeIdParameter);
       addWeekdaysTableToVariables(schemeId, vars);
-
-      String event = req.getParameter("event");
-      if ("schemeChange".equals(event)) {
-        try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
-          prb.replace("#work-schemes-tabs-container", (writer) -> {
-            pageTemplate.render(writer, vars, resp.getLocale(), "work-schemes-tabs-container");
-          });
-        }
-        return;
-      }
     }
+
+    String event = req.getParameter("event");
+    if ("schemeChange".equals(event)) {
+      try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+        prb.replace("#work-schemes-tabs-container", (writer) -> {
+          pageTemplate.render(writer, vars, resp.getLocale(), "work-schemes-tabs-container");
+        });
+      }
+      return;
+    }
+
+    vars.put("weekdays", DayOfWeek.values());
+    vars.put("textStyle", TextStyle.FULL);
 
     pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
   }
@@ -161,6 +236,15 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     if (schemeUsersComponent.getSupportedActions().contains(action)) {
       schemeUsersComponent.processAction(req, resp);
       return;
+    }
+
+    switch (action) {
+      case "newWeekday":
+        processNewWeekday(req, resp);
+        break;
+
+      default:
+        break;
     }
   }
 
@@ -187,6 +271,25 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     });
   }
 
+  private void processNewWeekday(final HttpServletRequest req, final HttpServletResponse resp)
+      throws IOException {
+    long schemeId = Long.parseLong(req.getParameter("schemeId"));
+    int weekdayIndex = Integer.parseInt(req.getParameter("weekday"));
+    String startTimeParam = req.getParameter("start-time");
+    Time startTime = Time.valueOf(startTimeParam + ':' + "00");
+    int durationInSeconds = Integer.parseInt(req.getParameter("duration")) * SECONDS_IN_MINUTE;
+    saveWeekday(schemeId, DayOfWeek.of(weekdayIndex), startTime, durationInSeconds);
+
+    try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
+      Map<String, Object> vars = createCommonVars(req, resp);
+      vars.put("schemeId", schemeId);
+      addWeekdaysTableToVariables(schemeId, vars);
+      renderAlertOnPrb("Weekday record saved", "info", prb, resp.getLocale());
+      prb.replace("#weekday-table",
+          (writer) -> pageTemplate.render(writer, vars, resp.getLocale(), "weekday-table"));
+    }
+  }
+
   private void removeAllUsersFromScheme(final long schemeId, final Connection connection,
       final Configuration configuration) {
 
@@ -210,6 +313,13 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
   }
 
+  private void renderAlertOnPrb(final String message, final String alertType,
+      final PartialResponseBuilder prb, final Locale locale) {
+
+    prb.append("#aui-message-bar",
+        (writer) -> AlertComponent.INSTANCE.render(writer, message, alertType, locale));
+  }
+
   private long saveScheme(final String schemeName) {
     return querydslSupport.execute((connection, configuration) -> {
       QWorkScheme qWorkScheme = QWorkScheme.workScheme;
@@ -217,6 +327,21 @@ public class WorkSchemesServlet extends AbstractPageServlet {
           .set(qWorkScheme.name, schemeName)
           .set(qWorkScheme.scope, WORK_SCHEME_SCOPE_GLOBAL)
           .executeWithKey(qWorkScheme.workSchemeId);
+    });
+  }
+
+  private void saveWeekday(final long schemeId, final DayOfWeek dayOfWeek, final Time startTime,
+      final int duration) {
+
+    querydslSupport.execute((connection, configuration) -> {
+      QWeekdayWork qWeekdayWork = QWeekdayWork.weekdayWork;
+      new SQLInsertClause(connection, configuration, qWeekdayWork)
+          .set(qWeekdayWork.workSchemeId, schemeId)
+          .set(qWeekdayWork.weekday, convertDbDayOfWeek(dayOfWeek))
+          .set(qWeekdayWork.startTime, startTime)
+          .set(qWeekdayWork.duration, duration)
+          .execute();
+      return null;
     });
   }
 

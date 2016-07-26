@@ -16,7 +16,7 @@
 
 if (!$.parseHTML) {
   $.parseHTML = function(str) {
-    var tmp = document.implementation.createHTMLDocument();
+    var tmp = document.implementation.createHTMLDocument("Everit Jira Configuration Plugin");
     tmp.body.innerHTML = str;
     return tmp.body.children;
   }

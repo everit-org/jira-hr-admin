@@ -51,7 +51,7 @@ public class QWeekdayWork extends com.querydsl.sql.RelationalPathBase<QWeekdayWo
 
     }
 
-    public final NumberPath<Integer> duration_ = createNumber("duration_", Integer.class);
+    public final NumberPath<Integer> duration = createNumber("duration", Integer.class);
 
     public final TimePath<java.sql.Time> startTime = createTime("startTime", java.sql.Time.class);
 
@@ -86,7 +86,7 @@ public class QWeekdayWork extends com.querydsl.sql.RelationalPathBase<QWeekdayWo
     }
 
     public void addMetadata() {
-        addMetadata(duration_, ColumnMetadata.named("duration_").withIndex(4).ofType(Types.INTEGER).withSize(10).notNull());
+        addMetadata(duration, ColumnMetadata.named("duration_").withIndex(4).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(startTime, ColumnMetadata.named("start_time").withIndex(3).ofType(Types.TIME).withSize(6).notNull());
         addMetadata(weekday, ColumnMetadata.named("weekday").withIndex(2).ofType(Types.TINYINT).withSize(3).notNull());
         addMetadata(weekdayWorkId, ColumnMetadata.named("weekday_work_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());

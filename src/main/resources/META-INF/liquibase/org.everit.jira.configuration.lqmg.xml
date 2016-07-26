@@ -91,6 +91,10 @@
           <name>fk_everit_jira_wd_w_wsch</name>
           <property>workSchemeFK</property>
         </foreignKey>
+        <column>
+          <name>duration_</name>
+          <property>duration</property>
+        </column>
       </propertyMappings>
     </classNameRule>
 
