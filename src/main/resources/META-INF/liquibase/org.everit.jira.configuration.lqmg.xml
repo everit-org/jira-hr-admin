@@ -216,23 +216,5 @@
       </propertyMappings>
     </classNameRule>
 
-    <classNameRule>
-      <entity>everit_jira_shifted_work_day</entity>
-      <class>ShiftedWorkDay</class>
-      <propertyMappings>
-        <primaryKey>
-          <name>pk_everit_jira_shifted_wday</name>
-          <property>shiftedWorkPK</property>
-        </primaryKey>
-        <foreignKey>
-          <name>fk_everit_jira_shifted_wd_hs</name>
-          <property>holidaySchemeFK</property>
-        </foreignKey>
-        <column>
-          <name>date_</name>
-          <property>date</property>
-        </column>
-      </propertyMappings>
-    </classNameRule>
   </namingRules>
 </lqmg>

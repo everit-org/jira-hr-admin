@@ -47,9 +47,9 @@ public class QUserHolidayScheme extends com.querydsl.sql.RelationalPathBase<QUse
 
     public class ForeignKeys {
 
-        public final com.querydsl.sql.ForeignKey<QHolidayScheme> holidaySchemeFK = createForeignKey(holidaySchemeId, "holiday_scheme_id");
-
         public final com.querydsl.sql.ForeignKey<QDateRange> dateRangeFK = createForeignKey(dateRangeId, "date_range_id");
+
+        public final com.querydsl.sql.ForeignKey<QHolidayScheme> holidaySchemeFK = createForeignKey(holidaySchemeId, "holiday_scheme_id");
 
     }
 

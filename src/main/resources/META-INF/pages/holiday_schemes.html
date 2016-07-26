@@ -70,7 +70,6 @@ table.aui thead tr td {
       data-eht-render="!empty(schemeId)">
       <ul class="tabs-menu">
         <li class="menu-item active-tab"><a href="#tab-public-holidays">Public holidays</a></li>
-        <li class="menu-item"><a href="#tab-shifted-work-days">Shifted work days</a></li>
         <li class="menu-item"><a href="#tab-users">Users</a></li>
       </ul>
       <div class="tabs-pane active-pane" id="tab-public-holidays">
@@ -79,6 +78,7 @@ table.aui thead tr td {
           <thead>
             <tr>
               <th id="public-holiday-date">Date</th>
+              <th id="public-holiday-replacement-date">Substitute work day</th> 
               <th id="public-holiday-description">Description</th>
               <td id="public-holiday-actions"><a href="#">Add</a></td>
             </tr>
@@ -93,30 +93,6 @@ table.aui thead tr td {
               <td headers="public-holiday-date">2016-12-25</td>
               <td headers="public-holiday-description">Karácsony</td>
               <td headers="public-holiday-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="tabs-pane" id="tab-shifted-work-days">
-        <h2>Shifted work days</h2>
-        <table class="aui">
-          <thead>
-            <tr>
-              <th id="shifted-work-day-date">Date</th>
-              <th id="shifted-work-day-description">Description</th>
-              <td id="shifted-work-day-actions"><a href="#">Add</a></td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td headers="shifted-work-day-date">2016-05-02</td>
-              <td headers="shifted-work-day-description">Május lecsúsztatás</td>
-              <td headers="shifted-work-day-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-            </tr>
-            <tr>
-              <td headers="shifted-work-day-date">2016-12-28</td>
-              <td headers="shifted-work-day-description">Karácsony lecsúsztatás</td>
-              <td headers="shifted-work-day-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
             </tr>
           </tbody>
         </table>

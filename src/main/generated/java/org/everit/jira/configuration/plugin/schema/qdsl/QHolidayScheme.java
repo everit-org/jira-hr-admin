@@ -49,8 +49,6 @@ public class QHolidayScheme extends com.querydsl.sql.RelationalPathBase<QHoliday
 
         public final com.querydsl.sql.ForeignKey<QPublicHoliday> _everitJiraPubHdHschFk = createInvForeignKey(holidaySchemeId, "holiday_scheme_id");
 
-        public final com.querydsl.sql.ForeignKey<QShiftedWorkDay> _everitJiraShiftedWdHsFk = createInvForeignKey(holidaySchemeId, "holiday_scheme_id");
-
         public final com.querydsl.sql.ForeignKey<QUserHolidayScheme> _everitJiraUsHdSchmHsFk = createInvForeignKey(holidaySchemeId, "holiday_scheme_id");
 
     }

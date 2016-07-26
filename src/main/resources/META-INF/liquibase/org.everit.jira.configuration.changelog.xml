@@ -209,26 +209,13 @@
       <column name="date_" type="date">
         <constraints nullable="false" />
       </column>
+      <column name="replacement_date" type="date" />
       <column name="description_" type="varchar(2000)" />
     </createTable>
     <createIndex tableName="everit_jira_public_holiday" indexName="i_everit_jira_public_hday_d">
       <column name="date_" />
     </createIndex>
-
-    <createTable tableName="everit_jira_shifted_work_day">
-      <column name="shifted_work_day_id" type="bigint" autoIncrement="true">
-        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_shifted_wday" />
-      </column>
-      <column name="holiday_scheme_id" type="bigint">
-        <constraints foreignKeyName="fk_everit_jira_shifted_wd_hs" referencedTableName="everit_jira_holiday_scheme"
-          referencedColumnNames="holiday_scheme_id" />
-      </column>
-      <column name="date_" type="date">
-        <constraints nullable="false" />
-      </column>
-      <column name="description_" type="varchar(2000)" />
-    </createTable>
-    <createIndex tableName="everit_jira_shifted_work_day" indexName="i_everit_jira_shifted_wd_date">
+    <createIndex tableName="everit_jira_public_holiday" indexName="i_everit_jira_public_hday_rd">
       <column name="date_" />
     </createIndex>
   </changeSet>
