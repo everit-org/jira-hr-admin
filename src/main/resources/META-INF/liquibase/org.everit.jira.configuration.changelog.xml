@@ -186,7 +186,7 @@
       </column>
     </createTable>
 
-    <createTable tableName="everit_jira_user_hday_schm">
+    <createTable tableName="everit_jira_user_hday_scheme">
       <column name="user_hday_scheme_id" type="bigint" autoIncrement="true">
         <constraints nullable="false" primaryKey="true" primaryKeyName="pk_user_hday_schm" />
       </column>

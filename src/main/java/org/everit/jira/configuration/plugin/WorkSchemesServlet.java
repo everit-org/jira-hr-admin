@@ -144,6 +144,9 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     vars.put("schemeUsers", schemeUsersComponent);
     vars.put("request", request);
     vars.put("locale", locale);
+    if (schemeId != null) {
+      vars.put("weekdayWorks", getWeekdayWorks(schemeId));
+    }
     prb.replace("#work-schemes-tabs-container",
         (writer) -> pageTemplate.render(writer, vars, locale, "work-schemes-tabs-container"));
   }

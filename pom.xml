@@ -124,7 +124,7 @@
               org.everit.web.partialresponse.jira;version="[1.0,2)",
               *
             </Import-Package>
-            <Export-Package>org.everit.jira.configuration.plugin.schema.qdsl;version="1.0.0"</Export-Package>
+            <Export-Package>org.everit.jira.configuration.plugin.schema.qdsl;version="1.0.0",org.everit.jira.configuration.plugin.util;version="1.0.0"</Export-Package>
             <Provide-Capability>liquibase.changelog;liquibase.changelog=org.everit.jira.configuration;resource=/META-INF/liquibase/org.everit.jira.configuration.changelog.xml;lqmg.config.resource=/META-INF/liquibase/org.everit.jira.configuration.lqmg.xml;version:Version="1.0.0"</Provide-Capability>
             <CONF_COMM />
           </instructions>
