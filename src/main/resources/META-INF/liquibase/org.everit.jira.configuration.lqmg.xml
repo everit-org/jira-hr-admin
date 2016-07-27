@@ -228,6 +228,7 @@
           <name>date_</name>
           <property>date</property>
         </column>
+        <column><name>description_</name><property>description</property></column>
       </propertyMappings>
     </classNameRule>
 

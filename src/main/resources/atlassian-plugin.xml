@@ -103,4 +103,9 @@
     <resource name="work-schemes.js" type="download" location="META-INF/webresource/js/work-schemes.js" />
     <context>org.everit.jira.configuration</context>
   </web-resource>
+
+  <web-resource name="Everit Jira Holiday Schemes" key="holiday-schemes">
+    <resource name="holiday-schemes.js" type="download" location="META-INF/webresource/js/holiday-schemes.js" />
+    <context>org.everit.jira.configuration</context>
+  </web-resource>
 </atlassian-plugin>

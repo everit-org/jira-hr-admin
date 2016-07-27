@@ -53,7 +53,7 @@ public class QPublicHoliday extends com.querydsl.sql.RelationalPathBase<QPublicH
 
     public final DatePath<java.sql.Date> date = createDate("date", java.sql.Date.class);
 
-    public final StringPath description_ = createString("description_");
+    public final StringPath description = createString("description");
 
     public final NumberPath<Long> holidaySchemeId = createNumber("holidaySchemeId", Long.class);
 
@@ -87,7 +87,7 @@ public class QPublicHoliday extends com.querydsl.sql.RelationalPathBase<QPublicH
 
     public void addMetadata() {
         addMetadata(date, ColumnMetadata.named("date_").withIndex(3).ofType(Types.DATE).withSize(8).notNull());
-        addMetadata(description_, ColumnMetadata.named("description_").withIndex(5).ofType(Types.VARCHAR).withSize(2000));
+        addMetadata(description, ColumnMetadata.named("description_").withIndex(5).ofType(Types.VARCHAR).withSize(2000));
         addMetadata(holidaySchemeId, ColumnMetadata.named("holiday_scheme_id").withIndex(2).ofType(Types.BIGINT).withSize(19));
         addMetadata(publicHolidayId, ColumnMetadata.named("public_holiday_id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(replacementDate, ColumnMetadata.named("replacement_date").withIndex(4).ofType(Types.DATE).withSize(8));

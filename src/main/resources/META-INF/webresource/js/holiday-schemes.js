@@ -1,0 +1,69 @@
+/*
+ * Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+var publicHolidayDataDialog = null;
+
+$(function() {
+  publicHolidayDataDialog = ajsDialogFromTemplate(
+      "#public-holiday-data-dialog-template", {
+        width : 550,
+        height : 280,
+        id : "public-holiday-data-dialog",
+        closeOnOutsideClick : true
+      });
+});
+
+var openNewPublicHolidayDialog = function() {
+  $("#public-holiday-dataform-action").val('newPublicHoliday');
+  $("#public-holiday-dataform-publicholiday-id").val('');
+  $("#public-holiday-dataform-date").val('');
+  $("#public-holiday-dataform-replacement-date").val('');
+  $("#public-holiday-dataform-description").val('');
+  publicHolidayDataDialog.show();
+}
+
+var savePublicHoliday = function(event) {
+  var form = $('#public-holiday-dataform')[0];
+  var formValid = form.checkValidity();
+  if (!formValid) {
+    return;
+  }
+
+  event.preventDefault();
+
+  var formdata = {
+    "action" : $("#public-holiday-dataform-action").val(),
+    "publicHolidayId" : $("#public-holiday-dataform-publicholiday-id").val(),
+    "date" : $("#public-holiday-dataform-date").val(),
+    "replacementDate" : $("#public-holiday-dataform-replacement-date").val(),
+    "description" : $("#public-holiday-dataform-description").val('')
+  }
+
+  $.ajax({
+    url : '#',
+    type : 'POST',
+    data : formdata
+  }).success(function(content) {
+    everit.partialresponse.process(content);
+    publicHolidayDataDialog.hide();
+    processRuntimeAlerts();
+  }).error(function(resp) {
+    if (resp.status == 400) {
+      everit.partialresponse.process(resp.responseText);
+      processRuntimeAlerts();
+    }
+  });
+}

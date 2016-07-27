@@ -28,7 +28,6 @@ import org.everit.jira.configuration.plugin.schema.qdsl.QWeekdayWork;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Coalesce;
 import com.querydsl.core.types.dsl.DatePath;
@@ -77,7 +76,7 @@ public final class QueryUtil {
    * @return The amount of work that should be done by the specified user in the specific time
    *         period.
    */
-  public static SubQueryExpression<Long> expectedWorkAmount(final Expression<Long> userId,
+  public static SQLQuery<Long> expectedWorkAmount(final Expression<Long> userId,
       final Expression<Date> startDate, final Expression<Date> endDateExcluded) {
 
     QUserHolidayAmountDate qDates = new QUserHolidayAmountDate("exp_work_dates");

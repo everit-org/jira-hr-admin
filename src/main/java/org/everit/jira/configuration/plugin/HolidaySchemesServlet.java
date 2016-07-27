@@ -17,7 +17,10 @@ package org.everit.jira.configuration.plugin;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,11 +34,13 @@ import org.everit.jira.configuration.plugin.ManageSchemeComponent.SchemeDTO;
 import org.everit.jira.configuration.plugin.SchemeUsersComponent.QUserSchemeEntityParameter;
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
 import org.everit.jira.configuration.plugin.schema.qdsl.QHolidayScheme;
+import org.everit.jira.configuration.plugin.schema.qdsl.QPublicHoliday;
 import org.everit.jira.configuration.plugin.schema.qdsl.QUserHolidayScheme;
 import org.everit.jira.configuration.plugin.schema.qdsl.QWorkScheme;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.sql.Configuration;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
@@ -46,6 +51,18 @@ import com.querydsl.sql.dml.SQLUpdateClause;
  * Managing holiday schemes.
  */
 public class HolidaySchemesServlet extends AbstractPageServlet {
+
+  public static class PublicHolidayDTO {
+
+    public Date date;
+
+    public String description;
+
+    public long publicHolidayId;
+
+    public Date replacementDate;
+
+  }
 
   private static final long serialVersionUID = 1073648466982165361L;
 
@@ -72,11 +89,22 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
         new SchemeUsersComponent(qUserSchemeEntityParameter, transactionTemplate);
   }
 
+  private void appendPublicHolidaysToVars(final HttpServletRequest req,
+      final Map<String, Object> vars,
+      final Long schemeId) {
+    List<Integer> publicHolidayYears = resolvePublicHolidayYears();
+    vars.put("publicHolidayYears", publicHolidayYears);
+    Integer publicHolidaySelectedYear = resolvePublicHolidaySelectedYear(req, publicHolidayYears);
+    vars.put("publicHolidaySelectedYear", publicHolidaySelectedYear);
+    vars.put("publicHolidays", listPublicHolidays(schemeId, publicHolidaySelectedYear));
+  }
+
   private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
       final PartialResponseBuilder prb, final Locale locale) {
     Map<String, Object> vars = new HashMap<>();
     vars.put("schemeId", schemeId);
     vars.put("schemeUsers", schemeUsersComponent);
+    appendPublicHolidaysToVars(request, vars, schemeId);
     vars.put("request", request);
     vars.put("locale", locale);
     prb.replace("#holiday-schemes-tabs-container",
@@ -103,9 +131,15 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
       return;
     }
 
-    vars.put("schemeId", req.getParameter("schemeId"));
+    String schemeIdParameter = req.getParameter("schemeId");
+    Long schemeId = (schemeIdParameter != null) ? Long.parseLong(schemeIdParameter) : null;
+    vars.put("schemeId", schemeId);
     vars.put("schemeUsers", schemeUsersComponent);
     vars.put("locale", resp.getLocale());
+
+    if (schemeId != null) {
+      appendPublicHolidaysToVars(req, vars, schemeId);
+    }
 
     String event = req.getParameter("event");
     if ("schemeChange".equals(event)) {
@@ -129,8 +163,21 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
     String action = req.getParameter("action");
     if (manageSchemeComponent.getSupportedActions().contains(action)) {
       manageSchemeComponent.processAction(req, resp);
-    } else if (schemeUsersComponent.getSupportedActions().contains(action)) {
+      return;
+    }
+    if (schemeUsersComponent.getSupportedActions().contains(action)) {
       schemeUsersComponent.processAction(req, resp);
+      return;
+    }
+
+    switch (action) {
+      case "newPublicHoliday":
+        processSavePublicHoliday(req, resp);
+
+        break;
+
+      default:
+        break;
     }
   }
 
@@ -156,6 +203,32 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
     });
   }
 
+  private Collection<PublicHolidayDTO> listPublicHolidays(final long schemeId, final Integer year) {
+    if (year == null) {
+      return Collections.emptySet();
+    }
+    return querydslSupport.execute((connection, configuration) -> {
+      QPublicHoliday qPublicHoliday = QPublicHoliday.publicHoliday;
+      return new SQLQuery<PublicHolidayDTO>(connection, configuration)
+          .select(Projections.fields(PublicHolidayDTO.class, qPublicHoliday.publicHolidayId,
+              qPublicHoliday.date, qPublicHoliday.replacementDate, qPublicHoliday.description))
+          .from(qPublicHoliday)
+          .where(qPublicHoliday.holidaySchemeId.eq(schemeId).and(qPublicHoliday.date.year().eq(year)
+              .or(qPublicHoliday.replacementDate.year().eq(year))))
+          .orderBy(qPublicHoliday.date.asc())
+          .fetch();
+    });
+  }
+
+  private void processSavePublicHoliday(final HttpServletRequest req,
+      final HttpServletResponse resp) {
+    Date date = Date.valueOf(req.getParameter("date"));
+    Date replacementDate = Date.valueOf(req.getParameter("replacementDate"));
+    String description = req.getParameter("description");
+
+    savePublicHoliday(date, replacementDate, description);
+  }
+
   private void removeAllUsersFromScheme(final long schemeId, final Connection connection,
       final Configuration configuration) {
 
@@ -177,6 +250,59 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
       dateRangeIds = sqlQuery.fetch();
     }
 
+  }
+
+  private Integer resolvePublicHolidaySelectedYear(final HttpServletRequest req,
+      final List<Integer> publicHolidayYears) {
+    if (publicHolidayYears.isEmpty()) {
+      return null;
+    }
+    String parameter = req.getParameter("publicHolidaySelectedYear");
+    Integer selectedYear = null;
+    if (parameter != null) {
+      selectedYear = Integer.valueOf(parameter);
+      if (!publicHolidayYears.contains(selectedYear)) {
+        selectedYear = null;
+      }
+    }
+
+    if (selectedYear == null) {
+      int currentYear = LocalDate.now().getYear();
+      if (publicHolidayYears.contains(currentYear)) {
+        selectedYear = currentYear;
+      } else {
+        selectedYear = publicHolidayYears.get(0);
+      }
+    }
+    return selectedYear;
+  }
+
+  private List<Integer> resolvePublicHolidayYears() {
+    return querydslSupport.execute((connection, configuration) -> {
+      QPublicHoliday qPublicHoliday = QPublicHoliday.publicHoliday;
+      NumberExpression<Integer> yearExpression =
+          qPublicHoliday.date.year().as("public_holiday_year");
+      return new SQLQuery<Integer>(connection, configuration)
+          .select(yearExpression)
+          .from(qPublicHoliday)
+          .groupBy(yearExpression)
+          .orderBy(yearExpression.asc())
+          .fetch();
+    });
+  }
+
+  private void savePublicHoliday(final Date date, final Date replacementDate,
+      final String description) {
+
+    querydslSupport.execute((connection, configuration) -> {
+      QPublicHoliday qPublicHoliday = QPublicHoliday.publicHoliday;
+      SQLInsertClause insertClause = new SQLInsertClause(connection, configuration, qPublicHoliday)
+          .set(qPublicHoliday.date, date);
+      if (replacementDate != null) {
+        insertClause.set(qPublicHoliday.replacementDate, date);
+      }
+      return null;
+    });
   }
 
   private long saveScheme(final String schemeName) {
