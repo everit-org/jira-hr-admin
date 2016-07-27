@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.everit.jira.configuration.plugin.ManageSchemeComponent.SchemeDTO;
 import org.everit.jira.configuration.plugin.SchemeUsersComponent.QUserSchemeEntityParameter;
 import org.everit.jira.configuration.plugin.schema.qdsl.QDateRange;
+import org.everit.jira.configuration.plugin.schema.qdsl.QExactWork;
 import org.everit.jira.configuration.plugin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.configuration.plugin.schema.qdsl.QWeekdayWork;
 import org.everit.jira.configuration.plugin.schema.qdsl.QWorkScheme;
@@ -164,6 +165,8 @@ public class WorkSchemesServlet extends AbstractPageServlet {
   private void deleteScheme(final long schemeId) {
     transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
       removeAllUsersFromScheme(schemeId, connection, configuration);
+      removeAllRegularWorkTimesFromScheme(schemeId, connection, configuration);
+      removeAllExactWorkFromScheme(schemeId, connection, configuration);
 
       QWorkScheme qWorkScheme = QWorkScheme.workScheme;
       return new SQLDeleteClause(connection, configuration, qWorkScheme)
@@ -313,6 +316,22 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     }
   }
 
+  private void removeAllExactWorkFromScheme(final long schemeId, final Connection connection,
+      final Configuration configuration) {
+
+    QExactWork qExactWork = QExactWork.exactWork;
+    new SQLDeleteClause(connection, configuration, qExactWork)
+        .where(qExactWork.workSchemeId.eq(schemeId)).execute();
+  }
+
+  private void removeAllRegularWorkTimesFromScheme(final long schemeId, final Connection connection,
+      final Configuration configuration) {
+
+    QWeekdayWork qWeekdayWork = QWeekdayWork.weekdayWork;
+    new SQLDeleteClause(connection, configuration, qWeekdayWork)
+        .where(qWeekdayWork.workSchemeId.eq(schemeId)).execute();
+  }
+
   private void removeAllUsersFromScheme(final long schemeId, final Connection connection,
       final Configuration configuration) {
 
@@ -330,8 +349,7 @@ public class WorkSchemesServlet extends AbstractPageServlet {
           .where(qUserWorkScheme.dateRangeId.in(dateRangeIds)).execute();
 
       new SQLDeleteClause(connection, configuration, QDateRange.dateRange)
-          .where(QDateRange.dateRange.dateRangeId.in(dateRangeIds));
-      dateRangeIds = sqlQuery.fetch();
+          .where(QDateRange.dateRange.dateRangeId.in(dateRangeIds)).execute();
     }
 
   }

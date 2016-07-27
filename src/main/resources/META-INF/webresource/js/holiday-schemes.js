@@ -17,13 +17,12 @@
 var publicHolidayDataDialog = null;
 
 $(function() {
-  publicHolidayDataDialog = ajsDialogFromTemplate(
-      "#public-holiday-data-dialog-template", {
-        width : 550,
-        height : 280,
-        id : "public-holiday-data-dialog",
-        closeOnOutsideClick : true
-      });
+  publicHolidayDataDialog = ajsDialogFromTemplate("#public-holiday-data-dialog-template", {
+    width : 550,
+    height : 280,
+    id : "public-holiday-data-dialog",
+    closeOnOutsideClick : true
+  });
 });
 
 var openNewPublicHolidayDialog = function() {
@@ -32,6 +31,19 @@ var openNewPublicHolidayDialog = function() {
   $("#public-holiday-dataform-date").val('');
   $("#public-holiday-dataform-replacement-date").val('');
   $("#public-holiday-dataform-description").val('');
+  publicHolidayDataDialog.show();
+}
+
+var openEditPublicHolidayDialog = function(publicHolidayId) {
+  var dataRow = $("#publicHoliday_" + publicHolidayId);
+
+  $("#public-holiday-dataform-action").val('updatePublicHoliday');
+  $("#public-holiday-dataform-publicholiday-id").val(publicHolidayId);
+  $("#public-holiday-dataform-date").val(dataRow.attr('data-public-holiday-date'));
+  $("#public-holiday-dataform-replacement-date").val(
+      dataRow.attr('data-public-holiday-replacement-date'));
+  $("#public-holiday-dataform-description").val(dataRow.attr('data-public-holiday-description'));
+
   publicHolidayDataDialog.show();
 }
 
@@ -45,11 +57,12 @@ var savePublicHoliday = function(event) {
   event.preventDefault();
 
   var formdata = {
+    "schemeId" : $("#scheme-selector").prop("value"),
     "action" : $("#public-holiday-dataform-action").val(),
     "publicHolidayId" : $("#public-holiday-dataform-publicholiday-id").val(),
     "date" : $("#public-holiday-dataform-date").val(),
     "replacementDate" : $("#public-holiday-dataform-replacement-date").val(),
-    "description" : $("#public-holiday-dataform-description").val('')
+    "description" : $("#public-holiday-dataform-description").val()
   }
 
   $.ajax({
@@ -65,5 +78,42 @@ var savePublicHoliday = function(event) {
       everit.partialresponse.process(resp.responseText);
       processRuntimeAlerts();
     }
+  });
+}
+
+var publicHolidayYearChange = function(event) {
+  event.preventDefault();
+  
+  var formdata = {
+      "schemeId" : $("#scheme-selector").prop("value"),
+      "action" : "publicHolidayYearChange",
+      "year" : $("#public-holiday-year-selector").prop('value')
+    }
+  
+  $.ajax({
+    url : '#',
+    type : 'GET',
+    data : formdata
+  }).success(function(content) {
+    everit.partialresponse.process(content);
+    processRuntimeAlerts();
+  });
+}
+
+var deletePublicHoliday = function(publicHolidayId) {
+  var formdata = {
+      "schemeId" : $("#scheme-selector").prop("value"),
+      "action" : "publicHolidayDelete",
+      "year" : $("#public-holiday-year-selector").prop('value'),
+      "publicHolidayId" : publicHolidayId
+    }
+  
+  $.ajax({
+    url : '#',
+    type : 'POST',
+    data : formdata
+  }).success(function(content) {
+    everit.partialresponse.process(content);
+    processRuntimeAlerts();
   });
 }

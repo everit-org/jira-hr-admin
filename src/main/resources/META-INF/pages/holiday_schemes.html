@@ -104,37 +104,49 @@ table.aui thead tr td {
         <li class="menu-item"><a href="#tab-users">Users</a></li>
       </ul>
       <div class="tabs-pane active-pane" id="tab-public-holidays">
-        <h2>Public holidays</h2>
-        <form class="aui" style="padding-top: 1em;">
-          <label for="public-holiday-year-selector">Year: </label> <select
-            id="public-holiday-year-selector" class="select short-field">
-            <option data-eht-foreach="{'year' : publicHolidayYears}" data-eht-attr-label="year"
-              data-eht-attr-value="year" />
-          </select>
-        </form>
-        <table class="aui">
-          <thead>
-            <tr>
-              <th id="public-holiday-date">Date</th>
-              <th id="public-holiday-replacement-date">Work day instead</th>
-              <th id="public-holiday-description">Description</th>
-              <td id="public-holiday-actions"><a href="javascript:openNewPublicHolidayDialog()">Add</a></td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr data-eht-foreach="{'publicHoliday' : publicHolidays}">
-              <td headers="public-holiday-date" data-eht-text="publicHoliday.date">2016-05-01</td>
-              <td headers="public-holiday-replacement-date"
-                data-eht-text="publicHoliday.replacementDate">2016-05-05</td>
-              <td headers="public-holiday-description" data-eht-text="publicHoliday.description">Május
-                elseje</td>
-              <td headers="public-holiday-actions"><a href="#">Edit</a> <a href="#">Delete</a></td>
-            </tr>
-            <tr data-eht-render="empty(publicHolidays)">
-              <td colspan="4">No record to show</td>
-            </tr>
-          </tbody>
-        </table>
+        <div id="public-holiday-panel" data-eht-fragment="'public-holiday-panel'">
+          <h2>Public holidays</h2>
+          <form class="aui" style="padding-top: 1em;" onsubmit="publicHolidayYearChange(event);">
+            <label for="public-holiday-year-selector">Year: </label> <select
+              onchange="publicHolidayYearChange(event);" id="public-holiday-year-selector"
+              class="select short-field">
+              <option data-eht-foreach="{'year' : publicHolidayYears}" data-eht-attr-label="year"
+                data-eht-attr-value="year"
+                data-eht-attr-selected="(year == publicHolidaySelectedYear) ? 'selected' : null" />
+            </select>
+          </form>
+          <table class="aui">
+            <thead>
+              <tr>
+                <th id="public-holiday-date">Date</th>
+                <th id="public-holiday-replacement-date">Work day instead</th>
+                <th id="public-holiday-description">Description</th>
+                <td id="public-holiday-actions"><a
+                  href="javascript:openNewPublicHolidayDialog()">Add</a></td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-eht-foreach="{'publicHoliday' : publicHolidays}"
+                data-eht-attr-id="'publicHoliday_' + publicHoliday.publicHolidayId"
+                data-eht-attr-data-public-holiday-date="publicHoliday.date"
+                data-eht-attr-data-public-holiday-replacement-date="publicHoliday.replacementDate"
+                data-eht-attr-data-public-holiday-description="publicHoliday.description">
+                <td headers="public-holiday-date" data-eht-text="publicHoliday.date">2016-05-01</td>
+                <td headers="public-holiday-replacement-date"
+                  data-eht-text="publicHoliday.replacementDate">2016-05-05</td>
+                <td headers="public-holiday-description" data-eht-text="publicHoliday.description">Május
+                  elseje</td>
+                <td headers="public-holiday-actions"><a
+                  data-eht-attr-href="'javascript:openEditPublicHolidayDialog(' + publicHoliday.publicHolidayId + ');'">Edit</a>
+                  <a
+                  data-eht-attr-href="'javascript:areYouSureDialog.show(function() {deletePublicHoliday(' + publicHoliday.publicHolidayId + ')});'">Delete</a></td>
+              </tr>
+              <tr data-eht-render="empty(publicHolidays)">
+                <td colspan="4">No record to show</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
       <div class="tabs-pane" id="tab-users" data-eht-utext="schemeUsers.render(request, locale)"></div>
     </div>

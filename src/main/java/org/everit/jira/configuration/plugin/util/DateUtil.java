@@ -23,6 +23,13 @@ public final class DateUtil {
     return new Date(Date.valueOf(date.toLocalDate().plusDays(daysToAdd)).getTime());
   }
 
+  public static Date parseDate(final String dateString) {
+    if (dateString == null || "".equals(dateString.trim())) {
+      return null;
+    }
+    return Date.valueOf(dateString);
+  }
+
   private DateUtil() {
   }
 }
