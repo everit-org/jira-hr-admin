@@ -86,7 +86,7 @@ public final class QueryUtil {
 
     SQLQuery<Long> query = new SQLQuery<>();
     query.select(
-        new Coalesce<Long>(
+        new Coalesce<Long>(Long.class,
             exactWorkSubSelect(qUserWorkScheme.workSchemeId, qDates.date),
             replacementWeekdaySubSelect(qUserWorkScheme.workSchemeId, userId, qDates.date),
             nonHolidayWeekdaySubSelect(qUserWorkScheme.workSchemeId, userId, qDates.date),
@@ -117,7 +117,7 @@ public final class QueryUtil {
             .and(qDateRange.startDate.loe(date))
             .and(qDateRange.endDateExcluded.gt(date))
             .and(qPublicHoliday.date.eq(date)))
-        .exists();
+        .notExists();
   }
 
   private static Expression<Long> nonHolidayWeekdaySubSelect(final NumberPath<Long> workSchemeId,

@@ -50,7 +50,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
   private static final long serialVersionUID = 1073648466982165361L;
 
   private final ManageSchemeComponent manageSchemeComponent =
-      new ManageSchemeComponent(this::listWorkSchemes, this::saveScheme, this::updateScheme,
+      new ManageSchemeComponent(this::listHolidaySchemes, this::saveScheme, this::updateScheme,
           this::deleteScheme, this::applySchemeSelectionChange);
 
   private final SchemeUsersComponent schemeUsersComponent;
@@ -144,9 +144,10 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
     return true;
   }
 
-  private Collection<SchemeDTO> listWorkSchemes() {
+  private Collection<SchemeDTO> listHolidaySchemes() {
     return querydslSupport.execute((connection, configuration) -> {
       QHolidayScheme qHolidayScheme = QHolidayScheme.holidayScheme;
+
       return new SQLQuery<SchemeDTO>(connection, configuration)
           .select(Projections.fields(SchemeDTO.class, qHolidayScheme.holidaySchemeId.as("schemeId"),
               qHolidayScheme.name.as("name")))

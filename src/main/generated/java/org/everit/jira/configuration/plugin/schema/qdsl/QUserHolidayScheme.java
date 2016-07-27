@@ -37,7 +37,7 @@ public class QUserHolidayScheme extends com.querydsl.sql.RelationalPathBase<QUse
 
     private static final long serialVersionUID = 1377548116;
 
-    public static final QUserHolidayScheme userHolidayScheme = new QUserHolidayScheme("everit_jira_user_hday_schm");
+    public static final QUserHolidayScheme userHolidayScheme = new QUserHolidayScheme("everit_jira_user_hday_scheme");
 
     public class PrimaryKeys {
 
@@ -68,7 +68,7 @@ public class QUserHolidayScheme extends com.querydsl.sql.RelationalPathBase<QUse
     public final ForeignKeys fk = new ForeignKeys();
 
     public QUserHolidayScheme(String variable) {
-        super(QUserHolidayScheme.class, forVariable(variable), "public", "everit_jira_user_hday_schm");
+        super(QUserHolidayScheme.class, forVariable(variable), "public", "everit_jira_user_hday_scheme");
         addMetadata();
     }
 
@@ -78,12 +78,12 @@ public class QUserHolidayScheme extends com.querydsl.sql.RelationalPathBase<QUse
     }
 
     public QUserHolidayScheme(Path<? extends QUserHolidayScheme> path) {
-        super(path.getType(), path.getMetadata(), "public", "everit_jira_user_hday_schm");
+        super(path.getType(), path.getMetadata(), "public", "everit_jira_user_hday_scheme");
         addMetadata();
     }
 
     public QUserHolidayScheme(PathMetadata metadata) {
-        super(QUserHolidayScheme.class, metadata, "public", "everit_jira_user_hday_schm");
+        super(QUserHolidayScheme.class, metadata, "public", "everit_jira_user_hday_scheme");
         addMetadata();
     }
 
