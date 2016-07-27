@@ -350,6 +350,8 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
       new SQLDeleteClause(connection, configuration, QDateRange.dateRange)
           .where(QDateRange.dateRange.dateRangeId.in(dateRangeIds)).execute();
+
+      dateRangeIds = sqlQuery.fetch();
     }
 
   }
