@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.everit.jira.configuration.plugin.util.AjaxRedirectCatchServletResponse;
 import org.everit.jira.configuration.plugin.util.LocalizedTemplate;
 import org.everit.jira.querydsl.support.QuerydslSupport;
 import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
@@ -70,7 +71,11 @@ public abstract class AbstractPageServlet extends HttpServlet {
         ComponentAccessor.getOSGiComponentInstanceOfType(WebSudoManager.class);
 
     if (!webSudoManager.canExecuteRequest(req)) {
-      webSudoManager.enforceWebSudoProtection(req, resp);
+      if ("XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
+        webSudoManager.enforceWebSudoProtection(req, new AjaxRedirectCatchServletResponse(resp));
+      } else {
+        webSudoManager.enforceWebSudoProtection(req, resp);
+      }
       return false;
     }
     return true;
@@ -101,6 +106,22 @@ public abstract class AbstractPageServlet extends HttpServlet {
       final Map<String, Object> vars) throws ServletException, IOException {
 
     pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
+  }
+
+  @Override
+  protected final void doPost(final HttpServletRequest req, final HttpServletResponse resp)
+      throws ServletException, IOException {
+
+    if (!checkWebSudo(req, resp)) {
+      return;
+    }
+
+    doPostInternal(req, resp);
+  }
+
+  protected void doPostInternal(final HttpServletRequest req, final HttpServletResponse resp)
+      throws ServletException, IOException {
+    super.doPost(req, resp);
   }
 
   protected abstract String getTemplateBase();

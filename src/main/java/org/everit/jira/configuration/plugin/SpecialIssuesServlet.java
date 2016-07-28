@@ -126,12 +126,8 @@ public class SpecialIssuesServlet extends AbstractPageServlet {
   }
 
   @Override
-  protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
+  protected void doPostInternal(final HttpServletRequest req, final HttpServletResponse resp)
       throws ServletException, IOException {
-
-    if (!checkWebSudo(req, resp)) {
-      return;
-    }
 
     String action = req.getParameter("action");
     if ("save".equals(action)) {

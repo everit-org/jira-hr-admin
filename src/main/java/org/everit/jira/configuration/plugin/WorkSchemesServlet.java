@@ -222,7 +222,7 @@ public class WorkSchemesServlet extends AbstractPageServlet {
   }
 
   @Override
-  protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
+  protected void doPostInternal(final HttpServletRequest req, final HttpServletResponse resp)
       throws ServletException, IOException {
 
     String action = req.getParameter("action");

@@ -76,3 +76,13 @@ var ajsDialogFromTemplate = function(templateElementSelector, configuration) {
 
   return dialog;
 }
+
+$( document ).ajaxComplete(function( event, xhr, settings ) {
+  if (xhr.status == 278) {
+  var newLocation = xhr.getResponseHeader("Location");
+  if (newLocation) {
+    window.location = newLocation;
+  }
+  }
+});
+
