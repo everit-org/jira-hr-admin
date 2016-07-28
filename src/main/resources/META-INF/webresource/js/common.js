@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+if (typeof $ === 'undefined') {
+  $ = AJS.$;
+}
+
 if (!$.parseHTML) {
   $.parseHTML = function(str) {
     var tmp = document.implementation.createHTMLDocument("Everit Jira Configuration Plugin");

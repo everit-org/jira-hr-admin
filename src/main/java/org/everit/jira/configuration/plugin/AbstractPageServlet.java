@@ -78,9 +78,8 @@ public abstract class AbstractPageServlet extends HttpServlet {
 
   protected Map<String, Object> createCommonVars(final HttpServletRequest req,
       final HttpServletResponse resp) throws IOException {
-    EveritWebResourceManager webResourceManager = new EveritWebResourceManager(resp.getWriter());
     Map<String, Object> vars = new HashMap<String, Object>();
-    vars.put("webResourceManager", webResourceManager);
+    vars.put("webResourceManager", ComponentAccessor.getWebResourceManager());
     vars.put("request", req);
     vars.put("response", resp);
     return vars;
