@@ -23,15 +23,15 @@
 <meta name="decorator" content="atl.admin">
 <style type="text/css">
 .everit-tabs .tabs-pane {
-	padding-top: 2em;
+    padding-top: 2em;
 }
 
 table.aui thead tr td {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .aui-inline-dialog.aui-datepicker-dialog {
-	z-index: 4000;
+    z-index: 4000;
 }
 </style>
 <script
@@ -60,6 +60,8 @@ table.aui thead tr td {
   data-eht-render="'content'"></script>
 </head>
 <body>
+  <div id="aui-message-bar"
+    style="position: absolute; z-index: 3005; top: 0; right: 0; max-width: 400px;"></div>
   <div id="public-holiday-data-dialog-template" data-jira-modal-title="Workday Record"
     data-eht-text="template_ctx.renderFragment('publicHolidayRecordDialogTemplateBody')"
     style="display: none;">
@@ -89,8 +91,7 @@ table.aui thead tr td {
     </div>
   </div>
   <div data-eht-utext="areYouSureDialogComponent.render(response.locale)"></div>
-  <div id="aui-message-bar" style="position: fixed; z-index: 3005; top: 0; left: 0; width: 100%;">
-  </div>
+
   <div data-eht-utext="schemeUsers.renderInitialFragments(request, response)"
     data-eht-render="'content'"></div>
   <div data-eht-utext="manageSchemeComponent.render(request, response.locale)"></div>

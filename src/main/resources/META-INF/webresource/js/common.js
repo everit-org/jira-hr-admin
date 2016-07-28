@@ -34,11 +34,13 @@ var processRuntimeAlerts = function() {
     thisObj.remove();
     if (alertType == 'info') {
       AJS.messages.generic({
-        body : alertMessage
+        body : alertMessage,
+        fadeout : true
       });
     } else if (alertType == 'error') {
       AJS.messages.error({
-        body : alertMessage
+        body : alertMessage,
+        fadeout : true
       });
     }
   });
