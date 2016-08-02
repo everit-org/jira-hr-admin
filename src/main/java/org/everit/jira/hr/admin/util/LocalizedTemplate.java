@@ -41,10 +41,13 @@ public class LocalizedTemplate {
 
   private final String baseName;
 
+  private final ClassLoader classLoader;
+
   private final CompiledTemplate compiledTemplate;
 
   public LocalizedTemplate(final String baseName, final ClassLoader classLoader) {
     this.baseName = baseName;
+    this.classLoader = classLoader;
     try {
       ParserConfiguration parserConfiguration = new ParserConfiguration(classLoader);
       parserConfiguration.setName(baseName + ".html");
@@ -61,7 +64,7 @@ public class LocalizedTemplate {
 
     Map<String, Object> localVars = new InheritantMap<>(vars, false);
     ResourceBundleMap messages =
-        TemplatingUtil.getMessages(baseName, this.getClass().getClassLoader(), locale);
+        TemplatingUtil.getMessages(baseName, classLoader, locale);
     localVars.put("messages", messages);
 
     compiledTemplate.render(writer, localVars, fragmentId);
