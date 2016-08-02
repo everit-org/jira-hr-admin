@@ -1,2 +1,2 @@
-# jira-configuration-plugin
-Configuration screens and tables of several Jira plugins that are provided by Everit.
+# jira-hr-admin
+Configuration screens and tables of several Jira HR Plugins that are provided by Everit.

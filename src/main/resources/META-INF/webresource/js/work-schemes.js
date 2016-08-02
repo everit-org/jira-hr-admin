@@ -14,24 +14,12 @@
  * limitations under the License.
  */
 
-var weekdayRecordDialog = null;
-
-$(function() {
-  weekdayRecordDialog = ajsDialogFromTemplate("#weekday-data-dialog-template",
-      {
-        width : 500,
-        height : 280,
-        id : "weekday-data-dialog",
-        closeOnOutsideClick : true
-      });
-});
-
 var openNewWeekdayDialog = function() {
   $("#workday-dataform-action").val('newWeekday');
   $("#weekday-dataform-weekday-selector").prop('value', '1');
   $("#weekday-dataform-start-time").val('');
   $("#weekday-dataform-duration").val('');
-  weekdayRecordDialog.show();
+  AJS.dialog2("#weekday-data-dialog").show();
 }
 
 var saveNewWeekday = function(event) {
@@ -50,7 +38,7 @@ var saveNewWeekday = function(event) {
     data : formdata
   }).success(function(content) {
     everit.partialresponse.process(content);
-    weekdayRecordDialog.hide();
+    AJS.dialog2("#weekday-data-dialog").hide();
     processRuntimeAlerts();
   }).error(function(resp) {
     if (resp.status == 400) {

@@ -23,48 +23,55 @@
 <meta name="decorator" content="atl.admin">
 <style type="text/css">
 .everit-tabs .tabs-pane {
-	padding-top: 2em;
+    padding-top: 2em;
 }
 
 table.aui thead tr td {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 .aui-inline-dialog.aui-datepicker-dialog {
-	z-index: 4000;
+    z-index: 4000;
 }
 </style>
 <script
   data-eht-text="webResourceManager.requireResource('com.atlassian.auiplugin:aui-date-picker')"
   data-eht-render="'content'"></script>
+<script data-eht-text="webResourceManager.requireResource('com.atlassian.auiplugin:dialog2')"
+  data-eht-render="'content'"></script>
 <script
   data-eht-text="webResourceManager.requireResource('org.everit.web.partialresponse.jira:org.everit.web.partialresponse')"
   data-eht-render="'content'"></script>
-<script
-  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:common')"
+<script data-eht-text="webResourceManager.requireResource('org.everit.jira.hr.admin:common')"
   data-eht-render="'content'"></script>
 <script
-  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:manage-schemes')"
+  data-eht-text="webResourceManager.requireResource('org.everit.jira.hr.admin:manage-schemes')"
   data-eht-render="'content'"></script>
-<script
-  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:are-you-sure')"
+<script data-eht-text="webResourceManager.requireResource('org.everit.jira.hr.admin:are-you-sure')"
   data-eht-render="'content'"></script>
-<script
-  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:scheme-users')"
+<script data-eht-text="webResourceManager.requireResource('org.everit.jira.hr.admin:scheme-users')"
   data-eht-render="'content'"></script>
-<script
-  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:unknown-error')"
+<script data-eht-text="webResourceManager.requireResource('org.everit.jira.hr.admin:unknown-error')"
   data-eht-render="'content'"></script>
-<script
-  data-eht-text="webResourceManager.requireResource('org.everit.jira.configuration.plugin:work-schemes')"
+<script data-eht-text="webResourceManager.requireResource('org.everit.jira.hr.admin:work-schemes')"
   data-eht-render="'content'"></script>
 </head>
 <body>
-  <div id="weekday-data-dialog-template" data-jira-modal-title="Workday Record"
-    data-eht-text="template_ctx.renderFragment('weekdayRecordDialogTemplateBody')"
-    style="display: none;">
 
-    <div data-eht-fragment="'weekdayRecordDialogTemplateBody'">
+  <section role="dialog" id="weekday-data-dialog" class="aui-layer aui-dialog2 aui-dialog2-medium"
+    aria-hidden="true" data-aui-remove-on-hide="false">
+    <!-- Dialog header -->
+    <header class="aui-dialog2-header">
+      <!-- The dialog's title -->
+      <h1 class="aui-dialog2-header-main">Weekday work</h1>
+
+      <!-- Close icon -->
+      <a class="aui-dialog2-header-close"> <span
+        class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>
+      </a>
+    </header>
+    <!-- Main dialog content -->
+    <div class="aui-dialog2-content">
       <form id="weekday-dataform" class="aui">
         <input type="hidden" id="workday-dataform-action" name="action" /> <input type="hidden"
           id="workday-dataform-weekday-id" name="weekday-work-id" />
@@ -92,11 +99,11 @@ table.aui thead tr td {
         </div>
       </form>
     </div>
-  </div>
+  </section>
 
   <div data-eht-utext="areYouSureDialogComponent.render(response.locale)"></div>
-  <div id="aui-message-bar" style="position: absolute; z-index: 3005; top: 0; right: 0; max-width: 400px;">
-  </div>
+  <div id="aui-message-bar"
+    style="position: absolute; z-index: 3005; top: 0; right: 0; max-width: 400px;"></div>
   <div data-eht-utext="schemeUsers.renderInitialFragments(request, response)"
     data-eht-render="'content'"></div>
   <div data-eht-utext="manageSchemeComponent.render(request, response.locale)"></div>
@@ -128,7 +135,8 @@ table.aui thead tr td {
               <td headers="regular-work-scheme-start-time" data-eht-text="weekdayWork.startTime">08:00</td>
               <td headers="regular-work-scheme-duration"
                 data-eht-text="weekdayWork.durationInMinutes + ' min'">480 min</td>
-              <td headers="regular-work-scheme-actions"><a href="#" data-eht-render="false">Edit</a> <a
+              <td headers="regular-work-scheme-actions"><a href="#" data-eht-render="false">Edit</a>
+                <a
                 data-eht-attr-href="'javascript:areYouSureDialog.show(function() {deleteWeekdayRecord(' + weekdayWork.weekdayWorkId + ')});'">Delete</a></td>
             </tr>
             <tr data-eht-render="empty(weekdayWorks)">

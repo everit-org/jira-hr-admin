@@ -23,9 +23,9 @@
     <vendor name="Everit Kft." url="http://www.everit.biz" />
   </plugin-info>
 
-  <resource type="i18n" name="i18n" location="META-INF/i18n/everit-configuration" />
+  <resource type="i18n" name="i18n" location="META-INF/i18n/everit-hr-admin" />
 
-  <web-section key="everit" name="Everit Configuration" location="admin_plugins_menu"
+  <web-section key="everit" name="Everit Jira HR Admin" location="admin_plugins_menu"
     weight="110">
     <label key="admin_plugins_menu.section_everit" />
   </web-section>
@@ -54,58 +54,58 @@
     <link>/plugins/servlet/everit/user-holiday-amount</link>
   </web-item>
 
-  <servlet name="Special Issues" class="org.everit.jira.configuration.plugin.SpecialIssuesServlet"
+  <servlet name="Special Issues" class="org.everit.jira.hr.admin.SpecialIssuesServlet"
     key="everit-special-issues">
     <url-pattern>/everit/special-issues</url-pattern>
   </servlet>
 
-  <servlet name="HolidaySchemes" class="org.everit.jira.configuration.plugin.HolidaySchemesServlet"
+  <servlet name="HolidaySchemes" class="org.everit.jira.hr.admin.HolidaySchemesServlet"
     key="everit-holiday-schemes">
     <url-pattern>/everit/holiday-schemes</url-pattern>
   </servlet>
 
-  <servlet name="WorkSchemes" class="org.everit.jira.configuration.plugin.WorkSchemesServlet"
+  <servlet name="WorkSchemes" class="org.everit.jira.hr.admin.WorkSchemesServlet"
     key="everit-work-schemes">
     <url-pattern>/everit/work-schemes</url-pattern>
   </servlet>
 
-  <servlet name="WorkSchemes" class="org.everit.jira.configuration.plugin.UserHolidayAmountServlet"
+  <servlet name="WorkSchemes" class="org.everit.jira.hr.admin.UserHolidayAmountServlet"
     key="everit-user-holiday-amount">
     <url-pattern>/everit/user-holiday-amount</url-pattern>
   </servlet>
 
   <web-resource name="Everit Jira Manage Scheme" key="manage-schemes">
     <resource name="manage-schemes.js" type="download" location="META-INF/webresource/js/manage-schemes.js" />
-    <context>org.everit.jira.configuration</context>
+    <context>org.everit.jira.hr.admin</context>
   </web-resource>
 
-  <web-resource name="Everit Jira Configuration Common" key="common">
+  <web-resource name="Everit Jira HR Admin Common" key="common">
     <resource name="common.js" type="download" location="META-INF/webresource/js/common.js" />
-    <context>org.everit.jira.configuration</context>
+    <context>org.everit.jira.hr.admin</context>
   </web-resource>
 
-  <web-resource name="Everit Jira Configuration AreYouSure" key="are-you-sure">
+  <web-resource name="Everit Jira HR Admin AreYouSure" key="are-you-sure">
     <resource name="are-you-sure.js" type="download" location="META-INF/webresource/js/are-you-sure.js" />
-    <context>org.everit.jira.configuration</context>
+    <context>org.everit.jira.hr.admin</context>
   </web-resource>
 
-  <web-resource name="Everit Jira Configuration Scheme Users" key="scheme-users">
+  <web-resource name="Everit Jira HR Admin Scheme Users" key="scheme-users">
     <resource name="scheme-users.js" type="download" location="META-INF/webresource/js/scheme-users.js" />
-    <context>org.everit.jira.configuration</context>
+    <context>org.everit.jira.hr.admin</context>
   </web-resource>
 
   <web-resource name="Everit Jira Unknown error after Ajax" key="unknown-error">
     <resource name="unknown-error.js" type="download" location="META-INF/webresource/js/unknown-error.js" />
-    <context>org.everit.jira.configuration</context>
+    <context>org.everit.jira.hr.admin</context>
   </web-resource>
 
   <web-resource name="Everit Jira Work Schemes" key="work-schemes">
     <resource name="work-schemes.js" type="download" location="META-INF/webresource/js/work-schemes.js" />
-    <context>org.everit.jira.configuration</context>
+    <context>org.everit.jira.hr.admin</context>
   </web-resource>
 
   <web-resource name="Everit Jira Holiday Schemes" key="holiday-schemes">
     <resource name="holiday-schemes.js" type="download" location="META-INF/webresource/js/holiday-schemes.js" />
-    <context>org.everit.jira.configuration</context>
+    <context>org.everit.jira.hr.admin</context>
   </web-resource>
 </atlassian-plugin>

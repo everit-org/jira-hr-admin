@@ -14,24 +14,13 @@
  * limitations under the License.
  */
 
-var publicHolidayDataDialog = null;
-
-$(function() {
-  publicHolidayDataDialog = ajsDialogFromTemplate("#public-holiday-data-dialog-template", {
-    width : 550,
-    height : 280,
-    id : "public-holiday-data-dialog",
-    closeOnOutsideClick : true
-  });
-});
-
 var openNewPublicHolidayDialog = function() {
   $("#public-holiday-dataform-action").val('newPublicHoliday');
   $("#public-holiday-dataform-publicholiday-id").val('');
   $("#public-holiday-dataform-date").val('');
   $("#public-holiday-dataform-replacement-date").val('');
   $("#public-holiday-dataform-description").val('');
-  publicHolidayDataDialog.show();
+  AJS.dialog2("#public-holiday-data-dialog-template").show();
 }
 
 var openEditPublicHolidayDialog = function(publicHolidayId) {
@@ -44,7 +33,7 @@ var openEditPublicHolidayDialog = function(publicHolidayId) {
       dataRow.attr('data-public-holiday-replacement-date'));
   $("#public-holiday-dataform-description").val(dataRow.attr('data-public-holiday-description'));
 
-  publicHolidayDataDialog.show();
+  AJS.dialog2("#public-holiday-data-dialog-template").show();
 }
 
 var savePublicHoliday = function(event) {
@@ -71,7 +60,7 @@ var savePublicHoliday = function(event) {
     data : formdata
   }).success(function(content) {
     everit.partialresponse.process(content);
-    publicHolidayDataDialog.hide();
+    AJS.dialog2("#public-holiday-data-dialog-template").hide();
     processRuntimeAlerts();
   }).error(function(resp) {
     if (resp.status == 400) {

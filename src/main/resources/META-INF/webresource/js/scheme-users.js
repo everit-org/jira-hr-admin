@@ -97,6 +97,26 @@ var openEditSchemeUserDialog = function(recordId) {
   userSchemeDataDialog.show();
 }
 
+var openCloneSchemeUserDialog = function(recordId) {
+  $('#scheme-user-dataform-action').val('scheme-user-savenew');
+  $('#scheme-user-dataform-record-id').val(recordId);
+  
+  var recordRow = $('#scheme_user_id_' + recordId);
+  
+  $('#scheme-user-dataform-start-date').val(recordRow.attr('data-scheme-user-start-date'));
+  $('#scheme-user-dataform-end-date').val(recordRow.attr('data-scheme-user-end-date'));
+  $('#scheme-user-dataform-messages').empty();
+  
+  userSchemeDataDialogUserPicker.setSelection(new AJS.ItemDescriptor({
+    value : recordRow.attr('data-scheme-user-user-name'),
+    label : recordRow.attr("data-scheme-user-display-name"),
+    icon : recordRow.attr("data-scheme-user-avatar-url")
+  }));
+  
+  userSchemeDataDialog.show();
+}
+
+
 var deleteSchemeUserRecord = function(userSchemeId) {
   var formdata = createUserSchemeFormDataWithSearchFields();
   formdata['action'] = 'scheme-user-delete';

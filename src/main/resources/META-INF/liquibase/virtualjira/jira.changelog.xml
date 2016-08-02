@@ -19,7 +19,7 @@
   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd"
-  logicalFilePath="org.everit.jira.configuration.lqmg">
+  logicalFilePath="org.everit.jira.hr.admin.lqmg">
 
   <changeSet id="1.0.0" author="everit">
     <createTable tableName="project">
