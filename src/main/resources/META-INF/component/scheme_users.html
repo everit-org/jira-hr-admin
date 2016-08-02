@@ -25,8 +25,8 @@
     <div class="form-group">
       <label for="user-selector">User: </label> <select id="scheme-user-user-selector"
         class="js-default-user-picker single-user-picker" name="user"></select> <label
-        for="current-checkbox">Current time ranges only:</label> <input id="scheme-user-current-checkbox"
-        type="checkbox" />
+        for="current-checkbox">Current time ranges only:</label> <input
+        id="scheme-user-current-checkbox" type="checkbox" />
       <button class="aui-button aui-button-primary">Filter</button>
     </div>
   </form>
@@ -59,9 +59,12 @@
         <td headers="scheme-user-end-date" data-eht-text="schemeUser.endDate">2016-11-30</td>
         <td headers="scheme-user-actions">
           <ul class="menu">
-            <li><a data-eht-attr-href="'javascript:openEditSchemeUserDialog(' + schemeUser.userSchemeId + ');'">Edit</a></li>
-            <li><a data-eht-attr-href="'javascript:areYouSureDialog.show(function() {deleteSchemeUserRecord(' + schemeUser.userSchemeId + ')});'">Delete</a></li>
-            <li><a data-eht-attr-href="'javascript:openCloneSchemeUserDialog(' + schemeUser.userSchemeId + ');'">Clone</a></li>
+            <li><a
+              data-eht-attr-href="'javascript:openEditSchemeUserDialog(' + schemeUser.userSchemeId + ');'">Edit</a></li>
+            <li><a
+              data-eht-attr-href="'javascript:areYouSureDialog.show(function() {deleteSchemeUserRecord(' + schemeUser.userSchemeId + ')});'">Delete</a></li>
+            <li><a
+              data-eht-attr-href="'javascript:openCloneSchemeUserDialog(' + schemeUser.userSchemeId + ');'">Clone</a></li>
           </ul>
         </td>
       </tr>
@@ -71,11 +74,21 @@
     </tbody>
   </table>
 
-  <div data-eht-fragment="'dialogs'" data-eht-render="(template_ctx.fragmentId == 'dialogs') ? 'content' : 'none'">
-    <div id="scheme-user-data-dialog-template" data-jira-modal-title="User data"
-      data-eht-text="template_ctx.renderFragment('dataDialogTemplateBody')" style="display: none;">
-
-      <div data-eht-fragment="'dataDialogTemplateBody'">
+  <div data-eht-fragment="'dialogs'"
+    data-eht-render="(template_ctx.fragmentId == 'dialogs') ? 'content' : 'none'">
+    <section role="dialog" id="scheme-user-data-dialog-template"
+      class="aui-layer aui-dialog2 aui-dialog2-medium" aria-hidden="true"
+      data-aui-remove-on-hide="false">
+      <!-- Dialog header -->
+      <header class="aui-dialog2-header">
+        <!-- The dialog's title -->
+        <h1 class="aui-dialog2-header-main">Assign user</h1>
+        <a class="aui-dialog2-header-close"> <span
+          class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>
+        </a>
+      </header>
+      <!-- Main dialog content -->
+      <div class="aui-dialog2-content">
         <form id="scheme-user-dataform" class="aui">
           <input type="hidden" id="scheme-user-dataform-action" name="action" /> <input
             type="hidden" id="scheme-user-dataform-record-id" name="userholidayamount-id" />
@@ -86,11 +99,13 @@
           </div>
           <div class="field-group">
             <label>Start date</label> <input id="scheme-user-dataform-start-date"
-              class="text aui-date-picker" name="start-date" type="date" required="required" />
+              class="text aui-date-picker everit-auto-extend" name="start-date" type="date"
+              required="required" />
           </div>
           <div class="field-group">
             <label>End date</label> <input id="scheme-user-dataform-end-date"
-              class="text aui-date-picker" name="end-date" type="date" required="required" />
+              class="text aui-date-picker everit-auto-extend" name="end-date" type="date"
+              required="required" />
           </div>
           <div class="field-group">
             <button id="scheme-user-dataform-savebutton" class="aui-button aui-button-primary"
@@ -98,7 +113,7 @@
           </div>
         </form>
       </div>
-    </div>
+    </section>
   </div>
 </body>
 </html>

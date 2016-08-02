@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-var userSchemeDataDialog = null;
 var userSchemeDataDialogUserPicker = null;
 
 $(function() {
-  userSchemeDataDialog = ajsDialogFromTemplate(
-      "#scheme-user-data-dialog-template", {
-        width : 500,
-        height : 280,
-        id : "scheme-user-data-dialog",
-        closeOnOutsideClick : true
-      });
-
   userSchemeDataDialogUserPicker = new AJS.SingleSelect({
     element : $("#scheme-user-dataform-user-selector"),
     submitInputVal : true,
@@ -51,7 +42,9 @@ var openAddSchemeUserDialog = function() {
   $('#scheme-user-dataform-start-date').val('');
   $('#scheme-user-dataform-end-date').val('');
   $('#scheme-user-dataform-messages').empty();
-  userSchemeDataDialog.show();
+  
+  $("#scheme-user-data-dialog-template header h1").text("New record");
+  AJS.dialog2("#scheme-user-data-dialog-template").show();
 }
 
 var createUserSchemeFormDataWithSearchFields = function() {
@@ -94,7 +87,9 @@ var openEditSchemeUserDialog = function(recordId) {
     icon : recordRow.attr("data-scheme-user-avatar-url")
   }));
   
-  userSchemeDataDialog.show();
+  $("#scheme-user-data-dialog-template header h1").text("Edit record");
+  
+  AJS.dialog2("#scheme-user-data-dialog-template").show();
 }
 
 var openCloneSchemeUserDialog = function(recordId) {
@@ -113,7 +108,8 @@ var openCloneSchemeUserDialog = function(recordId) {
     icon : recordRow.attr("data-scheme-user-avatar-url")
   }));
   
-  userSchemeDataDialog.show();
+  $("#scheme-user-data-dialog-template header h1").text("New record");
+  AJS.dialog2("#scheme-user-data-dialog-template").show();
 }
 
 
@@ -160,7 +156,7 @@ var saveSchemeUserRecord = function(event) {
     data : formdata
   }).success(function(content) {
     everit.partialresponse.process(content);
-    userSchemeDataDialog.hide();
+    AJS.dialog2("#scheme-user-data-dialog-template").hide();
     processRuntimeAlerts();
   }).error(function(resp) {
     if (resp.status == 400) {

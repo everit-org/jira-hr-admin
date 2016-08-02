@@ -14,22 +14,11 @@
  * limitations under the License.
  */
 
-var schemeDataDialog = null;
-
-$(function() {
-  schemeDataDialog = ajsDialogFromTemplate("#schemeDataDialog", {
-    width : 550,
-    height : 140,
-    id : "scheme-data-dialog",
-    closeOnOutsideClick : true
-  });
-});
-
 var openNewSchemeDialog = function(event) {
   event.preventDefault();
   $("#scheme-id-input").val("");
   $("#scheme-name-input").val("");
-  schemeDataDialog.show();
+  AJS.dialog2("#schemeDataDialog").show();
 }
 
 var openEditSchemeDialog = function(event) {
@@ -39,7 +28,7 @@ var openEditSchemeDialog = function(event) {
   $("#scheme-id-input").val(schemeId);
   $("#scheme-name-input").val($("#scheme-selector option:selected").text());
 
-  schemeDataDialog.show();
+  AJS.dialog2("#schemeDataDialog").show();
 }
 
 var saveNewScheme = function() {
@@ -54,7 +43,7 @@ var saveNewScheme = function() {
   }).success(
       function(content) {
         everit.partialresponse.process(content);
-        schemeDataDialog.hide();
+        AJS.dialog2("#schemeDataDialog").hide();
         processRuntimeAlerts();
         AJS.tabs.setup();
         JIRA.trigger(JIRA.Events.NEW_CONTENT_ADDED,
@@ -75,7 +64,7 @@ var updateScheme = function() {
     }
   }).success(function(content) {
     everit.partialresponse.process(content);
-    schemeDataDialog.hide();
+    AJS.dialog2("#schemeDataDialog").hide();
     processRuntimeAlerts();
   })
 }
@@ -102,7 +91,6 @@ var deleteScheme = function() {
     }
   }).success(function(content) {
     everit.partialresponse.process(content);
-    schemeDataDialog.hide();
     processRuntimeAlerts();
   });
 }

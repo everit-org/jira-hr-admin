@@ -26,6 +26,14 @@ if (!$.parseHTML) {
   }
 }
 
+$(function() {
+  AJS.$('.aui-date-picker.everit-auto-extend').each(function() {
+    new AJS.DatePicker(this, {
+      'overrideBrowserDefault' : true
+    });
+  });
+});
+
 var processRuntimeAlerts = function() {
   $('.everit-jira-runtimealert').each(function() {
     var thisObj = $(this);
@@ -44,37 +52,6 @@ var processRuntimeAlerts = function() {
       });
     }
   });
-}
-
-var ajsDialogFromTemplate = function(templateElementSelector, configuration) {
-  var dialog = new AJS.Dialog(configuration);
-  var template = $(templateElementSelector);
-
-  dialog.addHeader(template.attr('data-jira-modal-title'));
-  dialog.addPanel("Panel", template.text(), "panel-body");
-
-  template.remove();
-  var dialogId = configuration["id"];
-
-  AJS.$('#' + dialogId + ' .aui-date-picker').each(function() {
-    new AJS.DatePicker(this, {
-      'overrideBrowserDefault' : true
-    });
-  });
-
-  JIRA.trigger(JIRA.Events.NEW_CONTENT_ADDED, [ $('#' + dialogId) ]);
-
-  var dialogElementObj = $('#' + dialogId);
-  $('select.aui-ss-select', dialogElementObj).each(function() {
-    var thisObj = $(this);
-    var thisObjRequired = thisObj.prop('required');
-    if (thisObjRequired) {
-      thisObj.prop('required', false);
-      $('#' + thisObj.prop('id') + '-field').prop('required', true);
-    }
-  });
-
-  return dialog;
 }
 
 $( document ).ajaxComplete(function( event, xhr, settings ) {

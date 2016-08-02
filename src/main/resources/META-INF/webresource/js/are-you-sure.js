@@ -14,38 +14,27 @@
  * limitations under the License.
  */
 function AreYouSureDialog() {
-  var _dialog = null;
   var _yesHandler = null;
-  
-  $(function() {
-    _dialog = ajsDialogFromTemplate("#areYouSureDialog", {
-      width : 550,
-      height : 180,
-      id : "are-you-sure-dialog",
-      closeOnOutsideClick : true
-    });
-  });
-  
-  
+
   this.show = function(yesHandler, event) {
     if (event) {
       event.preventDefault();
     }
     _yesHandler = yesHandler;
-    _dialog.show();
+    AJS.dialog2("#are-you-sure-dialog").show();
   }
-  
+
   this._handleYes = function(event) {
     event.preventDefault();
     if (_yesHandler) {
       _yesHandler();
     }
-    _dialog.hide();
+    AJS.dialog2("#are-you-sure-dialog").hide();
   }
-  
+
   this._handleNo = function(event) {
     event.preventDefault();
-    _dialog.hide();
+    AJS.dialog2("#are-you-sure-dialog").hide();
   }
 }
 

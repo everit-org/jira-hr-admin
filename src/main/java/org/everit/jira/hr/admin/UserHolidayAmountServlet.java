@@ -127,6 +127,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     vars.put("pageSize", PAGE_SIZE);
     vars.put("userHolidayAmounts",
         getUserHolidayAmounts(userFilter, currentTimeRangesFilter, pageIndex));
+    vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
 
     if ("XMLHttpRequest".equals(req.getHeader("X-Requested-With"))) {
       try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
