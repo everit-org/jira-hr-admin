@@ -21,7 +21,7 @@
 
   <groupId>org.everit.jira.hr</groupId>
   <artifactId>org.everit.jira.hr.admin</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>atlassian-plugin</packaging>
 
   <parent>
@@ -30,7 +30,7 @@
     <version>7.3.0</version>
   </parent>
 
-  <name>Jira HR Admin plugin</name>
+  <name>Everit - Jira HR Admin Plugin</name>
   <url>http://maven.apache.org</url>
 
   <properties>
