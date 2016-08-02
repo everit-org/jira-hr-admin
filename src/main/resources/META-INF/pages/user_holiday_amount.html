@@ -94,6 +94,9 @@ table.aui thead tr td {
     $('#dataform-amount').val('');
     $('#dataform-description').val('');
     $('#dataform-messages').empty();
+    
+    $('#user-holiday-amount-dialog header h1').text('New record');
+    
     AJS.dialog2("#user-holiday-amount-dialog").show();
   }
 
@@ -117,6 +120,35 @@ table.aui thead tr td {
     $('#dataform-amount').val(recordRow.attr('data-amount'));
     $('#dataform-description').val(recordRow.attr('data-description'));
     $('#dataform-messages').empty();
+    
+    $('#user-holiday-amount-dialog header h1').text('Update record');
+    
+    AJS.dialog2("#user-holiday-amount-dialog").show();
+  }
+  
+  var openCloneDialog = function(userHolidayAmountId) {
+
+    $('#dataform-action').val('new');
+    $('#dataform-userholidayamount-id').val(userHolidayAmountId);
+
+    var recordRow = $('#record-' + userHolidayAmountId);
+
+    var userName = recordRow.attr('data-user-name');
+
+    editDialogUserPicker.setSelection(new AJS.ItemDescriptor({
+      value : userName,
+      label : recordRow.attr("data-display-name"),
+      icon : recordRow.attr("data-avatar-url")
+    }));
+
+    $('#dataform-start-date').val(recordRow.attr('data-start-date'));
+    $('#dataform-end-date').val(recordRow.attr('data-end-date'));
+    $('#dataform-amount').val(recordRow.attr('data-amount'));
+    $('#dataform-description').val(recordRow.attr('data-description'));
+    $('#dataform-messages').empty();
+    
+    $('#user-holiday-amount-dialog header h1').text('New record');
+    
     AJS.dialog2("#user-holiday-amount-dialog").show();
   }
 
@@ -246,12 +278,14 @@ table.aui thead tr td {
             name="user" required="required"></select>
         </div>
         <div class="field-group">
-          <label>Start date</label> <input id="dataform-start-date" class="text aui-date-picker everit-auto-extend"
-            name="start-date" type="date" required="required" />
+          <label>Start date</label> <input id="dataform-start-date"
+            class="text aui-date-picker everit-auto-extend" name="start-date" type="date"
+            required="required" />
         </div>
         <div class="field-group">
-          <label>End date</label> <input id="dataform-end-date" class="text aui-date-picker everit-auto-extend"
-            name="end-date" type="date" required="required" />
+          <label>End date</label> <input id="dataform-end-date"
+            class="text aui-date-picker everit-auto-extend" name="end-date" type="date"
+            required="required" />
         </div>
         <div class="field-group">
           <label>Amount (hours)</label> <input id="dataform-amount" class="text short-field"
@@ -323,6 +357,8 @@ table.aui thead tr td {
               data-eht-attr-href="'javascript:openEditDialog(' + record.userHolidayAmountId + ')'">Edit</a></li>
             <li><a
               data-eht-attr-href="'javascript:areYouSureDialog.show(function() {doDeleteHolidayAmount(' + record.userHolidayAmountId + ')});'">Delete</a></li>
+            <li><a
+              data-eht-attr-href="'javascript:openCloneDialog(' + record.userHolidayAmountId + ')'">Clone</a></li>
           </ul>
         </td>
       </tr>
