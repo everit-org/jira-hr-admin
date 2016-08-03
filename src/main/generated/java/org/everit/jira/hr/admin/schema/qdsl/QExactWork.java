@@ -35,7 +35,7 @@ import java.sql.Types;
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
 public class QExactWork extends com.querydsl.sql.RelationalPathBase<QExactWork> {
 
-    private static final long serialVersionUID = -1992795662;
+    private static final long serialVersionUID = 818791474;
 
     public static final QExactWork exactWork = new QExactWork("everit_jira_exact_work");
 

@@ -30,18 +30,18 @@ import java.sql.Types;
 
 
 /**
- * QUserHolidayAmountDate is a Querydsl query type for QUserHolidayAmountDate
+ * QDateSequence is a Querydsl query type for QDateSequence
  */
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
-public class QUserHolidayAmountDate extends com.querydsl.sql.RelationalPathBase<QUserHolidayAmountDate> {
+public class QDateSequence extends com.querydsl.sql.RelationalPathBase<QDateSequence> {
 
-    private static final long serialVersionUID = -1447110059;
+    private static final long serialVersionUID = -1088134963;
 
-    public static final QUserHolidayAmountDate userHolidayAmountDate = new QUserHolidayAmountDate("everit_jira_u_hday_am_date");
+    public static final QDateSequence dateSequence = new QDateSequence("everit_jira_date_sequence");
 
     public class PrimaryKeys {
 
-        public final com.querydsl.sql.PrimaryKey<QUserHolidayAmountDate> userHolidayAmountDatePK = createPrimaryKey(date);
+        public final com.querydsl.sql.PrimaryKey<QDateSequence> dateSequencePK = createPrimaryKey(date);
 
     }
 
@@ -49,23 +49,23 @@ public class QUserHolidayAmountDate extends com.querydsl.sql.RelationalPathBase<
 
     public final PrimaryKeys pk = new PrimaryKeys();
 
-    public QUserHolidayAmountDate(String variable) {
-        super(QUserHolidayAmountDate.class, forVariable(variable), "public", "everit_jira_u_hday_am_date");
+    public QDateSequence(String variable) {
+        super(QDateSequence.class, forVariable(variable), "public", "everit_jira_date_sequence");
         addMetadata();
     }
 
-    public QUserHolidayAmountDate(String variable, String schema, String table) {
-        super(QUserHolidayAmountDate.class, forVariable(variable), schema, table);
+    public QDateSequence(String variable, String schema, String table) {
+        super(QDateSequence.class, forVariable(variable), schema, table);
         addMetadata();
     }
 
-    public QUserHolidayAmountDate(Path<? extends QUserHolidayAmountDate> path) {
-        super(path.getType(), path.getMetadata(), "public", "everit_jira_u_hday_am_date");
+    public QDateSequence(Path<? extends QDateSequence> path) {
+        super(path.getType(), path.getMetadata(), "public", "everit_jira_date_sequence");
         addMetadata();
     }
 
-    public QUserHolidayAmountDate(PathMetadata metadata) {
-        super(QUserHolidayAmountDate.class, metadata, "public", "everit_jira_u_hday_am_date");
+    public QDateSequence(PathMetadata metadata) {
+        super(QDateSequence.class, metadata, "public", "everit_jira_date_sequence");
         addMetadata();
     }
 

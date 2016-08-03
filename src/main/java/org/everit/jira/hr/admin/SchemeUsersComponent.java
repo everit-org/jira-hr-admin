@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.hr.admin.schema.qdsl.QDateRange;
+import org.everit.jira.hr.admin.schema.qdsl.util.DateRangeUtil;
 import org.everit.jira.hr.admin.util.AvatarUtil;
 import org.everit.jira.hr.admin.util.DateUtil;
 import org.everit.jira.hr.admin.util.LocalizedTemplate;
@@ -150,8 +151,7 @@ public class SchemeUsersComponent {
               .where(qUserSchemeEntityParameter.userSchemeId.eq(userSchemeId))
               .execute();
 
-      new SQLDeleteClause(connection, configuration, qDateRange)
-          .where(qDateRange.dateRangeId.eq(dateRangeId)).execute();
+      new DateRangeUtil(connection, configuration).removeDateRange(dateRangeId);
       return null;
     }));
   }
@@ -446,11 +446,8 @@ public class SchemeUsersComponent {
           .from(qCwdUser)
           .where(qCwdUser.userName.eq(userName)).fetchOne();
 
-      QDateRange qDateRange = QDateRange.dateRange;
-      Long dateRangeId = new SQLInsertClause(connection, configuration, qDateRange)
-          .set(qDateRange.startDate, startDate)
-          .set(qDateRange.endDateExcluded, new Date(endDateExcluded.getTime()))
-          .executeWithKey(qDateRange.dateRangeId);
+      Long dateRangeId =
+          new DateRangeUtil(connection, configuration).createDateRange(startDate, endDateExcluded);
 
       new SQLInsertClause(connection, configuration,
           qUserSchemeEntityParameter.userSchemeEntityPath)
@@ -465,17 +462,14 @@ public class SchemeUsersComponent {
   private void update(final long recordId, final long schemeId, final long userId,
       final Date startDate, final Date endDateExcluded) {
     transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
-      QDateRange qDateRange = QDateRange.dateRange;
 
       Long dateRangeId = new SQLQuery<Long>(connection, configuration)
           .select(qUserSchemeEntityParameter.dateRangeId)
           .from(qUserSchemeEntityParameter.userSchemeEntityPath)
           .where(qUserSchemeEntityParameter.userSchemeId.eq(recordId)).fetchOne();
 
-      new SQLUpdateClause(connection, configuration, qDateRange)
-          .set(qDateRange.startDate, startDate)
-          .set(qDateRange.endDateExcluded, endDateExcluded)
-          .where(qDateRange.dateRangeId.eq(dateRangeId)).execute();
+      new DateRangeUtil(connection, configuration).modifyDateRange(dateRangeId, startDate,
+          endDateExcluded);
 
       new SQLUpdateClause(connection, configuration,
           qUserSchemeEntityParameter.userSchemeEntityPath)

@@ -228,4 +228,15 @@
     </createIndex>
   </changeSet>
 
+  <changeSet id="1.0.0_2.0.0" author="everit">
+    <dropTable tableName="everit_jira_u_hday_am_date" />
+
+    <createTable tableName="everit_jira_date_sequence"
+      remarks="Helper table to be able to query expected work within a date range. The table contains all dates that exist in any of the date range records.">
+      <column name="date_" type="date">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_everit_jira_date_sequence" />
+      </column>
+    </createTable>
+  </changeSet>
+
 </databaseChangeLog>

@@ -35,7 +35,7 @@ import java.sql.Types;
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
 public class QWorkScheme extends com.querydsl.sql.RelationalPathBase<QWorkScheme> {
 
-    private static final long serialVersionUID = -368012012;
+    private static final long serialVersionUID = 891843284;
 
     public static final QWorkScheme workScheme = new QWorkScheme("everit_jira_work_scheme");
 

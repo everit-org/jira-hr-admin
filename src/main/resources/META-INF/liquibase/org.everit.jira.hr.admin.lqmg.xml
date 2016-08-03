@@ -110,12 +110,12 @@
     </classNameRule>
 
     <classNameRule>
-      <entity>everit_jira_u_hday_am_date</entity>
-      <class>UserHolidayAmountDate</class>
+      <entity>everit_jira_date_sequence</entity>
+      <class>DateSequence</class>
       <propertyMappings>
         <primaryKey>
-          <name>pk_everit_jira_u_hday_am_date</name>
-          <property>userHolidayAmountDatePK</property>
+          <name>pk_everit_jira_date_sequence</name>
+          <property>dateSequencePK</property>
         </primaryKey>
         <column>
           <name>date_</name>

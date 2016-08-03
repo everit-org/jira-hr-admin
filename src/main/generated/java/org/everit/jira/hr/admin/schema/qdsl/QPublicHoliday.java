@@ -35,7 +35,7 @@ import java.sql.Types;
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
 public class QPublicHoliday extends com.querydsl.sql.RelationalPathBase<QPublicHoliday> {
 
-    private static final long serialVersionUID = -530108431;
+    private static final long serialVersionUID = -1900185039;
 
     public static final QPublicHoliday publicHoliday = new QPublicHoliday("everit_jira_public_holiday");
 

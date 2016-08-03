@@ -18,9 +18,9 @@ package org.everit.jira.hr.admin.util;
 import java.sql.Date;
 
 import org.everit.jira.hr.admin.schema.qdsl.QDateRange;
+import org.everit.jira.hr.admin.schema.qdsl.QDateSequence;
 import org.everit.jira.hr.admin.schema.qdsl.QExactWork;
 import org.everit.jira.hr.admin.schema.qdsl.QPublicHoliday;
-import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayAmountDate;
 import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QWeekdayWork;
@@ -78,7 +78,7 @@ public final class QueryUtil {
   public static SQLQuery<Long> expectedWorkAmount(final Expression<Long> userId,
       final Expression<Date> startDate, final Expression<Date> endDateExcluded) {
 
-    QUserHolidayAmountDate qDates = new QUserHolidayAmountDate("exp_work_dates");
+    QDateSequence qDates = new QDateSequence("exp_work_dates");
     QDateRange qDateRange = new QDateRange("exp_work_date_range");
     QUserWorkScheme qUserWorkScheme = new QUserWorkScheme("exp_work_user_work_scheme");
 

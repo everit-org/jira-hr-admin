@@ -35,7 +35,7 @@ import java.sql.Types;
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
 public class QWeekdayWork extends com.querydsl.sql.RelationalPathBase<QWeekdayWork> {
 
-    private static final long serialVersionUID = -965510885;
+    private static final long serialVersionUID = -564702373;
 
     public static final QWeekdayWork weekdayWork = new QWeekdayWork("everit_jira_weekday_work");
 

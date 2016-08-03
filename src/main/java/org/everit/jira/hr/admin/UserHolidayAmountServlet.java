@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.hr.admin.schema.qdsl.QDateRange;
 import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayAmount;
-import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayAmountDate;
+import org.everit.jira.hr.admin.schema.qdsl.util.DateRangeUtil;
 import org.everit.jira.hr.admin.util.AvatarUtil;
 import org.everit.jira.hr.admin.util.DateUtil;
 import org.everit.jira.hr.admin.util.QueryResultWithCount;
@@ -104,11 +103,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       new SQLDeleteClause(connection, configuration, qUserHolidayAmount)
           .where(qUserHolidayAmount.userHolidayAmountId.eq(userHolidayAmountId)).execute();
 
-      vacuumDates(connection, configuration);
-
-      QDateRange qDateRange = QDateRange.dateRange;
-      new SQLDeleteClause(connection, configuration, qDateRange)
-          .where(qDateRange.dateRangeId.eq(dateRangeId)).execute();
+      new DateRangeUtil(connection, configuration).removeDateRange(dateRangeId);
       return null;
     }));
   }
@@ -205,47 +200,6 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
     }
 
     renderPostAnswer(req, resp, message);
-  }
-
-  private void fillDateTable(final Date startDate, final Date endDateExcluded,
-      final Connection connection, final Configuration configuration) {
-    Date dateCursor = startDate;
-    final int batchSize = 100;
-    QUserHolidayAmountDate qDates = QUserHolidayAmountDate.userHolidayAmountDate;
-
-    while (dateCursor.before(endDateExcluded)) {
-      Date batchEndDateExcluded = DateUtil.addDays(dateCursor, batchSize);
-
-      if (batchEndDateExcluded.after(endDateExcluded)) {
-        batchEndDateExcluded = endDateExcluded;
-      }
-
-      List<Date> existingDates =
-          new SQLQuery<Date>(connection, configuration)
-              .select(qDates.date)
-              .from(qDates)
-              .where(qDates.date.goe(dateCursor).and(qDates.date.lt(batchEndDateExcluded)))
-              .orderBy(qDates.date.asc()).fetch();
-
-      Date[] existingDateArray =
-          existingDates.toArray(new Date[existingDates.size()]);
-
-      List<Date> dateBatch = new ArrayList<>(batchSize);
-      while (dateCursor.before(batchEndDateExcluded)) {
-        if (Arrays.binarySearch(existingDateArray, dateCursor) < 0) {
-          dateBatch.add(dateCursor);
-        }
-        dateCursor = DateUtil.addDays(dateCursor, 1);
-      }
-
-      if (!dateBatch.isEmpty()) {
-        SQLInsertClause dateInsert = new SQLInsertClause(connection, configuration, qDates);
-        for (Date date : dateBatch) {
-          dateInsert.set(qDates.date, date).addBatch();
-        }
-        dateInsert.execute();
-      }
-    }
   }
 
   private Long getDateRangeId(final Long userHolidayAmountId, final Connection connection,
@@ -423,14 +377,11 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
 
     transactionTemplate.execute(() -> {
       return querydslSupport.execute((connection, configuration) -> {
-        fillDateTable(startDate, endDateExcluded, connection, configuration);
-        QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
-        QDateRange qDateRange = QDateRange.dateRange;
 
-        Long dateRangeId = new SQLInsertClause(connection, configuration, qDateRange)
-            .set(qDateRange.startDate, startDate)
-            .set(qDateRange.endDateExcluded, endDateExcluded)
-            .executeWithKey(qDateRange.dateRangeId);
+        QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
+
+        long dateRangeId = new DateRangeUtil(connection, configuration).createDateRange(startDate,
+            endDateExcluded);
 
         new SQLInsertClause(connection, configuration, qUserHolidayAmount)
             .set(qUserHolidayAmount.userId, userId)
@@ -448,16 +399,13 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
       final long amountInSeconds, final String description) {
 
     transactionTemplate.execute(() -> querydslSupport.execute((connection, configuration) -> {
-      QDateRange qDateRange = QDateRange.dateRange;
       QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
 
       Long dateRangeId =
           getDateRangeId(userHolidayAmountId, connection, configuration);
 
-      new SQLUpdateClause(connection, configuration, qDateRange)
-          .set(qDateRange.startDate, startSqlDate)
-          .set(qDateRange.endDateExcluded, endSqlDateExcluded)
-          .where(qDateRange.dateRangeId.eq(dateRangeId)).execute();
+      new DateRangeUtil(connection, configuration).modifyDateRange(dateRangeId, startSqlDate,
+          endSqlDateExcluded);
 
       new SQLUpdateClause(connection, configuration, qUserHolidayAmount)
           .set(qUserHolidayAmount.userId, userId)
@@ -466,24 +414,7 @@ public class UserHolidayAmountServlet extends AbstractPageServlet {
           .where(qUserHolidayAmount.userHolidayAmountId.eq(userHolidayAmountId))
           .execute();
 
-      vacuumDates(connection, configuration);
       return null;
     }));
-  }
-
-  private void vacuumDates(final Connection connection, final Configuration configuration) {
-    QUserHolidayAmountDate qDates = QUserHolidayAmountDate.userHolidayAmountDate;
-    QUserHolidayAmount qUserHolidayAmount = QUserHolidayAmount.userHolidayAmount;
-    QDateRange qDateRange = QDateRange.dateRange;
-    new SQLDeleteClause(connection, configuration, qDates)
-        .where(
-            new SQLQuery<Boolean>()
-                .from(qUserHolidayAmount)
-                .innerJoin(qDateRange)
-                .on(qDateRange.dateRangeId.eq(qUserHolidayAmount.dateRangeId))
-                .where(qDateRange.startDate.loe(qDates.date)
-                    .and(qDateRange.endDateExcluded.gt(qDates.date)))
-                .notExists())
-        .execute();
   }
 }

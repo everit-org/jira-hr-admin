@@ -35,7 +35,7 @@ import java.sql.Types;
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
 public class QUserWorkScheme extends com.querydsl.sql.RelationalPathBase<QUserWorkScheme> {
 
-    private static final long serialVersionUID = 531016767;
+    private static final long serialVersionUID = 1008314879;
 
     public static final QUserWorkScheme userWorkScheme = new QUserWorkScheme("everit_jira_user_work_scheme");
 
@@ -47,9 +47,9 @@ public class QUserWorkScheme extends com.querydsl.sql.RelationalPathBase<QUserWo
 
     public class ForeignKeys {
 
-        public final com.querydsl.sql.ForeignKey<QDateRange> everitJiraUserWSchDrFk = createForeignKey(dateRangeId, "date_range_id");
-
         public final com.querydsl.sql.ForeignKey<QWorkScheme> workSchemeFK = createForeignKey(workSchemeId, "work_scheme_id");
+
+        public final com.querydsl.sql.ForeignKey<QDateRange> everitJiraUserWSchDrFk = createForeignKey(dateRangeId, "date_range_id");
 
     }
 

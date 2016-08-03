@@ -35,7 +35,7 @@ import java.sql.Types;
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
 public class QSpecialIssue extends com.querydsl.sql.RelationalPathBase<QSpecialIssue> {
 
-    private static final long serialVersionUID = -1655129826;
+    private static final long serialVersionUID = -2114967842;
 
     public static final QSpecialIssue specialIssue = new QSpecialIssue("everit_jira_spec_issue");
 

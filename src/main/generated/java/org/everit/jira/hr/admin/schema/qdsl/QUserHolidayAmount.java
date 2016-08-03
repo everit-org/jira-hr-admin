@@ -35,7 +35,7 @@ import java.sql.Types;
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
 public class QUserHolidayAmount extends com.querydsl.sql.RelationalPathBase<QUserHolidayAmount> {
 
-    private static final long serialVersionUID = 871682567;
+    private static final long serialVersionUID = -576979897;
 
     public static final QUserHolidayAmount userHolidayAmount = new QUserHolidayAmount("everit_jira_user_hday_amount");
 

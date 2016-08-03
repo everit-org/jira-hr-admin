@@ -35,7 +35,7 @@ import java.sql.Types;
 @Generated("com.querydsl.sql.codegen.MetaDataSerializer")
 public class QDateRange extends com.querydsl.sql.RelationalPathBase<QDateRange> {
 
-    private static final long serialVersionUID = -1906417295;
+    private static final long serialVersionUID = 905169841;
 
     public static final QDateRange dateRange = new QDateRange("everit_jira_date_range");
 

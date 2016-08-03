@@ -32,11 +32,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.everit.jira.hr.admin.ManageSchemeComponent.SchemeDTO;
 import org.everit.jira.hr.admin.SchemeUsersComponent.QUserSchemeEntityParameter;
-import org.everit.jira.hr.admin.schema.qdsl.QDateRange;
 import org.everit.jira.hr.admin.schema.qdsl.QHolidayScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QPublicHoliday;
 import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QWorkScheme;
+import org.everit.jira.hr.admin.schema.qdsl.util.DateRangeUtil;
 import org.everit.jira.hr.admin.util.DateUtil;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
@@ -388,8 +388,8 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
       new SQLDeleteClause(connection, configuration, qUserHolidayScheme)
           .where(qUserHolidayScheme.dateRangeId.in(dateRangeIds)).execute();
 
-      new SQLDeleteClause(connection, configuration, QDateRange.dateRange)
-          .where(QDateRange.dateRange.dateRangeId.in(dateRangeIds)).execute();
+      new DateRangeUtil(connection, configuration)
+          .removeDateRange(dateRangeIds.toArray(new Long[dateRangeIds.size()]));
 
       dateRangeIds = sqlQuery.fetch();
     }
