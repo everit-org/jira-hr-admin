@@ -43,10 +43,8 @@ public class AvatarUtil {
     }
   }
 
-  public static QAvatar joinAvatarToCwdUser(final SQLQuery<?> query,
-      final QCwdUser qCwdUser, final String variablePrefix) {
-
-    QAppUser qAppUser = new QAppUser(resolveVariableName(QAppUser.appUser, variablePrefix));
+  public static QAvatar joinAvatarToAppUser(final SQLQuery<?> query,
+      final QAppUser qAppUser, final String variablePrefix) {
 
     QPropertyentry qPropertyEntry =
         new QPropertyentry(resolveVariableName(QPropertyentry.propertyentry, variablePrefix));
@@ -56,13 +54,22 @@ public class AvatarUtil {
 
     QAvatar qAvatar = new QAvatar(resolveVariableName(QAvatar.avatar, variablePrefix));
 
-    query.innerJoin(qAppUser).on(qCwdUser.lowerUserName.eq(qAppUser.lowerUserName))
-        .leftJoin(qPropertyEntry).on(qPropertyEntry.entityId.eq(qAppUser.id)
-            .and(qPropertyEntry.propertyKey.eq("user.avatar.id")))
+    query.leftJoin(qPropertyEntry).on(qPropertyEntry.entityId.eq(qAppUser.id)
+        .and(qPropertyEntry.propertyKey.eq("user.avatar.id")))
         .leftJoin(qPropertyNumber).on(qPropertyEntry.id.eq(qPropertyNumber.id))
         .leftJoin(qAvatar).on(qAvatar.id.eq(qPropertyNumber.propertyvalue));
 
     return qAvatar;
+  }
+
+  public static QAvatar joinAvatarToCwdUser(final SQLQuery<?> query,
+      final QCwdUser qCwdUser, final String variablePrefix) {
+
+    QAppUser qAppUser = new QAppUser(resolveVariableName(QAppUser.appUser, variablePrefix));
+
+    query.innerJoin(qAppUser).on(qCwdUser.lowerUserName.eq(qAppUser.lowerUserName));
+
+    return joinAvatarToAppUser(query, qAppUser, variablePrefix);
   }
 
   private static String resolveVariableName(final Path<?> path, final String variablePrefix) {
