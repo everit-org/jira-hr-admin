@@ -21,7 +21,7 @@
 
   <groupId>org.everit.jira.hr</groupId>
   <artifactId>org.everit.jira.hr.admin</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2-SNAPSHOT</version>
   <packaging>atlassian-plugin</packaging>
 
   <parent>

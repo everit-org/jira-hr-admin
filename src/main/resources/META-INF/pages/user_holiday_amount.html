@@ -37,6 +37,8 @@ table.aui thead tr td {
 <script
   data-eht-text="webResourceManager.requireResource('com.atlassian.auiplugin:aui-date-picker')"
   data-eht-render="'content'"></script>
+<script data-eht-text="webResourceManager.requireResource('com.atlassian.auiplugin:dialog2')"
+  data-eht-render="'content'"></script>
 <script data-eht-text="webResourceManager.requireResource('org.everit.jira.hr.admin:common')"
   data-eht-render="'content'"></script>
 <script
@@ -94,9 +96,9 @@ table.aui thead tr td {
     $('#dataform-amount').val('');
     $('#dataform-description').val('');
     $('#dataform-messages').empty();
-    
+
     $('#user-holiday-amount-dialog header h1').text('New record');
-    
+
     AJS.dialog2("#user-holiday-amount-dialog").show();
   }
 
@@ -120,12 +122,12 @@ table.aui thead tr td {
     $('#dataform-amount').val(recordRow.attr('data-amount'));
     $('#dataform-description').val(recordRow.attr('data-description'));
     $('#dataform-messages').empty();
-    
+
     $('#user-holiday-amount-dialog header h1').text('Update record');
-    
+
     AJS.dialog2("#user-holiday-amount-dialog").show();
   }
-  
+
   var openCloneDialog = function(userHolidayAmountId) {
 
     $('#dataform-action').val('new');
@@ -146,9 +148,9 @@ table.aui thead tr td {
     $('#dataform-amount').val(recordRow.attr('data-amount'));
     $('#dataform-description').val(recordRow.attr('data-description'));
     $('#dataform-messages').empty();
-    
+
     $('#user-holiday-amount-dialog header h1').text('New record');
-    
+
     AJS.dialog2("#user-holiday-amount-dialog").show();
   }
 

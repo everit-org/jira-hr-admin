@@ -25,7 +25,6 @@ import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QWeekdayWork;
 
-import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -89,7 +88,7 @@ public final class QueryUtil {
             exactWorkSubSelect(qUserWorkScheme.workSchemeId, qDates.date),
             replacementWeekdaySubSelect(qUserWorkScheme.workSchemeId, userId, qDates.date),
             nonHolidayWeekdaySubSelect(qUserWorkScheme.workSchemeId, userId, qDates.date),
-            ConstantImpl.create(0))
+            Expressions.ZERO)
                 .asNumber().sum());
     query
         .from(qDates)
