@@ -102,7 +102,7 @@ public class SchemeUsersComponent {
 
   }
 
-  private static final int PAGE_SIZE = 50;
+  private static final int PAGE_SIZE = 500000;
 
   private static final Set<String> SUPPORTED_ACTIONS;
 
