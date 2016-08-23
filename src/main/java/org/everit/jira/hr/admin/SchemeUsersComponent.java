@@ -106,9 +106,9 @@ public class SchemeUsersComponent {
 
   private static final Set<String> SUPPORTED_ACTIONS;
 
-  private static final LocalizedTemplate TEMPLATE =
-      new LocalizedTemplate("/META-INF/component/scheme_users",
-          ManageSchemeComponent.class.getClassLoader());
+  private static final LocalizedTemplate TEMPLATE = new LocalizedTemplate(
+      "/META-INF/component/scheme_users",
+      ManageSchemeComponent.class.getClassLoader());
 
   static {
     Set<String> supportedActions = new HashSet<>();
@@ -129,7 +129,7 @@ public class SchemeUsersComponent {
     this.qUserSchemeEntityParameter = qUserSchemeEntityParameter;
     this.transactionTemplate = transactionTemplate;
     try {
-      this.querydslSupport = new QuerydslSupportImpl();
+      querydslSupport = new QuerydslSupportImpl();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -227,9 +227,13 @@ public class SchemeUsersComponent {
   private void processDelete(final HttpServletRequest req, final HttpServletResponse resp) {
     Long userSchemeId = Long.parseLong(req.getParameter("scheme-user-userscheme-id"));
     delete(userSchemeId);
+    Long userCount = QueryUtil.schemeUserCount(querydslSupport, req.getParameter("schemeId"));
 
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
       prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
+      prb.replace("#delete-schema-validation-dialog", (writer) -> {
+        DeleteSchemaValidationComponent.INSTANCE.render(writer, resp.getLocale(), userCount);
+      });
     }
   }
 
@@ -254,8 +258,8 @@ public class SchemeUsersComponent {
       return;
     }
 
-    Set<String> schemeNamesWithOverlappingTimeRange =
-        getSchemeNamesWithOverlappingTimeRange(userId, startDate, endDateExcluded, recordId);
+    Set<String> schemeNamesWithOverlappingTimeRange = getSchemeNamesWithOverlappingTimeRange(userId,
+        startDate, endDateExcluded, recordId);
 
     if (!schemeNamesWithOverlappingTimeRange.isEmpty()) {
       renderAlert(
@@ -300,8 +304,8 @@ public class SchemeUsersComponent {
       return;
     }
 
-    Set<String> schemeNamesWithOverlappingTimeRange =
-        getSchemeNamesWithOverlappingTimeRange(userId, startDate, endDateExcluded, null);
+    Set<String> schemeNamesWithOverlappingTimeRange = getSchemeNamesWithOverlappingTimeRange(userId,
+        startDate, endDateExcluded, null);
     if (!schemeNamesWithOverlappingTimeRange.isEmpty()) {
       renderAlert(
           "The user is assigned overlapping with the specified date range to the"
@@ -362,7 +366,7 @@ public class SchemeUsersComponent {
       query.orderBy(userDisplayNameExpression.asc(), qDateRange.startDate.desc());
       long offset = PAGE_SIZE * (pageIndex - 1);
       if (offset >= count) {
-        offset = PAGE_SIZE * (count / PAGE_SIZE - 1);
+        offset = PAGE_SIZE * ((count / PAGE_SIZE) - 1);
         if (offset < 0) {
           offset = 0;
         }
@@ -394,8 +398,7 @@ public class SchemeUsersComponent {
 
     QueryResultWithCount<SchemeUserDTO> schemeUsers;
     if (schemeId != null) {
-      schemeUsers =
-          querySchemeUsers(pageIndex, schemeId, userFilter, currentOnly);
+      schemeUsers = querySchemeUsers(pageIndex, schemeId, userFilter, currentOnly);
     } else {
       schemeUsers = new QueryResultWithCount<>(Collections.emptyList(), 0);
     }
@@ -446,8 +449,8 @@ public class SchemeUsersComponent {
           .from(qCwdUser)
           .where(qCwdUser.userName.eq(userName)).fetchOne();
 
-      Long dateRangeId =
-          new DateRangeUtil(connection, configuration).createDateRange(startDate, endDateExcluded);
+      Long dateRangeId = new DateRangeUtil(connection, configuration).createDateRange(startDate,
+          endDateExcluded);
 
       new SQLInsertClause(connection, configuration,
           qUserSchemeEntityParameter.userSchemeEntityPath)

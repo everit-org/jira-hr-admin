@@ -17,6 +17,7 @@ package org.everit.jira.hr.admin.util;
 
 import java.sql.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.everit.jira.hr.admin.schema.qdsl.QDateRange;
 import org.everit.jira.hr.admin.schema.qdsl.QDateSequence;
 import org.everit.jira.hr.admin.schema.qdsl.QExactWork;
@@ -24,6 +25,7 @@ import org.everit.jira.hr.admin.schema.qdsl.QPublicHoliday;
 import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QWeekdayWork;
+import org.everit.jira.querydsl.support.QuerydslSupport;
 
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
@@ -150,6 +152,23 @@ public final class QueryUtil {
             .and(qDateRange.startDate.loe(date))
             .and(qDateRange.endDateExcluded.gt(date)));
     return query;
+  }
+
+  public static Long schemeUserCount(final QuerydslSupport querydslSupport,
+      final String schemeIdString) {
+    if (StringUtils.isEmpty(schemeIdString)) {
+      return Long.valueOf(0);
+    } else {
+      Long schemeId = Long.valueOf(schemeIdString);
+      return querydslSupport.execute((connection, configuration) -> {
+        // select count(user_id) from everit_jira_user_work_scheme where work_scheme_id = schemeId;
+        QUserWorkScheme qUserWorkScheme = QUserWorkScheme.userWorkScheme;
+        return new SQLQuery<Long>(connection, configuration)
+            .from(qUserWorkScheme)
+            .where(qUserWorkScheme.workSchemeId.eq(schemeId))
+            .fetchCount();
+      });
+    }
   }
 
   private static Expression<Long> weekdaySumForReplacementDay(final NumberPath<Long> workSchemeId,

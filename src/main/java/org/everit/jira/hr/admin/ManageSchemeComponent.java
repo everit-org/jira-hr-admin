@@ -55,9 +55,9 @@ public class ManageSchemeComponent {
 
   private static final Set<String> SUPPORTED_ACTIONS;
 
-  private static final LocalizedTemplate TEMPLATE =
-      new LocalizedTemplate("/META-INF/component/manage_schemes",
-          ManageSchemeComponent.class.getClassLoader());
+  private static final LocalizedTemplate TEMPLATE = new LocalizedTemplate(
+      "/META-INF/component/manage_schemes",
+      ManageSchemeComponent.class.getClassLoader());
 
   static {
     Set<String> supportedActions = new HashSet<>();

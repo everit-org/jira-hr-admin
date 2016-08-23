@@ -40,6 +40,7 @@ import org.everit.jira.hr.admin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QWeekdayWork;
 import org.everit.jira.hr.admin.schema.qdsl.QWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.util.DateRangeUtil;
+import org.everit.jira.hr.admin.util.QueryUtil;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
 import com.atlassian.jira.component.ComponentAccessor;
@@ -107,19 +108,18 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
   private static final long serialVersionUID = 5855299893731146143L;
 
-  private static final Comparator<WeekdayWorkDTO> WEEKDAY_WORK_DTO_COMPARATOR =
-      new WeekdayWorkDTOComparator();
+  private static final Comparator<WeekdayWorkDTO> WEEKDAY_WORK_DTO_COMPARATOR = new WeekdayWorkDTOComparator();
 
   public static final String WORK_SCHEME_SCOPE_GLOBAL = "GLOBAL";
 
-  private final ManageSchemeComponent manageSchemeComponent =
-      new ManageSchemeComponent(this::listWorkSchemes, this::saveScheme, this::updateScheme,
-          this::deleteScheme, this::applySchemeSelectionChange);
+  private final ManageSchemeComponent manageSchemeComponent = new ManageSchemeComponent(
+      this::listWorkSchemes, this::saveScheme, this::updateScheme,
+      this::deleteScheme, this::applySchemeSelectionChange);
 
   private final SchemeUsersComponent schemeUsersComponent;
 
-  private final TransactionTemplate transactionTemplate =
-      ComponentAccessor.getOSGiComponentInstanceOfType(TransactionTemplate.class);
+  private final TransactionTemplate transactionTemplate = ComponentAccessor
+      .getOSGiComponentInstanceOfType(TransactionTemplate.class);
 
   public WorkSchemesServlet() {
     QUserSchemeEntityParameter qUserSchemeEntityParameter = new QUserSchemeEntityParameter();
@@ -134,8 +134,8 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     qUserSchemeEntityParameter.userId = userworkscheme.userId;
     qUserSchemeEntityParameter.userSchemeId = userworkscheme.userWorkSchemeId;
 
-    schemeUsersComponent =
-        new SchemeUsersComponent(qUserSchemeEntityParameter, transactionTemplate);
+    schemeUsersComponent = new SchemeUsersComponent(qUserSchemeEntityParameter,
+        transactionTemplate);
   }
 
   private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
@@ -194,11 +194,15 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     }
 
     String schemeIdParameter = req.getParameter("schemeId");
+    Long userCount = QueryUtil.schemeUserCount(querydslSupport, schemeIdParameter);
+
     vars.put("schemeId", schemeIdParameter);
+    vars.put("schemeUserCount", userCount);
     vars.put("schemeUsers", schemeUsersComponent);
     vars.put("locale", resp.getLocale());
     vars.put("manageSchemeComponent", manageSchemeComponent);
     vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
+    vars.put("deleteSchemaValidationComponent", DeleteSchemaValidationComponent.INSTANCE);
 
     if (schemeIdParameter != null) {
       long schemeId = Long.parseLong(schemeIdParameter);
@@ -210,6 +214,9 @@ public class WorkSchemesServlet extends AbstractPageServlet {
       try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
         prb.replace("#work-schemes-tabs-container", (writer) -> {
           pageTemplate.render(writer, vars, resp.getLocale(), "work-schemes-tabs-container");
+        });
+        prb.replace("#delete-schema-validation-dialog", (writer) -> {
+          DeleteSchemaValidationComponent.INSTANCE.render(writer, resp.getLocale(), userCount);
         });
       }
       return;
