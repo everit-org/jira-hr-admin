@@ -227,7 +227,7 @@ public class SchemeUsersComponent {
   private void processDelete(final HttpServletRequest req, final HttpServletResponse resp) {
     Long userSchemeId = Long.parseLong(req.getParameter("scheme-user-userscheme-id"));
     delete(userSchemeId);
-    Long userCount = QueryUtil.schemeUserCount(querydslSupport, req.getParameter("schemeId"));
+    Long userCount = QueryUtil.workSchemeUserCount(querydslSupport, req.getParameter("schemeId"));
 
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
       prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
@@ -316,9 +316,13 @@ public class SchemeUsersComponent {
     }
 
     save(schemeId, userName, startDate, endDateExcluded);
+    Long userCount = QueryUtil.workSchemeUserCount(querydslSupport, String.valueOf(schemeId));
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
       renderAlertOnPrb("Assiging user successful", "info", prb, resp.getLocale());
       prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
+      prb.replace("#delete-schema-validation-dialog", (writer) -> {
+        DeleteSchemaValidationComponent.INSTANCE.render(writer, resp.getLocale(), userCount);
+      });
     }
   }
 

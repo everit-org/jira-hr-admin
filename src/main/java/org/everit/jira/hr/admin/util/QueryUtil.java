@@ -103,6 +103,23 @@ public final class QueryUtil {
     return query;
   }
 
+  public static Long holidaySchemeUserCount(final QuerydslSupport querydslSupport,
+      final String schemeIdString) {
+    if (StringUtils.isEmpty(schemeIdString)) {
+      return Long.valueOf(0);
+    } else {
+      Long schemeId = Long.valueOf(schemeIdString);
+      return querydslSupport.execute((connection, configuration) -> {
+        // select count(user_id) from everit_jira_user_work_scheme where work_scheme_id = schemeId;
+        QUserHolidayScheme qUserHolidayScheme = QUserHolidayScheme.userHolidayScheme;
+        return new SQLQuery<Long>(connection, configuration)
+            .from(qUserHolidayScheme)
+            .where(qUserHolidayScheme.holidaySchemeId.eq(schemeId))
+            .fetchCount();
+      });
+    }
+  }
+
   private static Predicate noHolidayExistsSubSelect(final Expression<Long> userId,
       final DatePath<Date> date) {
     QPublicHoliday qPublicHoliday = new QPublicHoliday("exp_work_nh_ph");
@@ -154,7 +171,19 @@ public final class QueryUtil {
     return query;
   }
 
-  public static Long schemeUserCount(final QuerydslSupport querydslSupport,
+  private static Expression<Long> weekdaySumForReplacementDay(final NumberPath<Long> workSchemeId,
+      final NumberExpression<Integer> dayOfWeek) {
+    QWeekdayWork qWeekdayWork = new QWeekdayWork("exp_work_repl_wdw");
+    SQLQuery<Long> query = new SQLQuery<>();
+    query.select(qWeekdayWork.duration.sum())
+        .from(qWeekdayWork)
+        .where(qWeekdayWork.workSchemeId.eq(workSchemeId)
+            .and(
+                Expressions.path(Integer.class, qWeekdayWork.weekday.getMetadata()).eq(dayOfWeek)));
+    return query;
+  }
+
+  public static Long workSchemeUserCount(final QuerydslSupport querydslSupport,
       final String schemeIdString) {
     if (StringUtils.isEmpty(schemeIdString)) {
       return Long.valueOf(0);
@@ -169,18 +198,6 @@ public final class QueryUtil {
             .fetchCount();
       });
     }
-  }
-
-  private static Expression<Long> weekdaySumForReplacementDay(final NumberPath<Long> workSchemeId,
-      final NumberExpression<Integer> dayOfWeek) {
-    QWeekdayWork qWeekdayWork = new QWeekdayWork("exp_work_repl_wdw");
-    SQLQuery<Long> query = new SQLQuery<>();
-    query.select(qWeekdayWork.duration.sum())
-        .from(qWeekdayWork)
-        .where(qWeekdayWork.workSchemeId.eq(workSchemeId)
-            .and(
-                Expressions.path(Integer.class, qWeekdayWork.weekday.getMetadata()).eq(dayOfWeek)));
-    return query;
   }
 
 }

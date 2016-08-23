@@ -38,6 +38,7 @@ import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.util.DateRangeUtil;
 import org.everit.jira.hr.admin.util.DateUtil;
+import org.everit.jira.hr.admin.util.QueryUtil;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
 import com.querydsl.core.types.Predicate;
@@ -216,7 +217,10 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
       return;
     }
 
+    Long userCount = QueryUtil.workSchemeUserCount(querydslSupport, schemeIdParameter);
+
     vars.put("schemeId", schemeId);
+    vars.put("schemeUserCount", userCount);
     vars.put("schemeUsers", schemeUsersComponent);
     vars.put("locale", resp.getLocale());
 
@@ -230,12 +234,16 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
         prb.replace("#holiday-schemes-tabs-container", (writer) -> {
           pageTemplate.render(writer, vars, resp.getLocale(), "holiday-schemes-tabs-container");
         });
+        prb.replace("#delete-schema-validation-dialog", (writer) -> {
+          DeleteSchemaValidationComponent.INSTANCE.render(writer, resp.getLocale(), userCount);
+        });
       }
       return;
     }
 
     vars.put("manageSchemeComponent", manageSchemeComponent);
     vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
+    vars.put("deleteSchemaValidationComponent", DeleteSchemaValidationComponent.INSTANCE);
     pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
   }
 

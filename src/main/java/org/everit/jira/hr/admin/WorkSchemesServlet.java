@@ -194,7 +194,7 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     }
 
     String schemeIdParameter = req.getParameter("schemeId");
-    Long userCount = QueryUtil.schemeUserCount(querydslSupport, schemeIdParameter);
+    Long userCount = QueryUtil.workSchemeUserCount(querydslSupport, schemeIdParameter);
 
     vars.put("schemeId", schemeIdParameter);
     vars.put("schemeUserCount", userCount);
