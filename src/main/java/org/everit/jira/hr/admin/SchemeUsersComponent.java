@@ -371,7 +371,7 @@ public class SchemeUsersComponent {
       query.orderBy(userDisplayNameExpression.asc(), qDateRange.startDate.desc());
       long offset = PAGE_SIZE * (pageIndex - 1);
       if (offset >= count) {
-        offset = PAGE_SIZE * ((count / PAGE_SIZE) - 1);
+        offset = PAGE_SIZE * (count / PAGE_SIZE - 1);
         if (offset < 0) {
           offset = 0;
         }
