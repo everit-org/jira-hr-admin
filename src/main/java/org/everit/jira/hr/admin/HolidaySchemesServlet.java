@@ -38,7 +38,6 @@ import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.util.DateRangeUtil;
 import org.everit.jira.hr.admin.util.DateUtil;
-import org.everit.jira.hr.admin.util.QueryUtil;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
 import com.querydsl.core.types.Predicate;
@@ -217,7 +216,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
       return;
     }
 
-    Long userCount = QueryUtil.workSchemeUserCount(querydslSupport, schemeIdParameter);
+    Long userCount = schemeUsersComponent.schemeUserCount(schemeIdParameter);
 
     vars.put("schemeId", schemeId);
     vars.put("schemeUserCount", userCount);

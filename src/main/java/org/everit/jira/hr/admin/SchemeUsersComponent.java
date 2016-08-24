@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.everit.jira.hr.admin.schema.qdsl.QDateRange;
 import org.everit.jira.hr.admin.schema.qdsl.util.DateRangeUtil;
 import org.everit.jira.hr.admin.util.AvatarUtil;
@@ -227,7 +228,7 @@ public class SchemeUsersComponent {
   private void processDelete(final HttpServletRequest req, final HttpServletResponse resp) {
     Long userSchemeId = Long.parseLong(req.getParameter("scheme-user-userscheme-id"));
     delete(userSchemeId);
-    Long userCount = QueryUtil.workSchemeUserCount(querydslSupport, req.getParameter("schemeId"));
+    Long userCount = schemeUserCount(req.getParameter("schemeId"));
 
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
       prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
@@ -316,7 +317,7 @@ public class SchemeUsersComponent {
     }
 
     save(schemeId, userName, startDate, endDateExcluded);
-    Long userCount = QueryUtil.workSchemeUserCount(querydslSupport, String.valueOf(schemeId));
+    Long userCount = schemeUserCount(String.valueOf(schemeId));
     try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
       renderAlertOnPrb("Assiging user successful", "info", prb, resp.getLocale());
       prb.replace("#scheme-user-table", render(req, resp.getLocale(), "scheme-user-table"));
@@ -464,6 +465,29 @@ public class SchemeUsersComponent {
 
       return null;
     }));
+  }
+
+  /**
+   * ▼ Count users belonging to a scheme (work or holiday scheme).
+   *
+   * @param schemeIdString
+   *          Scheme id in string, usually from request parameter.
+   * @return If parameter null or empty, return 0. Otherwise, returns the number of users belonging
+   *         to the specified schema.
+   */
+  public Long schemeUserCount(final String schemeIdString) {
+    if (StringUtils.isEmpty(schemeIdString)) {
+      return Long.valueOf(0);
+    } else {
+      Long schemeId = Long.valueOf(schemeIdString);
+      return querydslSupport.execute((connection, configuration) -> {
+        // select count(user_id) from everit_jira_user_work_scheme where work_scheme_id = schemeId;
+        return new SQLQuery<Long>(connection, configuration)
+            .from(qUserSchemeEntityParameter.userSchemeEntityPath)
+            .where(qUserSchemeEntityParameter.userSchemeSchemeId.eq(schemeId))
+            .fetchCount();
+      });
+    }
   }
 
   private void update(final long recordId, final long schemeId, final long userId,

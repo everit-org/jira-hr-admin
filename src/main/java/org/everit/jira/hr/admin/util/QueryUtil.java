@@ -17,7 +17,6 @@ package org.everit.jira.hr.admin.util;
 
 import java.sql.Date;
 
-import org.apache.commons.lang.StringUtils;
 import org.everit.jira.hr.admin.schema.qdsl.QDateRange;
 import org.everit.jira.hr.admin.schema.qdsl.QDateSequence;
 import org.everit.jira.hr.admin.schema.qdsl.QExactWork;
@@ -25,7 +24,6 @@ import org.everit.jira.hr.admin.schema.qdsl.QPublicHoliday;
 import org.everit.jira.hr.admin.schema.qdsl.QUserHolidayScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QWeekdayWork;
-import org.everit.jira.querydsl.support.QuerydslSupport;
 
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Predicate;
@@ -103,23 +101,6 @@ public final class QueryUtil {
     return query;
   }
 
-  public static Long holidaySchemeUserCount(final QuerydslSupport querydslSupport,
-      final String schemeIdString) {
-    if (StringUtils.isEmpty(schemeIdString)) {
-      return Long.valueOf(0);
-    } else {
-      Long schemeId = Long.valueOf(schemeIdString);
-      return querydslSupport.execute((connection, configuration) -> {
-        // select count(user_id) from everit_jira_user_work_scheme where work_scheme_id = schemeId;
-        QUserHolidayScheme qUserHolidayScheme = QUserHolidayScheme.userHolidayScheme;
-        return new SQLQuery<Long>(connection, configuration)
-            .from(qUserHolidayScheme)
-            .where(qUserHolidayScheme.holidaySchemeId.eq(schemeId))
-            .fetchCount();
-      });
-    }
-  }
-
   private static Predicate noHolidayExistsSubSelect(final Expression<Long> userId,
       final DatePath<Date> date) {
     QPublicHoliday qPublicHoliday = new QPublicHoliday("exp_work_nh_ph");
@@ -181,23 +162,6 @@ public final class QueryUtil {
             .and(
                 Expressions.path(Integer.class, qWeekdayWork.weekday.getMetadata()).eq(dayOfWeek)));
     return query;
-  }
-
-  public static Long workSchemeUserCount(final QuerydslSupport querydslSupport,
-      final String schemeIdString) {
-    if (StringUtils.isEmpty(schemeIdString)) {
-      return Long.valueOf(0);
-    } else {
-      Long schemeId = Long.valueOf(schemeIdString);
-      return querydslSupport.execute((connection, configuration) -> {
-        // select count(user_id) from everit_jira_user_work_scheme where work_scheme_id = schemeId;
-        QUserWorkScheme qUserWorkScheme = QUserWorkScheme.userWorkScheme;
-        return new SQLQuery<Long>(connection, configuration)
-            .from(qUserWorkScheme)
-            .where(qUserWorkScheme.workSchemeId.eq(schemeId))
-            .fetchCount();
-      });
-    }
   }
 
 }

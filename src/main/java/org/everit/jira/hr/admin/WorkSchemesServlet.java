@@ -40,7 +40,6 @@ import org.everit.jira.hr.admin.schema.qdsl.QUserWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.QWeekdayWork;
 import org.everit.jira.hr.admin.schema.qdsl.QWorkScheme;
 import org.everit.jira.hr.admin.schema.qdsl.util.DateRangeUtil;
-import org.everit.jira.hr.admin.util.QueryUtil;
 import org.everit.web.partialresponse.PartialResponseBuilder;
 
 import com.atlassian.jira.component.ComponentAccessor;
@@ -194,7 +193,7 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     }
 
     String schemeIdParameter = req.getParameter("schemeId");
-    Long userCount = QueryUtil.workSchemeUserCount(querydslSupport, schemeIdParameter);
+    Long userCount = schemeUsersComponent.schemeUserCount(schemeIdParameter);
 
     vars.put("schemeId", schemeIdParameter);
     vars.put("schemeUserCount", userCount);
