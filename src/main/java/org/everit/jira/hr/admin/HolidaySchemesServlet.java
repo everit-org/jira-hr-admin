@@ -68,9 +68,9 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
 
   private static final long serialVersionUID = 1073648466982165361L;
 
-  private final ManageSchemeComponent manageSchemeComponent = new ManageSchemeComponent(
-      this::listHolidaySchemes, this::saveScheme, this::updateScheme,
-      this::deleteScheme, this::applySchemeSelectionChange);
+  private final ManageSchemeComponent manageSchemeComponent =
+      new ManageSchemeComponent(this::listHolidaySchemes, this::saveScheme, this::updateScheme,
+          this::deleteScheme, this::applySchemeSelectionChange);
 
   private final SchemeUsersComponent schemeUsersComponent;
 
@@ -87,16 +87,16 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
     qUserSchemeEntityParameter.userId = userworkscheme.userId;
     qUserSchemeEntityParameter.userSchemeId = userworkscheme.userHolidaySchemeId;
 
-    schemeUsersComponent = new SchemeUsersComponent(qUserSchemeEntityParameter,
-        transactionTemplate);
+    schemeUsersComponent =
+        new SchemeUsersComponent(qUserSchemeEntityParameter, transactionTemplate);
   }
 
   private void appendPublicHolidaysToVars(final HttpServletRequest req,
       final Map<String, Object> vars, final Long schemeId, final Integer year) {
     List<Integer> publicHolidayYears = resolvePublicHolidayYears(schemeId);
     vars.put("publicHolidayYears", publicHolidayYears);
-    Integer publicHolidaySelectedYear = resolvePublicHolidaySelectedYear(req, publicHolidayYears,
-        year);
+    Integer publicHolidaySelectedYear =
+        resolvePublicHolidaySelectedYear(req, publicHolidayYears, year);
     vars.put("publicHolidaySelectedYear", publicHolidaySelectedYear);
     vars.put("publicHolidays", listPublicHolidays(schemeId, publicHolidaySelectedYear));
   }
@@ -350,7 +350,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
 
   private void processUpdatePublicHoliday(final HttpServletRequest req,
       final HttpServletResponse resp)
-          throws IOException {
+      throws IOException {
     long schemeId = Long.parseLong(req.getParameter("schemeId"));
     long publicHolidayId = Long.parseLong(req.getParameter("publicHolidayId"));
     Date date = Date.valueOf(req.getParameter("date"));
@@ -422,7 +422,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
   private Integer resolvePublicHolidaySelectedYear(final HttpServletRequest req,
       final List<Integer> publicHolidayYears, final Integer year) {
 
-    if ((year != null) && publicHolidayYears.contains(year)) {
+    if (year != null && publicHolidayYears.contains(year)) {
       return year;
     }
 
@@ -452,8 +452,8 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
   private List<Integer> resolvePublicHolidayYears(final long schemeId) {
     return querydslSupport.execute((connection, configuration) -> {
       QPublicHoliday qPublicHoliday = QPublicHoliday.publicHoliday;
-      NumberExpression<Integer> yearExpression = qPublicHoliday.date.year()
-          .as("public_holiday_year");
+      NumberExpression<Integer> yearExpression =
+          qPublicHoliday.date.year().as("public_holiday_year");
       return new SQLQuery<Integer>(connection, configuration)
           .select(yearExpression)
           .from(qPublicHoliday)
@@ -474,7 +474,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
       if (replacementDate != null) {
         insertClause.set(qPublicHoliday.replacementDate, replacementDate);
       }
-      if ((description != null) && !"".equals(description.trim())) {
+      if (description != null && !"".equals(description.trim())) {
         insertClause.set(qPublicHoliday.description, description);
       }
       insertClause.set(qPublicHoliday.holidaySchemeId, schemeId);

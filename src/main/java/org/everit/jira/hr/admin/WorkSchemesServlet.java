@@ -107,18 +107,19 @@ public class WorkSchemesServlet extends AbstractPageServlet {
 
   private static final long serialVersionUID = 5855299893731146143L;
 
-  private static final Comparator<WeekdayWorkDTO> WEEKDAY_WORK_DTO_COMPARATOR = new WeekdayWorkDTOComparator();
+  private static final Comparator<WeekdayWorkDTO> WEEKDAY_WORK_DTO_COMPARATOR =
+      new WeekdayWorkDTOComparator();
 
   public static final String WORK_SCHEME_SCOPE_GLOBAL = "GLOBAL";
 
-  private final ManageSchemeComponent manageSchemeComponent = new ManageSchemeComponent(
-      this::listWorkSchemes, this::saveScheme, this::updateScheme,
-      this::deleteScheme, this::applySchemeSelectionChange);
+  private final ManageSchemeComponent manageSchemeComponent =
+      new ManageSchemeComponent(this::listWorkSchemes, this::saveScheme, this::updateScheme,
+          this::deleteScheme, this::applySchemeSelectionChange);
 
   private final SchemeUsersComponent schemeUsersComponent;
 
-  private final TransactionTemplate transactionTemplate = ComponentAccessor
-      .getOSGiComponentInstanceOfType(TransactionTemplate.class);
+  private final TransactionTemplate transactionTemplate =
+      ComponentAccessor.getOSGiComponentInstanceOfType(TransactionTemplate.class);
 
   public WorkSchemesServlet() {
     QUserSchemeEntityParameter qUserSchemeEntityParameter = new QUserSchemeEntityParameter();
@@ -133,8 +134,8 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     qUserSchemeEntityParameter.userId = userworkscheme.userId;
     qUserSchemeEntityParameter.userSchemeId = userworkscheme.userWorkSchemeId;
 
-    schemeUsersComponent = new SchemeUsersComponent(qUserSchemeEntityParameter,
-        transactionTemplate);
+    schemeUsersComponent =
+        new SchemeUsersComponent(qUserSchemeEntityParameter, transactionTemplate);
   }
 
   private void applySchemeSelectionChange(final HttpServletRequest request, final Long schemeId,
