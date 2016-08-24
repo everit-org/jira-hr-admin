@@ -70,7 +70,7 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
 
   private final ManageSchemeComponent manageSchemeComponent = new ManageSchemeComponent(
       this::listHolidaySchemes, this::saveScheme, this::updateScheme,
-      this::deleteScheme, this::applySchemeSelectionChange); // TODO
+      this::deleteScheme, this::applySchemeSelectionChange);
 
   private final SchemeUsersComponent schemeUsersComponent;
 

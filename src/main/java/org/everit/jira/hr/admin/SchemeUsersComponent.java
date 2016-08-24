@@ -130,7 +130,7 @@ public class SchemeUsersComponent {
     this.qUserSchemeEntityParameter = qUserSchemeEntityParameter;
     this.transactionTemplate = transactionTemplate;
     try {
-      querydslSupport = new QuerydslSupportImpl();
+      this.querydslSupport = new QuerydslSupportImpl();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
