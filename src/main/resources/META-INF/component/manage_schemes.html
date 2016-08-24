@@ -30,7 +30,7 @@
     <button id="scheme-edit-button" class="aui-button" onclick="openEditSchemeDialog(event);"
       data-eht-attr-disabled="(empty(selectedSchemeId)) ? 'disabled' : null">Edit</button>
     <button id="scheme-delete-button" class="aui-button"
-      onclick="areYouSureDialog.show(deleteScheme, event);"
+      onclick="deleteSchemaValidationDialog.show(deleteScheme, event);"
       data-eht-attr-disabled="(empty(selectedSchemeId)) ? 'disabled' : null">Delete</button>
     <button class="aui-button" onclick="openNewSchemeDialog(event);">New</button>
   </form>

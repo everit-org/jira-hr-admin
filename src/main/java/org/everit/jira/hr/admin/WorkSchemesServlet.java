@@ -194,11 +194,15 @@ public class WorkSchemesServlet extends AbstractPageServlet {
     }
 
     String schemeIdParameter = req.getParameter("schemeId");
+    Long userCount = schemeUsersComponent.schemeUserCount(schemeIdParameter);
+
     vars.put("schemeId", schemeIdParameter);
+    vars.put("schemeUserCount", userCount);
     vars.put("schemeUsers", schemeUsersComponent);
     vars.put("locale", resp.getLocale());
     vars.put("manageSchemeComponent", manageSchemeComponent);
     vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
+    vars.put("deleteSchemaValidationComponent", DeleteSchemaValidationComponent.INSTANCE);
 
     if (schemeIdParameter != null) {
       long schemeId = Long.parseLong(schemeIdParameter);
@@ -210,6 +214,9 @@ public class WorkSchemesServlet extends AbstractPageServlet {
       try (PartialResponseBuilder prb = new PartialResponseBuilder(resp)) {
         prb.replace("#work-schemes-tabs-container", (writer) -> {
           pageTemplate.render(writer, vars, resp.getLocale(), "work-schemes-tabs-container");
+        });
+        prb.replace("#delete-schema-validation-dialog", (writer) -> {
+          DeleteSchemaValidationComponent.INSTANCE.render(writer, resp.getLocale(), userCount);
         });
       }
       return;

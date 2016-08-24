@@ -216,7 +216,10 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
       return;
     }
 
+    Long userCount = schemeUsersComponent.schemeUserCount(schemeIdParameter);
+
     vars.put("schemeId", schemeId);
+    vars.put("schemeUserCount", userCount);
     vars.put("schemeUsers", schemeUsersComponent);
     vars.put("locale", resp.getLocale());
 
@@ -230,12 +233,16 @@ public class HolidaySchemesServlet extends AbstractPageServlet {
         prb.replace("#holiday-schemes-tabs-container", (writer) -> {
           pageTemplate.render(writer, vars, resp.getLocale(), "holiday-schemes-tabs-container");
         });
+        prb.replace("#delete-schema-validation-dialog", (writer) -> {
+          DeleteSchemaValidationComponent.INSTANCE.render(writer, resp.getLocale(), userCount);
+        });
       }
       return;
     }
 
     vars.put("manageSchemeComponent", manageSchemeComponent);
     vars.put("areYouSureDialogComponent", AreYouSureDialogComponent.INSTANCE);
+    vars.put("deleteSchemaValidationComponent", DeleteSchemaValidationComponent.INSTANCE);
     pageTemplate.render(resp.getWriter(), vars, resp.getLocale(), null);
   }
 

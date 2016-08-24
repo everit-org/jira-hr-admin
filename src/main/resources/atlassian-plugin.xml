@@ -84,6 +84,11 @@
     <resource name="are-you-sure.js" type="download" location="META-INF/webresource/js/are-you-sure.js" />
     <context>org.everit.jira.hr.admin</context>
   </web-resource>
+  
+    <web-resource name="Everit Jira HR Admin Delete Schema Validation" key="delete_schema_validation">
+    <resource name="delete_schema_validation.js" type="download" location="META-INF/webresource/js/delete_schema_validation.js" />
+    <context>org.everit.jira.hr.admin</context>
+  </web-resource>
 
   <web-resource name="Everit Jira HR Admin Scheme Users" key="scheme-users">
     <resource name="scheme-users.js" type="download" location="META-INF/webresource/js/scheme-users.js" />
