@@ -130,7 +130,7 @@ public class SchemeUsersComponent {
     this.qUserSchemeEntityParameter = qUserSchemeEntityParameter;
     this.transactionTemplate = transactionTemplate;
     try {
-      querydslSupport = new QuerydslSupportImpl();
+      this.querydslSupport = new QuerydslSupportImpl();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -371,7 +371,7 @@ public class SchemeUsersComponent {
       query.orderBy(userDisplayNameExpression.asc(), qDateRange.startDate.desc());
       long offset = PAGE_SIZE * (pageIndex - 1);
       if (offset >= count) {
-        offset = PAGE_SIZE * (count / PAGE_SIZE - 1);
+        offset = PAGE_SIZE * ((count / PAGE_SIZE) - 1);
         if (offset < 0) {
           offset = 0;
         }
@@ -403,7 +403,8 @@ public class SchemeUsersComponent {
 
     QueryResultWithCount<SchemeUserDTO> schemeUsers;
     if (schemeId != null) {
-      schemeUsers = querySchemeUsers(pageIndex, schemeId, userFilter, currentOnly);
+      schemeUsers =
+          querySchemeUsers(pageIndex, schemeId, userFilter, currentOnly);
     } else {
       schemeUsers = new QueryResultWithCount<>(Collections.emptyList(), 0);
     }
